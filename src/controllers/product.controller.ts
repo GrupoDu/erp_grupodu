@@ -1,11 +1,9 @@
-import type { Request, Response } from "express";
+import { response, type Request, type Response } from "express";
 import { prisma } from "../../lib/prisma.js";
 import type { IProduct } from "../types/models.interface.js";
-import type { JsonValue } from "@prisma/client/runtime/client";
+import { responseMessages } from "../constants/messages.constants.js";
 
 class ProductController {
-  private errorMessage = "Houve um erro de conexão";
-
   async getAllProductsData(req: Request, res: Response): Promise<Response> {
     try {
       const searchByProductType = {
@@ -14,12 +12,14 @@ class ProductController {
         },
       };
 
-      const allProducts = await prisma.products.findMany(searchByProductType);
+      const allProducts: IProduct[] = await prisma.products.findMany(
+        searchByProductType
+      );
 
       return res.status(200).json(allProducts);
     } catch (err) {
       return res.status(500).json({
-        message: this.errorMessage,
+        message: responseMessages.catchErrorMessage,
         error: (err as Error).message,
       });
     }
@@ -27,7 +27,7 @@ class ProductController {
 
   async registerProduct(req: Request, res: Response): Promise<Response> {
     try {
-      const productInfos: IProduct = req.body;
+      const productInfos = req.body;
 
       if (
         !productInfos.name ||
@@ -35,7 +35,9 @@ class ProductController {
         !productInfos.product_type ||
         !productInfos.image
       ) {
-        throw new Error("Por favor, preencha os campos obrigatórios.");
+        return res
+          .status(422)
+          .json({ message: responseMessages.fillAllFieldMessage });
       }
 
       const newProduct: IProduct = await prisma.products.create({
@@ -55,7 +57,7 @@ class ProductController {
         .json({ message: "Produto registrado com sucesso.", data: newProduct });
     } catch (err) {
       return res.status(500).json({
-        message: this.errorMessage,
+        message: responseMessages.catchErrorMessage,
         error: (err as Error).message,
       });
     }
@@ -63,13 +65,16 @@ class ProductController {
 
   async deleteProduct(req: Request, res: Response): Promise<Response> {
     try {
-      const { uuid } = req.body;
+      const { uuid } = req.params;
 
-      if (!uuid) throw new Error();
+      if (!uuid)
+        return res
+          .status(422)
+          .json({ message: responseMessages.fillAllFieldMessage });
 
       const productToBeDeleted = {
         where: {
-          uuid: uuid,
+          uuid: uuid as string,
         },
       };
 
@@ -77,33 +82,42 @@ class ProductController {
 
       return res.status(200).json({ message: "Produto removido com sucesso." });
     } catch (err) {
-      return res
-        .status(500)
-        .json({ message: this.errorMessage, error: (err as Error).message });
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
     }
   }
 
   async updateProductData(req: Request, res: Response): Promise<Response> {
     try {
-      const { updateValues, uuid } = req.body;
+      const { productNewInfos } = req.body;
+      const { uuid } = req.params;
 
-      const updatedData = {
-        data: updateValues,
+      if (!productNewInfos || !uuid) {
+        return res
+          .status(422)
+          .json({ message: responseMessages.fillAllFieldMessage });
+      }
+
+      const productToBeUpdated = {
+        data: productNewInfos,
         where: {
-          uuid: uuid,
+          uuid: uuid as string,
         },
       };
 
-      const updatedProduct = await prisma.products.update(updatedData);
+      const updatedProduct = await prisma.products.update(productToBeUpdated);
 
       return res.status(200).json({
         message: "Produto atualizado com sucesso.",
         updated: updatedProduct,
       });
     } catch (err) {
-      return res
-        .status(500)
-        .json({ message: this.errorMessage, error: (err as Error).message });
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
     }
   }
 }
