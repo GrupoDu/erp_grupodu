@@ -18,5 +18,3 @@ Apos instalar as dependências, execute o comando `npx prisma migrate dev` para 
 
 >[!NOTE]
 >Se o banco de dados do prisma estiver desatualizado, use `npx prisma db pull` para atualizar o banco de dados e `npx prisma generate` para gerar o prisma client.
-
-Por fim, rode o projeto com o comando `npm run dev`.
