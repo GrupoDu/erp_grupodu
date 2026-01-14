@@ -78,3 +78,5 @@ class GoalController {
     }
   }
 }
+
+export default GoalController;
