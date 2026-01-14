@@ -10,9 +10,10 @@ class EmployeeController {
 
       return res.status(200).json(allEmployeesData);
     } catch (err) {
-      return res
-        .status(500)
-        .json({ message: responseMessages.catchErrorMessage });
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
     }
   }
 
@@ -29,9 +30,10 @@ class EmployeeController {
         employee: newEmployee,
       });
     } catch (err) {
-      return res
-        .status(500)
-        .json({ message: responseMessages.catchErrorMessage });
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
     }
   }
 
@@ -51,9 +53,10 @@ class EmployeeController {
         .status(200)
         .json({ message: "Funcionário removido do sistema." });
     } catch (err) {
-      return res
-        .status(500)
-        .json({ message: responseMessages.catchErrorMessage });
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
     }
   }
 
@@ -78,9 +81,10 @@ class EmployeeController {
         udpate: updatedEmployee,
       });
     } catch (err) {
-      return res
-        .status(500)
-        .json({ message: responseMessages.catchErrorMessage });
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
     }
   }
 }

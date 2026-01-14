@@ -12,7 +12,10 @@ class GoalController {
     } catch (err) {
       return res
         .status(500)
-        .json({ message: responseMessages.catchErrorMessage });
+        .json({
+          message: responseMessages.catchErrorMessage,
+          error: (err as Error).message,
+        });
     }
   }
 
@@ -30,7 +33,10 @@ class GoalController {
     } catch (err) {
       return res
         .status(500)
-        .json({ message: responseMessages.catchErrorMessage });
+        .json({
+          message: responseMessages.catchErrorMessage,
+          error: (err as Error).message,
+        });
     }
   }
 
@@ -50,7 +56,10 @@ class GoalController {
     } catch (err) {
       return res
         .status(500)
-        .json({ message: responseMessages.catchErrorMessage });
+        .json({
+          message: responseMessages.catchErrorMessage,
+          error: (err as Error).message,
+        });
     }
   }
 
@@ -74,7 +83,10 @@ class GoalController {
     } catch (err) {
       return res
         .status(500)
-        .json({ message: responseMessages.catchErrorMessage });
+        .json({
+          message: responseMessages.catchErrorMessage,
+          error: (err as Error).message,
+        });
     }
   }
 }
