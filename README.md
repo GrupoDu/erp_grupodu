@@ -16,7 +16,7 @@ Primeiro é necessário configura o `.env` com as variáveis necessárias:
 Depois de configuras as variáveis de ambiente, execute o comando `npm install` para instalar as dependências.
 Apos instalar as dependências, execute o comando `npx prisma migrate dev` para criar o banco de dados e o comando `npm run dev` para rodar o projeto.
 
->[NOTE]
+>[!NOTE]
 >Se o banco de dados do prisma estiver desatualizado, use `npx prisma db pull` para atualizar o banco de dados e `npx prisma generate` para gerar o prisma client.
 
 Por fim, rode o projeto com o comando `npm run dev`.
