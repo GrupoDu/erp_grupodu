@@ -2,3 +2,4 @@ node_modules/
 database.types.ts
 .env
 /generated/prisma
+/dist
