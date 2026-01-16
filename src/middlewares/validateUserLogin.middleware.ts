@@ -1,37 +1,54 @@
 import type { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../../lib/prisma.js";
+import type { IUser } from "../types/models.interface.js";
+import { responseMessages } from "../constants/messages.constants.js";
+import {
+  hasValidPassword,
+  successfulValidation,
+  type IUserValidation,
+} from "../types/userValidation.interface.js";
 
-export async function validateUser(
+// interface ILoginValues {
+//   email?: string;
+//   password?: string;
+//   loginValuesVerified: boolean;
+//   err: {
+//     message: string;
+//     statusCode: number;
+//   };
+// }
+
+export async function validateUserMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const { email, password }: { email: string; password: string } = req.body;
+    const { email, password } = req.body;
 
-    const userTryingToLogin = await prisma.user.findFirst({
-      where: {
-        email: email,
-      },
-    });
+    const validatedUser: IUserValidation = await checkIfUserExists(email);
 
-    if (!userTryingToLogin) {
-      res.status(401).json({ message: "Usuário não encontrado." });
+    if (!successfulValidation(validatedUser)) {
+      res
+        .status(validatedUser.error?.statusCode || 401)
+        .json({ message: validatedUser.error?.message });
       return;
     }
 
-    const userPasswordDecode = await bcrypt.compare(
+    const validatedPassword: IUserValidation = await checkIfPasswordMatch(
       password,
-      userTryingToLogin.password
+      validatedUser.user
     );
 
-    if (!userPasswordDecode) {
-      res.status(401).json({ message: "Senha ou email incorretos." });
+    if (!hasValidPassword(validatedPassword)) {
+      res
+        .status(validatedPassword.error?.statusCode || 401)
+        .json({ message: validatedPassword.error?.message });
       return;
     }
 
-    req.authenticadedUser = userTryingToLogin;
+    req.authenticatedUser = validatedPassword.user;
     next();
     return;
   } catch (err) {
@@ -43,4 +60,51 @@ export async function validateUser(
   }
 }
 
-export default validateUser;
+async function checkIfPasswordMatch(
+  password: string,
+  userInfos: IUser
+): Promise<IUserValidation> {
+  const userPassword = userInfos.password;
+
+  const userPasswordDecode = await bcrypt.compare(password, userPassword);
+
+  if (!userPasswordDecode) {
+    return {
+      success: false,
+      error: {
+        message: "Usuário ou senha incorretos.",
+        statusCode: 401,
+      },
+    };
+  }
+
+  return {
+    success: true,
+    user: userInfos,
+  };
+}
+
+async function checkIfUserExists(email: string): Promise<IUserValidation> {
+  const userTryingToLogin = await prisma.user.findFirst({
+    where: {
+      email: email,
+    },
+  });
+
+  if (!userTryingToLogin) {
+    return {
+      success: false,
+      error: {
+        message: "Usuário ou senha incorretos.",
+        statusCode: 401,
+      },
+    };
+  }
+
+  return {
+    success: true,
+    user: userTryingToLogin,
+  };
+}
+
+export default validateUserMiddleware;
