@@ -12,7 +12,7 @@ class LoginController {
         { user_id: userLoged.user_id, email: userLoged.email },
         "secret",
         {
-          expiresIn: "1d",
+          expiresIn: "30d",
         }
       );
 
