@@ -1,58 +1,76 @@
-import type { Request, Response } from "express";
+import { responseMessages } from "../constants/messages.constants.js";
 import type { IProduct } from "../types/models.interface.js";
-import { prisma } from "../../lib/prisma.js";
-import type { Prisma } from "@prisma/client";
-import type {
-  IProductCreate,
-  IProductUpdate,
-} from "../types/product.interface.js";
+import type { IProductInputData } from "../types/product.interface.js";
+import type { PrismaClient } from "@prisma/client";
 
 class ProductService {
-  async getAllProductsData(): Promise<IProduct[] | string> {
+  constructor(private prisma: PrismaClient) {}
+
+  async getAllProductsData(): Promise<IProduct[]> {
     try {
-      const allProducts: IProduct[] = await prisma.products.findMany();
+      const allProducts: IProduct[] = await this.prisma.products.findMany();
 
       return allProducts;
     } catch (err) {
-      return (err as Error).message;
+      throw new Error((err as Error).message);
     }
   }
 
   async registerNewProduct(
-    newProductData: IProductCreate
-  ): Promise<IProduct | string> {
+    newProductData: IProductInputData,
+  ): Promise<IProduct> {
     try {
       const { name, description, product_type, image } = newProductData;
 
       if (!name || !description || !product_type || !image) {
-        return "Preencha todos os campos.";
+        throw new Error(responseMessages.fillAllFieldMessage);
       }
 
-      const newProduct: IProduct = await prisma.products.create({
+      const newProduct: IProduct = await this.prisma.products.create({
         data: newProductData,
       });
 
       return newProduct;
     } catch (err) {
-      return (err as Error).message;
+      throw new Error((err as Error).message);
     }
   }
 
   async updateProductData(
-    productNewData: IProductUpdate,
-    productUuid: string
-  ): Promise<IProduct | string> {
+    productNewData: IProductInputData,
+    productUuid: string,
+  ): Promise<IProduct> {
     try {
-      const updatedProduct: IProduct = await prisma.products.update({
+      if (!productNewData || !productUuid) {
+        throw new Error(responseMessages.fillAllFieldMessage);
+      }
+
+      const updatedProduct: IProduct = await this.prisma.products.update({
         where: {
-          uuid: productUuid as string,
+          uuid: productUuid,
         },
         data: productNewData,
       });
 
       return updatedProduct;
     } catch (err) {
-      return (err as Error).message;
+      throw new Error((err as Error).message);
+    }
+  }
+
+  async deleteProduct(productUuid: string): Promise<string> {
+    try {
+      await this.prisma.products.delete({
+        where: {
+          uuid: productUuid,
+        },
+      });
+
+      return "Produto excluido com sucesso";
+    } catch (err) {
+      throw new Error((err as Error).message);
     }
   }
 }
+
+export default ProductService;
