@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
 import { responseMessages } from "../constants/messages.constants.js";
-import type { IUserResponse, IUserUpdate } from "../types/user.interface.js";
+import type {
+  IUserCreate,
+  IUserResponse,
+  IUserUpdate,
+} from "../types/user.interface.js";
 import type UserService from "../services/user.service.js";
 
 class UserController {
@@ -21,10 +25,8 @@ class UserController {
   }
 
   async createNewUser(req: Request, res: Response): Promise<Response> {
-    const saltRounds = 10;
-
     try {
-      const newUserInfos = req.body;
+      const newUserInfos: IUserCreate = req.body;
 
       const newUser: IUserResponse =
         await this.userService.registerNewUser(newUserInfos);
@@ -56,13 +58,10 @@ class UserController {
 
   async updateUserData(req: Request, res: Response): Promise<Response> {
     try {
-      const { updateInfos } = req.body;
-      const { uuid } = req.params;
+      const updateInfos = req.body;
 
-      const updatedUser = await this.userService.updateUserData(
-        updateInfos,
-        uuid as string,
-      );
+      const updatedUser: IUserResponse =
+        await this.userService.updateUserData(updateInfos);
 
       return res.status(200).json({
         message: "Usuário editado com successo.",
