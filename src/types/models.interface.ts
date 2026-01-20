@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client";
 import type { Decimal } from "@prisma/client/runtime/client";
 
 export interface IRegister {
