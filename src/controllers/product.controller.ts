@@ -1,15 +1,14 @@
-import { response, type Request, type Response } from "express";
-import { prisma } from "../../lib/prisma.js";
-import type { IProduct } from "../types/models.interface.js";
+import { type Request, type Response } from "express";
 import { responseMessages } from "../constants/messages.constants.js";
 import type ProductService from "../services/product.service.js";
+import type { IProductResponse } from "../types/product.interface.js";
 
 class ProductController {
   constructor(private productService: ProductService) {}
 
   async getAllProductsData(req: Request, res: Response): Promise<Response> {
     try {
-      const allProducts: IProduct[] =
+      const allProducts: IProductResponse[] =
         await this.productService.getAllProductsData();
 
       return res.status(200).json({ data: allProducts });
@@ -25,7 +24,7 @@ class ProductController {
     try {
       const productInfos = req.body;
 
-      const newProduct =
+      const newProduct: IProductResponse =
         await this.productService.registerNewProduct(productInfos);
 
       return res
@@ -64,10 +63,11 @@ class ProductController {
       const { productNewData } = req.body;
       const { uuid } = req.params;
 
-      const updatedProduct = await this.productService.updateProductData(
-        productNewData,
-        uuid as string,
-      );
+      const updatedProduct: IProductResponse =
+        await this.productService.updateProductData(
+          productNewData,
+          uuid as string,
+        );
 
       return res.status(200).json({
         message: "Produto atualizado com sucesso.",
