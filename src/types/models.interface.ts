@@ -1,25 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import type { Decimal, JsonValue } from "@prisma/client/runtime/client";
-
-export interface IProduct {
-  uuid?: string;
-  created_at?: Date;
-  name: string;
-  description: string;
-  product_type: string;
-  image: string;
-  features?: string[];
-  acronym?: string | null;
-  composition?: Prisma.JsonValue;
-}
-
-export interface IUser {
-  user_id: string;
-  name: string;
-  email: string;
-  password: string;
-  user_type: string;
-}
+import type { Decimal } from "@prisma/client/runtime/client";
 
 export interface IRegister {
   register_id: string;
