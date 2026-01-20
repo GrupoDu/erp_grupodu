@@ -10,12 +10,8 @@ interface IProduct {
   composition?: Prisma.JsonValue;
 }
 
-export interface IProductCreate extends Omit<IProduct, "composition"> {
+export interface IProductInputData extends Omit<IProduct, "composition"> {
   composition?: Prisma.InputJsonValue;
-}
-
-export interface IProductUpdate extends Partial<IProduct> {
-  uuid: string;
 }
 
 export interface IProductResponse extends IProduct {
