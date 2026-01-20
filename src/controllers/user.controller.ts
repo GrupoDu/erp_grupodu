@@ -1,15 +1,17 @@
 import type { Request, Response } from "express";
-import { prisma } from "../../lib/prisma.js";
-import type { IUser } from "../types/models.interface.js";
-import bcrypt from "bcrypt";
 import { responseMessages } from "../constants/messages.constants.js";
+import type { IUserResponse } from "../types/user.interface.js";
+import type UserService from "../services/user.service.js";
 
 class UserController {
+  constructor(private userService: UserService) {}
+
   async getAllUsers(req: Request, res: Response): Promise<Response> {
     try {
-      const allUsers: IUser[] = await prisma.user.findMany();
+      const allUsers: IUserResponse[] =
+        await this.userService.getAllUsersData();
 
-      return res.status(200).json(allUsers);
+      return res.status(200).json({ users: allUsers });
     } catch (err) {
       return res.status(500).json({
         message: responseMessages.catchErrorMessage,
@@ -24,38 +26,17 @@ class UserController {
     try {
       const newUserInfos = req.body;
 
-      if (
-        !newUserInfos.name ||
-        !newUserInfos.email ||
-        !newUserInfos.password ||
-        !newUserInfos.user_type
-      ) {
-        return res
-          .status(422)
-          .json({ message: responseMessages.fillAllFieldMessage });
-      }
-
-      const hashPassword = await bcrypt.hash(newUserInfos.password, saltRounds);
-
-      const newUser: IUser = await prisma.user.create({
-        data: {
-          name: newUserInfos.name,
-          email: newUserInfos.email,
-          password: hashPassword,
-          user_type: newUserInfos.user_type,
-        },
-      });
+      const newUser: IUserResponse =
+        await this.userService.registerNewUser(newUserInfos);
 
       return res
         .status(201)
         .json({ message: "Novo usuário criado com sucesso.", user: newUser });
     } catch (err) {
-      return res
-        .status(500)
-        .json({
-          message: responseMessages.catchErrorMessage,
-          error: (err as Error).message,
-        });
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
     }
   }
 
@@ -63,19 +44,7 @@ class UserController {
     try {
       const { uuid } = req.params;
 
-      if (!uuid)
-        return res.status(422).json({
-          message:
-            "Por favor, passe o parametro 'uuid' para deletar o usuário.",
-        });
-
-      const userToBeDeleted = {
-        where: {
-          user_id: uuid as string,
-        },
-      };
-
-      await prisma.user.delete(userToBeDeleted);
+      await this.userService.deleteUserData(uuid as string);
 
       return res.status(200).json({ message: "Usuário deletado com sucesso." });
     } catch (err) {
@@ -90,14 +59,10 @@ class UserController {
       const { updateInfos } = req.body;
       const { uuid } = req.params;
 
-      const userToBeUpdated = {
-        data: updateInfos,
-        where: {
-          user_id: uuid as string,
-        },
-      };
-
-      const updatedUser = await prisma.user.update(userToBeUpdated);
+      const updatedUser = await this.userService.updateUserData(
+        updateInfos,
+        uuid as string,
+      );
 
       return res.status(200).json({
         message: "Usuário editado com successo.",
