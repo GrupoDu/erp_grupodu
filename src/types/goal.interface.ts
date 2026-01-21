@@ -1,4 +1,5 @@
 export interface IGoal {
+  goal_id: string;
   title: string;
   description: string | null;
   goal_type: string;
@@ -10,7 +11,4 @@ export interface IEmployeeGoal extends Omit<IGoal, "employee_goal"> {
   employee_goal: string | null;
 }
 
-export interface IGoalResponse extends IGoal {
-  goal_id: string;
-  created_at: Date;
-}
+export interface IGoalUpdate extends Partial<Omit<IGoal, "goal_id">> {}
