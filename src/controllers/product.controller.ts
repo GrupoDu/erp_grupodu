@@ -1,14 +1,14 @@
 import { type Request, type Response } from "express";
 import { responseMessages } from "../constants/messages.constants.js";
 import type ProductService from "../services/product.service.js";
-import type { IProductResponse } from "../types/product.interface.js";
+import type { IProduct } from "../types/product.interface.js";
 
 class ProductController {
   constructor(private productService: ProductService) {}
 
   async getAllProductsData(req: Request, res: Response): Promise<Response> {
     try {
-      const allProducts: IProductResponse[] =
+      const allProducts: IProduct[] =
         await this.productService.getAllProductsData();
 
       return res.status(200).json({ data: allProducts });
@@ -24,7 +24,7 @@ class ProductController {
     try {
       const productInfos = req.body;
 
-      const newProduct: IProductResponse =
+      const newProduct: IProduct =
         await this.productService.registerNewProduct(productInfos);
 
       return res
@@ -61,13 +61,9 @@ class ProductController {
   async updateProductData(req: Request, res: Response): Promise<Response> {
     try {
       const { productNewData } = req.body;
-      const { uuid } = req.params;
 
-      const updatedProduct: IProductResponse =
-        await this.productService.updateProductData(
-          productNewData,
-          uuid as string,
-        );
+      const updatedProduct: IProduct =
+        await this.productService.updateProductData(productNewData);
 
       return res.status(200).json({
         message: "Produto atualizado com sucesso.",
