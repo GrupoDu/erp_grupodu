@@ -3,8 +3,10 @@ import type {
   IEmployeeGoal,
   IGoal,
   IGoalResponse,
+  IGoalUpdate,
 } from "../types/goal.interface.js";
 import { responseMessages } from "../constants/messages.constants.js";
+import verifyFieldstoUpdate from "../utils/verifyFieldsToUpdate.utils.js";
 
 class GoalService {
   constructor(private prisma: PrismaClient) {}
@@ -64,16 +66,23 @@ class GoalService {
     return "Meta excluida com sucesso.";
   }
 
-  async updateGoal(goalData: IGoal, goalUuid: string): Promise<IGoalResponse> {
-    if (!goalData || !goalUuid) {
+  async updateGoalData(
+    goalData: IGoalUpdate,
+    goalUuid: string,
+  ): Promise<IGoalResponse> {
+    if (!goalUuid) {
       throw new Error(responseMessages.fillAllFieldMessage);
     }
+
+    const updateFields = verifyFieldstoUpdate(goalData);
+
+    if (updateFields.length < 1) throw new Error("Nenhum campo fornecido");
 
     const updatedGoal: IGoalResponse = await this.prisma.goal.update({
       where: {
         goal_id: goalUuid as string,
       },
-      data: goalData,
+      data: updateFields,
     });
 
     return updatedGoal;
