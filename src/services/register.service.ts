@@ -5,6 +5,7 @@ import type {
   IRegisterUpdate,
 } from "../types/register.interface.js";
 import { responseMessages } from "../constants/messages.constants.js";
+import removeUndefinedUpdateFields from "../utils/removeUndefinedUpdateFields.utils.js";
 
 class RegisterService {
   constructor(private prisma: PrismaClient) {}
@@ -46,11 +47,15 @@ class RegisterService {
     if (!uuid || !registerData)
       throw new Error(responseMessages.fillAllFieldMessage);
 
+    const updateFields = removeUndefinedUpdateFields(registerData);
+
+    if (updateFields.length < 1) throw new Error("Nenhum campo fornecido.");
+
     const updatedRegister: IRegister = await this.prisma.register.update({
       where: {
         register_id: uuid,
       },
-      data: registerData,
+      data: updateFields,
     });
 
     return updatedRegister;
