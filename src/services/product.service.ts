@@ -5,6 +5,7 @@ import type {
   IProductUpdate,
 } from "../types/product.interface.js";
 import type { PrismaClient } from "@prisma/client";
+import verifyFieldstoUpdate from "../utils/verifyFieldsToUpdate.utils.js";
 
 class ProductService {
   constructor(private prisma: PrismaClient) {}
@@ -29,15 +30,21 @@ class ProductService {
     return newProduct;
   }
 
-  async updateProductData(productNewData: IProductUpdate): Promise<IProduct> {
-    if (!productNewData.uuid)
-      throw new Error(responseMessages.fillAllFieldMessage);
+  async updateProductData(
+    productNewData: IProductUpdate,
+    productUuid: string,
+  ): Promise<IProduct> {
+    if (!productUuid) throw new Error(responseMessages.fillAllFieldMessage);
+
+    const updateFields = verifyFieldstoUpdate(productNewData);
+
+    if (updateFields.length < 1) throw new Error("Nenhum campo fornecido");
 
     const updatedProduct: IProduct = await this.prisma.products.update({
       where: {
-        uuid: productNewData.uuid,
+        uuid: productUuid,
       },
-      data: productNewData,
+      data: updateFields,
     });
 
     return updatedProduct;
