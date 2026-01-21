@@ -1,35 +1,37 @@
 import type { Request, Response } from "express";
+import type RegisterService from "../services/register.service.js";
+import type {
+  IRegister,
+  IRegisterUpdate,
+} from "../types/register.interface.js";
 import { responseMessages } from "../constants/messages.constants.js";
-import { prisma } from "../../lib/prisma.js";
-import type { IRegister } from "../types/models.interface.js";
 
 class RegisterController {
+  constructor(private registerService: RegisterService) {}
+
   async getAllProductionRegisters(
     req: Request,
-    res: Response
+    res: Response,
   ): Promise<Response> {
     try {
       const allProductionRegisters: IRegister[] =
-        await prisma.register.findMany();
+        await this.registerService.getAllRegistersData();
 
-      return res.status(200).json(allProductionRegisters);
+      return res.status(200).json({ registers: allProductionRegisters });
     } catch (err) {
-      return res
-        .status(500)
-        .json({
-          message: responseMessages.catchErrorMessage,
-          error: (err as Error).message,
-        });
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
     }
   }
 
   async createNewRegister(req: Request, res: Response): Promise<Response> {
     try {
-      const newRegisterData = req.body;
+      const newRegisterData: IRegister = req.body;
 
-      const newRegister: IRegister = await prisma.register.create({
-        data: newRegisterData,
-      });
+      const newRegister: IRegister =
+        await this.registerService.createNewRegister(newRegisterData);
 
       return res.status(201).json({
         message: "Registro criado com sucesso.",
@@ -47,13 +49,12 @@ class RegisterController {
     try {
       const { uuid } = req.params;
 
-      const registerToBeDeleter = {
-        where: {
-          register_id: uuid as string,
-        },
-      };
+      if (!uuid)
+        return res
+          .status(422)
+          .json({ message: responseMessages.fillAllFieldMessage });
 
-      await prisma.register.delete(registerToBeDeleter);
+      await this.registerService.removeRegisterData(uuid as string);
 
       return res
         .status(200)
@@ -68,19 +69,14 @@ class RegisterController {
 
   async updateRegister(req: Request, res: Response): Promise<Response> {
     try {
-      const updateRegisterValues = req.body;
+      const updateRegisterValues: IRegisterUpdate = req.body;
       const { uuid } = req.params;
 
-      const registerToBeUpdated = {
-        where: {
-          register_id: uuid as string,
-        },
-        data: updateRegisterValues,
-      };
-
-      const updatedRegister: IRegister = await prisma.register.update(
-        registerToBeUpdated
-      );
+      const updatedRegister: IRegister =
+        await this.registerService.updateRegisterData(
+          updateRegisterValues,
+          uuid as string,
+        );
 
       return res.status(200).json({
         message: "Registro atualizado com sucesso.",
