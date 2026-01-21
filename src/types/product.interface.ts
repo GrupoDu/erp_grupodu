@@ -19,6 +19,5 @@ export interface IProductCreate extends Omit<IProduct, "composition"> {
 export interface IProductUpdate extends Partial<
   Omit<IProduct, "composition" | "uuid" | "created_at">
 > {
-  uuid: string;
   composition?: Prisma.InputJsonValue;
 }
