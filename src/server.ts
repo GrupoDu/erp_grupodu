@@ -6,7 +6,7 @@ import UserRoutes from "./routes/user.routes.js";
 import GoalRoutes from "./routes/goal.routes.js";
 import RegisterRoutes from "./routes/register.routes.js";
 import EmployeeRoutes from "./routes/employee.routes.js";
-import LoginRoutes from "./routes/login.routes.js";
+import LoginRoutes from "./routes/auth.routes.js";
 import ProductionAnalysisRoutes from "./routes/productionDataAnalysis.routes.js";
 
 dotenv.config();
