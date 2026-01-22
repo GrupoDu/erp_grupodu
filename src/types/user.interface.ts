@@ -1,4 +1,4 @@
-export interface IUser {
+interface IUser {
   user_id: string;
   name: string;
   email: string;
@@ -10,9 +10,10 @@ export interface IUserUpdate extends Partial<Omit<IUser, "user_id">> {}
 
 export interface IUserCreate extends Omit<IUser, "user_id"> {}
 
-export interface IUserResponse extends Omit<IUser, "password"> {}
+export interface IUserLogin extends Pick<IUser, "email" | "password"> {}
 
-export interface IUserLogin extends Pick<
-  IUser,
-  "email" | "password" | "user_id"
-> {}
+export interface IUserPublic extends Omit<IUser, "password"> {}
+
+export interface IUserWithPassword extends IUser {
+  password: string;
+}
