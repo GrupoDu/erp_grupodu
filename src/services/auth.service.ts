@@ -1,0 +1,76 @@
+import type { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+import type {
+  IUserPublic,
+  IUserWithPassword,
+} from "../types/user.interface.js";
+
+dotenv.config();
+
+class AuthService {
+  constructor(private prisma: PrismaClient) {}
+
+  async userLogin(email: string, password: string): Promise<IUserPublic> {
+    const saltRounds = process.env.SALT_ROUNDS || 10;
+
+    if (!saltRounds)
+      throw new Error("Variável de ambiente SALT_ROUNDS não encontrada.");
+
+    if (!email || !password) throw new Error("Preencha todos os campos.");
+
+    const userTryingToLogin: IUserWithPassword =
+      await this.checkIfUserExists(email);
+
+    if (!this.isPasswordMatch(password, userTryingToLogin.password)) {
+      throw new Error("Credenciais inválidas.");
+    }
+
+    const { password: _, ...userPublic } = userTryingToLogin;
+
+    return userPublic;
+  }
+
+  private async checkIfUserExists(email: string): Promise<IUserWithPassword> {
+    const userTryingToLogin = await this.prisma.user.findFirst({
+      where: {
+        email: email,
+      },
+      select: {
+        user_id: true,
+        name: true,
+        email: true,
+        user_type: true,
+        password: true,
+      },
+    });
+
+    if (!userTryingToLogin) {
+      throw new Error("Credenciais inválidas.");
+    }
+
+    return userTryingToLogin;
+  }
+
+  private async isPasswordMatch(
+    password: string,
+    userHashPassword: string,
+  ): Promise<boolean> {
+    return bcrypt.compare(password, userHashPassword);
+  }
+
+  async generateAccessToken(userId: string): Promise<string> {
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret)
+      throw new Error("Variável de ambiente JWT_SECRET não encontrada.");
+
+    // Depois mudar expiresIn para variável de ambiente
+    return jwt.sign({ user_id: userId }, secret, {
+      expiresIn: "30d",
+    });
+  }
+}
+
+export default AuthService;
