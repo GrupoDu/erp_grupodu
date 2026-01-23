@@ -2,6 +2,7 @@ import type { PrismaClient } from "@prisma/client";
 import type { IEmployeeProductionAnalysis } from "../types/dataAnalysis.interface.js";
 import { cacheInstance } from "../utils/cache.util.js";
 import type { IEmployee } from "../types/employee.interface.js";
+import { getMonthRange } from "../utils/getMonthRange.util.js";
 
 class EmployeeAnalysisService {
   private readonly CACHE_TTL = 300;
@@ -94,8 +95,8 @@ class EmployeeAnalysisService {
           employee_uuid: employee_id,
           status: status,
           deadline: {
-            gte: this.getMonthRange().actualMonth,
-            lt: this.getMonthRange().nextMonth,
+            gte: getMonthRange().actualMonth,
+            lt: getMonthRange().nextMonth,
           },
         },
       },
@@ -114,22 +115,6 @@ class EmployeeAnalysisService {
     if (!employeeData) throw new Error("Funcionário não encontrado.");
 
     return employeeData;
-  }
-
-  private getMonthRange(): { actualMonth: Date; nextMonth: Date } {
-    const today = new Date();
-    const actualMonth: Date = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      1,
-    );
-    const nextMonth: Date = new Date(
-      today.getFullYear(),
-      today.getMonth() + 1,
-      1,
-    );
-
-    return { actualMonth, nextMonth };
   }
 }
 
