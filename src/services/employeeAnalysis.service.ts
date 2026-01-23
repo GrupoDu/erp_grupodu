@@ -1,83 +1,135 @@
 import type { PrismaClient } from "@prisma/client";
 import type { IEmployeeProductionAnalysis } from "../types/dataAnalysis.interface.js";
-import type { IRegister } from "../types/register.interface.js";
+import { cacheInstance } from "../utils/cache.util.js";
+import type { IEmployee } from "../types/employee.interface.js";
 
 class EmployeeAnalysisService {
+  private readonly CACHE_TTL = 300;
+  private readonly CACHE_PREFIX = "employee_analysis";
+
   constructor(private prisma: PrismaClient) {}
 
-  private getTodayDate(): Date {
-    return new Date();
+  async employeeActivityAnalysis(
+    employee_id: string,
+  ): Promise<IEmployeeProductionAnalysis> {
+    const month = new Date().getMonth() + 1;
+    const cacheKey = `${this.CACHE_PREFIX}:${employee_id}:${month}`;
+    const dataAnalysis = this.getCachedData(cacheKey);
+
+    if (dataAnalysis !== undefined) {
+      console.log(`== USANDO CACHE: ${cacheKey} ==`);
+      return dataAnalysis;
+    }
+
+    console.log("== CACHE EXPIRADO ==");
+    console.log("== BUSCANDO NOVOS DADOS... =");
+    const newDataAnalysis = await this.saveDataToCache(employee_id);
+
+    return newDataAnalysis;
   }
 
-  async employeeActivityAnalysis(employee_id: string) {
-    const employee = await this.prisma.employee.findUnique({
-      where: {
-        employee_id: employee_id,
-      },
-    });
+  private getCachedData(
+    cacheKey: string,
+  ): IEmployeeProductionAnalysis | undefined {
+    const cache = cacheInstance;
 
-    if (!employee) throw new Error("Funcionário não encontrado.");
+    const cachedData = cache.get<IEmployeeProductionAnalysis>(cacheKey);
 
-    const employeeDeliveredRegisters: number =
-      await this.getEmployeeDeliveredRegistersQuantity(employee_id);
+    return cachedData;
+  }
 
-    const employeeNotDeliveredRegisters: number =
-      await this.getEmployeeNotDeliveredRegistersQuantity(employee_id);
+  private async saveDataToCache(
+    employee_id: string,
+  ): Promise<IEmployeeProductionAnalysis> {
+    const cacheKey = `${this.CACHE_PREFIX}:${employee_id}`;
+    const cache = cacheInstance;
 
-    const employeeFullAnalysis: IEmployeeProductionAnalysis = {
-      deliveredRegisterQuantity: employeeDeliveredRegisters,
-      notDeliveredRegisterQuantity: employeeNotDeliveredRegisters,
-      employeeName: employee.name,
+    const employeeData: IEmployee = await this.getEmployeeData(employee_id);
+
+    const [delivered, notDelivered] = await Promise.all([
+      this.getEmployeeDeliveredRegistersQuantity(employee_id),
+      this.getEmployeeNotDeliveredRegistersQuantity(employee_id),
+    ]);
+
+    const fullEmployeeDataAnalysis: IEmployeeProductionAnalysis = {
+      deliveredRegisterQuantity: delivered,
+      notDeliveredRegisterQuantity: notDelivered,
+      employeeName: employeeData.name,
     };
 
-    return employeeFullAnalysis;
+    cache.set<IEmployeeProductionAnalysis>(
+      cacheKey,
+      fullEmployeeDataAnalysis,
+      this.CACHE_TTL,
+    );
+
+    return fullEmployeeDataAnalysis;
   }
 
   private async getEmployeeDeliveredRegistersQuantity(
     employee_id: string,
   ): Promise<number> {
-    const employeeDeliveredRegisters: IRegister[] =
+    const employeeDeliveredRegisters: number =
       await this.getEmployeeRegisterData(employee_id, "Entregue");
 
-    return employeeDeliveredRegisters.length;
+    return employeeDeliveredRegisters;
   }
 
   private async getEmployeeNotDeliveredRegistersQuantity(
     employee_id: string,
   ): Promise<number> {
-    const employeeNotDeliveredRegisters: IRegister[] =
-      await this.getEmployeeRegisterData(employee_id, "Nao entregue");
+    const employeeNotDeliveredRegisters: number =
+      await this.getEmployeeRegisterData(employee_id, "Não entregue");
 
-    return employeeNotDeliveredRegisters.length;
+    return employeeNotDeliveredRegisters;
   }
 
   private async getEmployeeRegisterData(
     employee_id: string,
     status: string,
-  ): Promise<IRegister[]> {
-    const registerData: IRegister[] = await this.prisma.register.findMany({
-      where: {
-        employee_uuid: employee_id,
-        status: status,
-        deadline: {
-          gte: new Date(
-            this.getTodayDate().getFullYear(),
-            this.getTodayDate().getMonth(),
-          ),
-          lt: new Date(
-            this.getTodayDate().getFullYear(),
-            this.getTodayDate().getMonth() + 1,
-          ),
+  ): Promise<number> {
+    const employeeDeliveredRegisters: number = await this.prisma.register.count(
+      {
+        where: {
+          employee_uuid: employee_id,
+          status: status,
+          deadline: {
+            gte: this.getMonthRange().actualMonth,
+            lt: this.getMonthRange().nextMonth,
+          },
         },
+      },
+    );
+
+    return employeeDeliveredRegisters;
+  }
+
+  private async getEmployeeData(employee_id: string): Promise<IEmployee> {
+    const employeeData = await this.prisma.employee.findUnique({
+      where: {
+        employee_id: employee_id,
       },
     });
 
-    if (!registerData)
-      throw new Error(
-        `Nenhum registro de status ${status} encontrado para o funcionário nesse mês.`,
-      );
+    if (!employeeData) throw new Error("Funcionário não encontrado.");
 
-    return registerData;
+    return employeeData;
+  }
+
+  private getMonthRange(): { actualMonth: Date; nextMonth: Date } {
+    const today = new Date();
+    const actualMonth: Date = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      1,
+    );
+    const nextMonth: Date = new Date(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      1,
+    );
+
+    return { actualMonth, nextMonth };
   }
 }
 
