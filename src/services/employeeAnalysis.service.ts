@@ -42,7 +42,8 @@ class EmployeeAnalysisService {
   private async saveDataToCache(
     employee_id: string,
   ): Promise<IEmployeeProductionAnalysis> {
-    const cacheKey = `${this.CACHE_PREFIX}:${employee_id}`;
+    const month = new Date().getMonth() + 1;
+    const cacheKey = `${this.CACHE_PREFIX}:${employee_id}:${month}`;
     const cache = cacheInstance;
 
     const employeeData: IEmployee = await this.getEmployeeData(employee_id);
@@ -56,6 +57,8 @@ class EmployeeAnalysisService {
       deliveredRegisterQuantity: delivered,
       notDeliveredRegisterQuantity: notDelivered,
       employeeName: employeeData.name,
+      actualMonth: getMonthRange(this.getTodayDate()).actualMonth,
+      nextMonth: getMonthRange(this.getTodayDate()).nextMonth,
     };
 
     cache.set<IEmployeeProductionAnalysis>(
@@ -95,8 +98,8 @@ class EmployeeAnalysisService {
           employee_uuid: employee_id,
           status: status,
           deadline: {
-            gte: getMonthRange().actualMonth,
-            lt: getMonthRange().nextMonth,
+            gte: getMonthRange(this.getTodayDate()).actualMonth,
+            lt: getMonthRange(this.getTodayDate()).nextMonth,
           },
         },
       },
@@ -115,6 +118,10 @@ class EmployeeAnalysisService {
     if (!employeeData) throw new Error("Funcionário não encontrado.");
 
     return employeeData;
+  }
+
+  private getTodayDate() {
+    return new Date();
   }
 }
 
