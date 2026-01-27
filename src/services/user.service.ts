@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import jwt, { type JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import type {
   IUserCreate,
