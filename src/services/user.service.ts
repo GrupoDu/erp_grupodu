@@ -37,7 +37,9 @@ class UserService {
       throw new Error(responseMessages.fillAllFieldMessage);
     }
 
-    const hashPassword = await bcrypt.hash(userInfos.password, saltRounds);
+    const saltRoundsNumber = parseInt(saltRounds, 10);
+
+    const hashPassword = await bcrypt.hash(userInfos.password, saltRoundsNumber);
 
     const newUser: IUserPublic = await this.prisma.user.create({
       data: {
