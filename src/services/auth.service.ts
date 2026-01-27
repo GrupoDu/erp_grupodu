@@ -60,14 +60,17 @@ class AuthService {
     return bcrypt.compare(password, userHashPassword);
   }
 
-  async generateAccessToken(userId: string): Promise<string> {
+  async generateAccessToken(
+    user_id: string,
+    user_type: string,
+  ): Promise<string> {
     const secret = process.env.JWT_SECRET;
 
     if (!secret)
       throw new Error("Variável de ambiente JWT_SECRET não encontrada.");
 
     // Depois mudar expiresIn para variável de ambiente
-    return jwt.sign({ user_id: userId }, secret, {
+    return jwt.sign({ user_id: user_id, user_type: user_type }, secret, {
       expiresIn: "30d",
     });
   }
