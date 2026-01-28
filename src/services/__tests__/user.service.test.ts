@@ -1,9 +1,12 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import UserService from "../user.service.js";
 import type { IUserPublic } from "../../types/user.interface.js";
-import { prisma } from "../../../lib/prisma.js";
 import { randomUUID } from "crypto";
+
+vi.mock("../../../lib/prisma.js");
+
+import prisma from "../../tests/__mocks__/@prisma/prisma.js";
 
 const getUserToken = (user_type: string) => {
   const adminUser = {
@@ -62,15 +65,17 @@ describe("Testes de registro", () => {
   it("Deve criar um novo usuário.", async () => {
     const adminJwt = getUserToken("Admin");
 
-    const newUser = await userService.registerNewUser(
-      {
-        name: "Mario",
-        email: "mario@email.com",
-        password: "1234",
-        user_type: "Cliente",
-      },
-      adminJwt,
-    );
+    const newMockedUser = {
+      user_id: randomUUID(),
+      name: "Mario",
+      email: "mario@email.com",
+      password: "1234",
+      user_type: "Cliente",
+    };
+
+    prisma.user.create.mockResolvedValue(newMockedUser);
+
+    const newUser = await userService.registerNewUser(newMockedUser, adminJwt);
 
     expect(newUser.name).toBe("Mario");
   });
@@ -128,7 +133,7 @@ describe("Testes de update.", () => {
   });
 
   // Passou, mas da erro pois procura os dados diretamente no banco de dados
-  it("Não deve permitir alteração de dados do usuário.", ({ skip }) => {
+  it("Não deve permitir alteração de dados do usuário.", () => {
     const adminJwt = getUserToken("Cliente");
 
     expect(async () => {
