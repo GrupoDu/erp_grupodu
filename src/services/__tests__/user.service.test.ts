@@ -8,25 +8,6 @@ vi.mock("../../../lib/prisma.js");
 
 import prisma from "../../tests/__mocks__/@prisma/prisma.js";
 
-const getUserToken = (user_type: string) => {
-  const adminUser = {
-    user_id: randomUUID(),
-    user_type: user_type,
-    email: "felipe@email.com",
-  };
-
-  const jwtSecret = process.env.JWT_SECRET || "fallback_secret_for_tests";
-
-  return jwt.sign(
-    {
-      user_id: adminUser.user_id,
-      user_type: adminUser.user_type,
-    },
-    jwtSecret,
-    { expiresIn: "30d" },
-  );
-};
-
 describe("Teste de variáveis de ambiente.", () => {
   it("deve carrega a variável SALT_ROUNDS", () => {
     console.log(`SALT_ROUNDS: ${process.env.SALT_ROUNDS}`);
@@ -41,30 +22,14 @@ describe("Teste de variáveis de ambiente.", () => {
 
 describe("Testes de registro", () => {
   let userService: UserService;
-  let userList: IUserPublic[];
+  let jwtSpyMock: any;
 
   beforeEach(() => {
-    userList = [
-      {
-        name: "Pedro",
-        email: "pedro@email.com",
-        user_type: "Cliente",
-        user_id: randomUUID(),
-      },
-      {
-        name: "João",
-        email: "joao@email.com",
-        user_type: "Cliente",
-        user_id: randomUUID(),
-      },
-    ];
-
+    jwtSpyMock = vi.spyOn(jwt, "verify");
     userService = new UserService(prisma);
   });
 
   it("Deve criar um novo usuário.", async () => {
-    const adminJwt = getUserToken("Admin");
-
     const newMockedUser = {
       user_id: randomUUID(),
       name: "Mario",
@@ -73,15 +38,26 @@ describe("Testes de registro", () => {
       user_type: "Cliente",
     };
 
+    jwtSpyMock.mockReturnValue({
+      user_id: "fake-id",
+      user_type: "Admin",
+    });
+
     prisma.user.create.mockResolvedValue(newMockedUser);
 
-    const newUser = await userService.registerNewUser(newMockedUser, adminJwt);
+    const newUser = await userService.registerNewUser(
+      newMockedUser,
+      jwtSpyMock,
+    );
 
     expect(newUser.name).toBe("Mario");
   });
 
   it("Não deve permitir a criação do usuário", async () => {
-    const adminJwt = getUserToken("Cliente");
+    jwtSpyMock.mockReturnValue({
+      user_id: "fake-id",
+      user_type: "Cliente",
+    });
 
     expect(async () => {
       await userService.registerNewUser(
@@ -91,7 +67,7 @@ describe("Testes de registro", () => {
           password: "1234",
           user_type: "Cliente",
         },
-        adminJwt,
+        jwtSpyMock,
       );
     }).toThrowError;
   });
@@ -100,8 +76,11 @@ describe("Testes de registro", () => {
 describe("Testes de update.", () => {
   let userService: UserService;
   let userList: IUserPublic[];
+  let jwtSpyMock: any;
 
   beforeEach(() => {
+    jwtSpyMock = vi.spyOn(jwt, "verify");
+
     userList = [
       {
         user_id: randomUUID(),
@@ -134,13 +113,16 @@ describe("Testes de update.", () => {
 
   // Passou, mas da erro pois procura os dados diretamente no banco de dados
   it("Não deve permitir alteração de dados do usuário.", () => {
-    const adminJwt = getUserToken("Cliente");
+    jwtSpyMock.mockReturnValue({
+      user_id: "fake-id",
+      user_type: "Cliente",
+    });
 
     expect(async () => {
       await userService.updateUserData(
         { name: "Rafael" },
         userList[1]!.user_id,
-        adminJwt,
+        jwtSpyMock,
       );
     }).toThrowError;
   });
@@ -149,8 +131,11 @@ describe("Testes de update.", () => {
 describe("Testes de delete.", () => {
   let userService: UserService;
   let userList: IUserPublic[];
+  let jwtSpyMock: any;
 
   beforeEach(() => {
+    jwtSpyMock = vi.spyOn(jwt, "verify");
+
     userList = [
       {
         user_id: randomUUID(),
@@ -182,10 +167,13 @@ describe("Testes de delete.", () => {
   });
 
   it("Não deve permitir a remoção do usuário", () => {
-    const adminJwt = getUserToken("Cliente");
+    jwtSpyMock.mockReturnValue({
+      user_id: "fake-id",
+      user_type: "Cliente",
+    });
 
     expect(async () => {
-      await userService.deleteUserData(userList[0]!.user_id, adminJwt);
+      await userService.deleteUserData(userList[0]!.user_id, jwtSpyMock);
     }).toThrowError;
   });
 });
