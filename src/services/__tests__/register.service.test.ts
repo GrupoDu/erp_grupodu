@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, expect, vi } from "vitest";
+import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import RegisterService from "../register.service.js";
 import { mockedRegisterFactory } from "../../tests/factories/register.factory.js";
 import jwt from "jsonwebtoken";
@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken";
 vi.mock("../../../lib/prisma.js");
 
 import prisma from "../../tests/__mocks__/@prisma/prisma.js";
-import { afterEach } from "node:test";
 
 describe("Testes de criação de registro.", () => {
   let registerService: RegisterService;
