@@ -1,19 +1,19 @@
 import { describe, it, beforeEach, expect, vi } from "vitest";
 import RegisterService from "../register.service.js";
-import { Prisma } from "@prisma/client";
+import { mockedRegisterFactory } from "../../tests/factories/register.factory.js";
+import jwt from "jsonwebtoken";
 
 vi.mock("../../../lib/prisma.js");
 
 import prisma from "../../tests/__mocks__/@prisma/prisma.js";
-import { randomUUID } from "node:crypto";
-import type { IRegister } from "../../types/register.interface.js";
-import { mockedRegisterFactory } from "../../tests/factories/register.factory.js";
+import { afterEach } from "node:test";
 
 describe("Testes de criação de registro.", () => {
   let registerService: RegisterService;
 
   beforeEach(() => {
     vi.clearAllMocks();
+
     registerService = new RegisterService(prisma);
   });
 
@@ -30,13 +30,25 @@ describe("Testes de criação de registro.", () => {
 
 describe("Testes de update de registro.", () => {
   let registerService: RegisterService;
+  let jwtVerifySpy: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    jwtVerifySpy = vi.spyOn(jwt, "verify");
+
+    jwtVerifySpy.mockReturnValue({
+      user_id: "123",
+      user_type: "admin",
+    });
     registerService = new RegisterService(prisma);
   });
 
-  it("Deve editar título do registro.", async () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("Deve editar título do registro.", async ({ skip }) => {
     const mockedTitleUpdateRegister = mockedRegisterFactory({
       title: "Update de título",
     });
@@ -46,6 +58,7 @@ describe("Testes de update de registro.", () => {
     const updateRegister = await registerService.updateRegisterData(
       mockedTitleUpdateRegister,
       "550e8400-e29b-41d4-a716-446655440000",
+      jwtVerifySpy,
     );
 
     expect(updateRegister.title).toBe("Update de título");
@@ -54,7 +67,7 @@ describe("Testes de update de registro.", () => {
     );
   });
 
-  it("Deve editar descrição do registro.", async () => {
+  it("Deve editar descrição do registro.", async ({ skip }) => {
     const mockedDescriptionUpdateRegister = mockedRegisterFactory({
       description: "Atualizando a descrição desse registro.",
     });
@@ -64,6 +77,7 @@ describe("Testes de update de registro.", () => {
     const updateRegister = await registerService.updateRegisterData(
       mockedDescriptionUpdateRegister,
       "550e8400-e29b-41d4-a716-446655440000",
+      jwtVerifySpy,
     );
 
     expect(updateRegister.description).toBe(
@@ -72,5 +86,42 @@ describe("Testes de update de registro.", () => {
     expect(updateRegister.register_id).toBe(
       "550e8400-e29b-41d4-a716-446655440000",
     );
+  });
+
+  it("Deve editar ajudante de corte.", async ({ skip }) => {
+    const mockedCutAssistantUpdateRegister = mockedRegisterFactory({
+      cut_assistant: "Sergio",
+    });
+
+    prisma.register.update.mockResolvedValue(mockedCutAssistantUpdateRegister);
+
+    const updateRegister = await registerService.updateRegisterData(
+      mockedCutAssistantUpdateRegister,
+      "550e8400-e29b-41d4-a716-446655440000",
+      jwtVerifySpy,
+    );
+
+    expect(updateRegister.cut_assistant).toBe("Sergio");
+  });
+
+  it("Não deve permitir edição de registro.", () => {
+    const mockedTitleUpdateRegister = mockedRegisterFactory({
+      title: "Atualização de título",
+    });
+
+    jwtVerifySpy.mockImplementation(() => {
+      throw new Error("Token invalido");
+    });
+
+    prisma.register.update.mockResolvedValue(mockedTitleUpdateRegister);
+
+    expect(
+      async () =>
+        await registerService.updateRegisterData(
+          mockedTitleUpdateRegister,
+          "550e8400-e29b-41d4-a716-446655440000",
+          jwtVerifySpy,
+        ),
+    ).toThrowError;
   });
 });
