@@ -22,18 +22,11 @@ class UserService {
     return allUsersData;
   }
 
-  async registerNewUser(
-    userInfos: IUserCreate,
-    adminUserToken: string,
-  ): Promise<IUserPublic> {
+  async registerNewUser(userInfos: IUserCreate): Promise<IUserPublic> {
     const saltRounds = process.env.SALT_ROUNDS;
 
     if (!saltRounds) {
       throw new Error("Variável de ambiente SALT_ROUNDS não encontrada.");
-    }
-
-    if (!adminUserToken || !(await this.verifyUserToken(adminUserToken))) {
-      throw new Error("Token inválido.");
     }
 
     if (
@@ -67,14 +60,10 @@ class UserService {
   async updateUserData(
     userNewData: IUserUpdate,
     userUuid: string,
-    adminToken: string,
   ): Promise<IUserPublic> {
     if (!userUuid) {
       throw new Error(responseMessages.fillAllFieldMessage);
     }
-
-    if (!adminToken || !(await this.verifyUserToken(adminToken)))
-      throw new Error("Token inválido.");
 
     const updateFields = removeUndefinedUpdateFields(userNewData);
 
@@ -91,10 +80,7 @@ class UserService {
     return updatedUser;
   }
 
-  async deleteUserData(userUuid: string, adminToken: string): Promise<string> {
-    if (!(await this.verifyUserToken(adminToken)))
-      throw new Error("Usuário sem privilégios");
-
+  async deleteUserData(userUuid: string): Promise<string> {
     await this.prisma.user.delete({
       where: {
         user_id: userUuid,
@@ -102,20 +88,6 @@ class UserService {
     });
 
     return "Usuário excluido com sucesso";
-  }
-
-  private async verifyUserToken(adminUserToken: string): Promise<boolean> {
-    const JWT_SECRET = process.env.JWT_SECRET;
-
-    if (!JWT_SECRET) throw new Error("Secret inválido.");
-
-    const tokenDecoded = jwt.verify(adminUserToken, JWT_SECRET) as IUserPublic;
-
-    if (tokenDecoded.user_type !== "Admin") {
-      return false;
-    }
-
-    return true;
   }
 }
 
