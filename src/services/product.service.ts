@@ -38,7 +38,7 @@ class ProductService {
 
     const updateFields = removeUndefinedUpdateFields(productNewData);
 
-    if (updateFields.length < 1) throw new Error("Nenhum campo fornecido");
+    if (Object.keys(updateFields).length < 1) throw new Error("Nenhum campo fornecido");
 
     const updatedProduct: IProduct = await this.prisma.products.update({
       where: {

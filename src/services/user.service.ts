@@ -78,6 +78,9 @@ class UserService {
 
     const updateFields = removeUndefinedUpdateFields(userNewData);
 
+    if (Object.keys(updateFields).length < 1)
+      throw new Error("Nenhum campo fornecido");
+
     const updatedUser: IUserPublic = await this.prisma.user.update({
       where: {
         user_id: userUuid,
