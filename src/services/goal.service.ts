@@ -55,11 +55,13 @@ class GoalService {
       throw new Error(responseMessages.fillAllFieldMessage);
     }
 
-    await this.prisma.goal.delete({
+    const deletedGoal = await this.prisma.goal.delete({
       where: {
         goal_id: goalUuid,
       },
     });
+
+    if (!deletedGoal) throw new Error("Meta não encontrada.");
 
     return "Meta excluida com sucesso.";
   }
