@@ -26,7 +26,7 @@ describe("Teste de middleware de acesso em rotas.", () => {
   it("Deve validar e permitir usuário.", () => {
     vi.spyOn(jwt, "verify").mockReturnValue({
       user_id: randomUUID(),
-      user_type: "Admin",
+      user_type: "admin",
     } as any);
 
     adminAuthMiddleware(mockReq, mockRes, mockNext);
