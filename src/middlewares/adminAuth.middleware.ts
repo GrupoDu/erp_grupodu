@@ -22,7 +22,7 @@ export function adminAuthMiddleware(
 
     const payload = jwt.verify(token, process.env.JWT_SECRET) as IUserPublic;
 
-    if (payload.user_type !== "Admin") {
+    if (payload.user_type !== "admin") {
       return res.status(403).json({ message: "não autorizado." });
     }
 
