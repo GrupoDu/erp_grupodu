@@ -38,7 +38,7 @@ class GoalService {
     return newGoal;
   }
 
-  async createEmployeeGoal(newGoalData: IGoal): Promise<IGoal> {
+  private async createEmployeeGoal(newGoalData: IGoal): Promise<IGoal> {
     if (newGoalData.goal_type !== "Funcionário") {
       throw new Error("Tipo de meta inválido.");
     }
