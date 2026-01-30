@@ -81,11 +81,17 @@ class UserService {
   }
 
   async deleteUserData(userUuid: string): Promise<string> {
-    await this.prisma.user.delete({
+    if (!userUuid) throw new Error("id do usuário não fornecido.");
+
+    const deletedUser = await this.prisma.user.delete({
       where: {
         user_id: userUuid,
       },
     });
+
+    if (!deletedUser) {
+      throw new Error("Usuário não encontrado.");
+    }
 
     return "Usuário excluido com sucesso";
   }
