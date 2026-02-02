@@ -38,7 +38,7 @@ class GoalService {
     return newGoal;
   }
 
-  async createEmployeeGoal(newGoalData: IGoal): Promise<IGoal> {
+  private async createEmployeeGoal(newGoalData: IGoal): Promise<IGoal> {
     if (newGoalData.goal_type !== "Funcionário") {
       throw new Error("Tipo de meta inválido.");
     }
@@ -55,11 +55,13 @@ class GoalService {
       throw new Error(responseMessages.fillAllFieldMessage);
     }
 
-    await this.prisma.goal.delete({
+    const deletedGoal = await this.prisma.goal.delete({
       where: {
         goal_id: goalUuid,
       },
     });
+
+    if (!deletedGoal) throw new Error("Meta não encontrada.");
 
     return "Meta excluida com sucesso.";
   }
@@ -74,7 +76,8 @@ class GoalService {
 
     const updateFields = removeUndefinedUpdateFields(goalData);
 
-    if (updateFields.length < 1) throw new Error("Nenhum campo fornecido");
+    if (Object.keys(updateFields).length < 1)
+      throw new Error("Nenhum campo fornecido");
 
     const updatedGoal: IGoal = await this.prisma.goal.update({
       where: {

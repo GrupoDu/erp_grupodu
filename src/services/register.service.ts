@@ -1,4 +1,5 @@
-import type { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
 import type {
   IRegister,
   IRegisterCreate,
@@ -6,6 +7,9 @@ import type {
 } from "../types/register.interface.js";
 import { responseMessages } from "../constants/messages.constants.js";
 import removeUndefinedUpdateFields from "../utils/removeUndefinedUpdateFields.utils.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 class RegisterService {
   constructor(private prisma: PrismaClient) {}

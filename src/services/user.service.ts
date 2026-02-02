@@ -7,6 +7,7 @@ import type {
 } from "../types/user.interface.js";
 import { responseMessages } from "../constants/messages.constants.js";
 import removeUndefinedUpdateFields from "../utils/removeUndefinedUpdateFields.utils.js";
+import { isEmailFormatValid } from "../utils/emailFormatValidator.util.js";
 
 class UserService {
   constructor(private prisma: PrismaClient) {}
@@ -37,7 +38,14 @@ class UserService {
       throw new Error(responseMessages.fillAllFieldMessage);
     }
 
-    const hashPassword = await bcrypt.hash(userInfos.password, saltRounds);
+    isEmailFormatValid(userInfos.email);
+
+    const saltRoundsNumber = parseInt(saltRounds, 10);
+
+    const hashPassword = await bcrypt.hash(
+      userInfos.password,
+      saltRoundsNumber,
+    );
 
     const newUser: IUserPublic = await this.prisma.user.create({
       data: {
@@ -61,6 +69,9 @@ class UserService {
 
     const updateFields = removeUndefinedUpdateFields(userNewData);
 
+    if (Object.keys(updateFields).length < 1)
+      throw new Error("Nenhum campo fornecido");
+
     const updatedUser: IUserPublic = await this.prisma.user.update({
       where: {
         user_id: userUuid,
@@ -72,11 +83,17 @@ class UserService {
   }
 
   async deleteUserData(userUuid: string): Promise<string> {
-    await this.prisma.user.delete({
+    if (!userUuid) throw new Error("id do usuário não fornecido.");
+
+    const deletedUser = await this.prisma.user.delete({
       where: {
         user_id: userUuid,
       },
     });
+
+    if (!deletedUser) {
+      throw new Error("Usuário não encontrado.");
+    }
 
     return "Usuário excluido com sucesso";
   }
