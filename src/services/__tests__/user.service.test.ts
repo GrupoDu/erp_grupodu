@@ -77,6 +77,19 @@ describe("Testes de registro", () => {
       );
     }
   });
+
+  it("Deve retornar erro de formato de email inválido.", async () => {
+    const newUserWrongEmailFormat = {
+      email: "wrongÉmail @gmail.com",
+      name: "Pedro",
+      password: "12345",
+      user_type: "cliente",
+    };
+
+    await expect(
+      userService.registerNewUser(newUserWrongEmailFormat),
+    ).rejects.toThrowError("Formato de email inválido.");
+  });
 });
 
 describe("Testes de update.", () => {
