@@ -75,7 +75,7 @@ model register {
   description                                     String?
   deliver_observation                             String?
   is_delivered                                    Boolean   @default(false)
-  user                                            user      @relation(fields: [client_uuid], references: [user_id], onDelete: SetNull)
+  user                                            user      @relation(fields: [client_uuid], references: [user_id], onDelete: Cascade)
   employee_register_cut_assistantToemployee       employee? @relation("register_cut_assistantToemployee", fields: [cut_assistant], references: [employee_id])
   employee_register_employee_uuidToemployee       employee? @relation("register_employee_uuidToemployee", fields: [employee_uuid], references: [employee_id])
   employee_register_finishing_assistantToemployee employee? @relation("register_finishing_assistantToemployee", fields: [finishing_assistant], references: [employee_id])
