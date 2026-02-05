@@ -6,14 +6,16 @@ class RegisterAnalysisService {
   constructor(private prisma: PrismaClient) {}
 
   async registerDataAnalysis(): Promise<IProductionAnalysis> {
-    const [delivered, notDelivered] = await Promise.all([
+    const [delivered, notDelivered, pending] = await Promise.all([
       this.getDeliveredRegistersData(),
       this.getNotDeliveredRegistersData(),
+      this.getPendingRegistersData(),
     ]);
 
     const fullDataAnalysis: IProductionAnalysis = {
       deliveredRegisterQuantity: delivered,
       notDeliveredRegisterQuantity: notDelivered,
+      pendingRegisterQuantity: pending,
       actualMonth: getMonthRange(this.getTodayDate()).actualMonth,
       nextMonth: getMonthRange(this.getTodayDate()).nextMonth,
     };
@@ -39,6 +41,20 @@ class RegisterAnalysisService {
     const notDeliveredRegistersQuantity = await this.prisma.register.count({
       where: {
         status: "Não entregue",
+        deadline: {
+          gte: getMonthRange(this.getTodayDate()).actualMonth,
+          lt: getMonthRange(this.getTodayDate()).nextMonth,
+        },
+      },
+    });
+
+    return notDeliveredRegistersQuantity;
+  }
+
+  private async getPendingRegistersData(): Promise<number> {
+    const notDeliveredRegistersQuantity = await this.prisma.register.count({
+      where: {
+        status: "Pendente",
         deadline: {
           gte: getMonthRange(this.getTodayDate()).actualMonth,
           lt: getMonthRange(this.getTodayDate()).nextMonth,
