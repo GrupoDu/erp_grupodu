@@ -11,7 +11,7 @@ class GoalService {
   constructor(private prisma: PrismaClient) {}
 
   async getAllGoalsData() {
-    const allGoalsData = await this.prisma.goal.findMany();
+    const allGoalsData: IGoal[] = await this.prisma.goal.findMany();
 
     if (!allGoalsData) {
       throw new Error("Nenhuma meta encontrada.");
@@ -26,7 +26,7 @@ class GoalService {
     }
 
     if (newGoalData.goal_type === "Funcionário") {
-      const newEmployeeGoal = await this.createEmployeeGoal(newGoalData);
+      const newEmployeeGoal: IGoal = await this.createEmployeeGoal(newGoalData);
 
       return newEmployeeGoal;
     }
@@ -43,7 +43,7 @@ class GoalService {
       throw new Error("Tipo de meta inválido.");
     }
 
-    const newEmployeeGoal = await this.prisma.goal.create({
+    const newEmployeeGoal: IEmployeeGoal = await this.prisma.goal.create({
       data: newGoalData,
     });
 
