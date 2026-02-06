@@ -4,7 +4,7 @@ export interface IGoal {
   description: string | null;
   goal_type: string;
   deadline: Date;
-  employee_goal?: never;
+  employee_goal: string | null;
   goal_status: string;
 }
 
