@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import { responseMessages } from "../constants/messages.constants.js";
-import type { IUserPublic } from "../types/user.interface.js";
 import type AuthService from "../services/auth.service.js";
 
 class AuthController {
