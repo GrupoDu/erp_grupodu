@@ -13,9 +13,16 @@ class UserService {
   constructor(private prisma: PrismaClient) {}
 
   async getAllUsersData(): Promise<IUserPublic[]> {
-    const allUsersData: IUserPublic[] = await this.prisma.user.findMany();
+    const allUsersData: IUserPublic[] = await this.prisma.user.findMany({
+      select: {
+        email: true,
+        name: true,
+        user_id: true,
+        user_type: true,
+      },
+    });
 
-    if (!allUsersData) {
+    if (allUsersData.length < 1) {
       throw new Error("Nenhum usuário encontrado.");
     }
 
@@ -26,6 +33,12 @@ class UserService {
     const userData = await this.prisma.user.findUnique({
       where: {
         user_id,
+      },
+      select: {
+        email: true,
+        name: true,
+        user_id: true,
+        user_type: true,
       },
     });
 
