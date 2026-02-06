@@ -10,10 +10,7 @@ class AuthController {
     try {
       const { email, password } = req.body;
 
-      const userLogged: IUserPublic = await this.authService.userLogin(
-        email,
-        password,
-      );
+      const userLogged = await this.authService.userLogin(email, password);
 
       const token = await this.authService.generateAccessToken(
         userLogged.user_id,
