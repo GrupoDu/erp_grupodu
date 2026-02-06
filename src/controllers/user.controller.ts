@@ -37,10 +37,9 @@ class UserController {
 
   async createNewUser(req: Request, res: Response): Promise<Response> {
     try {
-      const newUserInfos: IUserCreate = req.body;
+      const newUserInfos = req.body;
 
-      const newUser: IUserPublic =
-        await this.userService.registerNewUser(newUserInfos);
+      const newUser = await this.userService.registerNewUser(newUserInfos);
 
       return res
         .status(201)
@@ -72,7 +71,7 @@ class UserController {
     try {
       const { uuid, updateInfos } = req.body;
 
-      const updatedUser: IUserPublic = await this.userService.updateUserData(
+      const updatedUser = await this.userService.updateUserData(
         updateInfos,
         uuid,
       );
