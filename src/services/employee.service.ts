@@ -20,6 +20,24 @@ class EmployeeService {
     return allEmployeesData;
   }
 
+  async getEmployeeData(employeeUuid: string): Promise<IEmployee> {
+    const employeeData: IEmployee | null =
+      await this.prisma.employee.findUnique({
+        where: {
+          employee_id: employeeUuid,
+        },
+        select: {
+          employee_id: true,
+          name: true,
+          employee_type: true,
+        },
+      });
+
+    if (!employeeData) throw new Error("Usuário não encontrado.");
+
+    return employeeData;
+  }
+
   async registerNewEmployee(employeeData: IEmployeeCreate): Promise<IEmployee> {
     if (!employeeData) {
       throw new Error(responseMessages.fillAllFieldMessage);
