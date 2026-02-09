@@ -10,7 +10,24 @@ class EmployeeController {
     try {
       const allEmployeesData = await this.employeeService.getAllEmployeesData();
 
-      return res.status(200).json({ employees: allEmployeesData });
+      return res.status(200).json(allEmployeesData);
+    } catch (err) {
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
+    }
+  }
+
+  async getEmployeeData(req: Request, res: Response): Promise<Response> {
+    try {
+      const { uuid } = req.params;
+
+      const employeeData = await this.employeeService.getEmployeeData(
+        uuid as string,
+      );
+
+      return res.status(200).json(employeeData);
     } catch (err) {
       return res.status(500).json({
         message: responseMessages.catchErrorMessage,
