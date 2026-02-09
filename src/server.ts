@@ -9,6 +9,7 @@ import EmployeeRoutes from "./routes/employee.routes.js";
 import AuthRoutes from "./routes/auth.routes.js";
 import EmployeeAnalysisRoutes from "./routes/employeeAnalysis.routes.js";
 import RegistersAnalysisRoutes from "./routes/registerAnalysis.routes.js";
+import AnualAnaylsisRoutes from "./routes/anualAnalysis.router.js";
 
 dotenv.config();
 const app = express();
@@ -24,6 +25,7 @@ app.use("/employees", EmployeeRoutes);
 app.use("/login", AuthRoutes);
 app.use("/employees-analysis", EmployeeAnalysisRoutes);
 app.use("/registers-analysis", RegistersAnalysisRoutes);
+app.use("/anual-analysis", AnualAnaylsisRoutes);
 
 app.get("/", (req: Request, res: Response) => res.json({ status: "ok" }));
 
