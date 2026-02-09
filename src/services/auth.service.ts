@@ -71,7 +71,7 @@ class AuthService {
 
     // Depois mudar expiresIn para variável de ambiente
     return jwt.sign({ user_id: user_id, user_type: user_type }, secret, {
-      expiresIn: "30d",
+      expiresIn: "7d",
     });
   }
 }
