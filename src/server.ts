@@ -10,13 +10,23 @@ import AuthRoutes from "./routes/auth.routes.js";
 import EmployeeAnalysisRoutes from "./routes/employeeAnalysis.routes.js";
 import RegistersAnalysisRoutes from "./routes/registerAnalysis.routes.js";
 import AnualAnaylsisRoutes from "./routes/anualAnalysis.router.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT;
 
-app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  }),
+);
 app.use("/products", ProductRoutes);
 app.use("/users", UserRoutes);
 app.use("/goals", GoalRoutes);
