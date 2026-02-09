@@ -14,6 +14,9 @@ router.get("/", adminAuthMiddleware, (req: Request, res: Response) => {
 router.post("/", adminAuthMiddleware, (req: Request, res: Response) => {
   employeeController.createNewEmployee(req, res);
 });
+router.get("/:uuid", adminAuthMiddleware, (req: Request, res: Response) => {
+  employeeController.getEmployeeData(req, res);
+});
 router.delete("/:uuid", adminAuthMiddleware, (req: Request, res: Response) => {
   employeeController.removeEmployeeData(req, res);
 });
