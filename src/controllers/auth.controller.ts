@@ -8,6 +8,7 @@ class AuthController {
   async userLogin(req: Request, res: Response) {
     try {
       const { email, password } = req.body;
+      const env = process.env.NODE_ENV;
 
       const userLogged = await this.authService.userLogin(email, password);
 
@@ -16,10 +17,23 @@ class AuthController {
         userLogged.user_type,
       );
 
-      return res.status(200).json({
-        message: `Usuário logado com sucesso.`,
-        token: token,
-      });
+      const DAYS = 7;
+      const HOURS = 24;
+      const MINUTES = 60;
+      const SECONDS = 60;
+      const MILLISECONDS = 1000;
+
+      return res
+        .status(200)
+        .cookie("token", token, {
+          httpOnly: true,
+          sameSite: env === "production" ? "lax" : "strict",
+          maxAge: DAYS * HOURS * MINUTES * SECONDS * MILLISECONDS, // 7 dias
+          path: "/",
+        })
+        .json({
+          message: `Usuário logado com sucesso.`,
+        });
     } catch (err) {
       return res.status(500).json({
         message: responseMessages.catchErrorMessage,
@@ -27,6 +41,20 @@ class AuthController {
       });
     }
   }
+
+  isTokenStillValid(req: Request, res: Response) {
+    const token = req.cookies.token;
+
+    if (!token) {
+      throw new Error("Token inválido.");
+    }
+
+    return res.status(200).json({ status: "ok" });
+  }
+
+  // tokenValidator() {
+  //   return jwt
+  // }
 }
 
 export default AuthController;
