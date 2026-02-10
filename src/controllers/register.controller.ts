@@ -1,9 +1,5 @@
 import type { Request, Response } from "express";
 import type RegisterService from "../services/register.service.js";
-import type {
-  IRegister,
-  IRegisterUpdate,
-} from "../types/register.interface.js";
 import { responseMessages } from "../constants/messages.constants.js";
 
 class RegisterController {
@@ -17,7 +13,7 @@ class RegisterController {
       const allProductionRegisters =
         await this.registerService.getAllRegistersData();
 
-      return res.status(200).json({ registers: allProductionRegisters });
+      return res.status(200).json(allProductionRegisters);
     } catch (err) {
       return res.status(500).json({
         message: responseMessages.catchErrorMessage,

@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import { responseMessages } from "../constants/messages.constants.js";
-import type { IUserCreate, IUserPublic } from "../types/user.interface.js";
 import type UserService from "../services/user.service.js";
 
 class UserController {
@@ -10,7 +9,7 @@ class UserController {
     try {
       const allUsers = await this.userService.getAllUsersData();
 
-      return res.status(200).json({ users: allUsers });
+      return res.status(200).json(allUsers);
     } catch (err) {
       return res.status(500).json({
         message: responseMessages.catchErrorMessage,

@@ -1,7 +1,6 @@
 import { type Request, type Response } from "express";
 import { responseMessages } from "../constants/messages.constants.js";
 import type ProductService from "../services/product.service.js";
-import type { IProduct } from "../types/product.interface.js";
 
 class ProductController {
   constructor(private productService: ProductService) {}
@@ -10,7 +9,7 @@ class ProductController {
     try {
       const allProducts = await this.productService.getAllProductsData();
 
-      return res.status(200).json({ data: allProducts });
+      return res.status(200).json(allProducts);
     } catch (err) {
       return res.status(500).json({
         message: responseMessages.catchErrorMessage,

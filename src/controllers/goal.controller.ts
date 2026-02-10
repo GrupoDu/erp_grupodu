@@ -9,7 +9,7 @@ class GoalController {
     try {
       const allGoalsData = await this.goalService.getAllGoalsData();
 
-      return res.status(200).json({ goals: allGoalsData });
+      return res.status(200).json(allGoalsData);
     } catch (err) {
       return res.status(500).json({
         message: responseMessages.catchErrorMessage,

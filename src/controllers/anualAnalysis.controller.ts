@@ -15,7 +15,7 @@ class AnualAnalysisController {
         throw new Error("Nenhum registro nos últimos meses");
       }
 
-      return res.status(200).json({ anualAnalysis: anualAnalysisData });
+      return res.status(200).json(anualAnalysisData);
     } catch (err) {
       return res.status(500).json({
         message: responseMessages.catchErrorMessage,

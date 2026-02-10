@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import { responseMessages } from "../constants/messages.constants.js";
 import type EmployeeService from "../services/employee.service.js";
-import type { IEmployee } from "../types/employee.interface.js";
 
 class EmployeeController {
   constructor(private employeeService: EmployeeService) {}
