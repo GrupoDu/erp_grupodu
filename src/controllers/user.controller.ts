@@ -68,11 +68,12 @@ class UserController {
 
   async updateUserData(req: Request, res: Response): Promise<Response> {
     try {
-      const { uuid, updateInfos } = req.body;
+      const { updateInfos } = req.body;
+      const { uuid } = req.params;
 
       const updatedUser = await this.userService.updateUserData(
         updateInfos,
-        uuid,
+        uuid as string,
       );
 
       return res.status(200).json({
@@ -82,7 +83,7 @@ class UserController {
     } catch (err) {
       return res
         .status(500)
-        .json({ message: responseMessages.catchErrorMessage });
+        .json({ message: responseMessages.catchErrorMessage, error: (err as Error).message });
     }
   }
 }
