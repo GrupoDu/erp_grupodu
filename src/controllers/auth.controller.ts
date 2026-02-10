@@ -43,6 +43,19 @@ class AuthController {
     }
   }
 
+  async userLogout(req: Request, res: Response): Promise<Response> {
+    const isProduction = process.env.NODE_ENV === "production";
+
+    return res
+      .clearCookie("token", {
+        httpOnly: true,
+        sameSite: isProduction ? "strict" : "lax",
+        secure: isProduction,
+        path: "/",
+      })
+      .json({ message: "Usuário deslogado." });
+  }
+
   isTokenStillValid(req: Request, res: Response) {
     const token = req.cookies.token;
 
