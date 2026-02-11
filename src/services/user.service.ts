@@ -101,7 +101,11 @@ class UserService {
       where: {
         user_id: userUuid,
       },
-      data: updateFields,
+      data: {
+        email: updateFields.email,
+        name: updateFields.name,
+        user_type: updateFields.user_type,
+      },
     });
 
     return updatedUser;
