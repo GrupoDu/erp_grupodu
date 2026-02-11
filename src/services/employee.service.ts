@@ -30,6 +30,8 @@ class EmployeeService {
           employee_id: true,
           name: true,
           employee_type: true,
+          delivered_activities_quantity: true,
+          not_delivered_activities_quantity: true,
         },
       });
 
@@ -84,6 +86,23 @@ class EmployeeService {
     });
 
     return "Funcionário removido do sistema.";
+  }
+
+  async updateEmployeeActivitiesQuantity(
+    employeeUuid: string,
+  ): Promise<IEmployee> {
+    const updatedEmployee: IEmployee = await this.prisma.employee.update({
+      where: {
+        employee_id: employeeUuid as string,
+      },
+      data: {
+        delivered_activities_quantity: {
+          increment: 1,
+        },
+      },
+    });
+
+    return updatedEmployee;
   }
 }
 
