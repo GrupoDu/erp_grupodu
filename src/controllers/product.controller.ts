@@ -58,11 +58,12 @@ class ProductController {
 
   async updateProductData(req: Request, res: Response): Promise<Response> {
     try {
-      const { productUuid, productNewData } = req.body;
+      const productNewData = req.body;
+      const { uuid } = req.params;
 
       const updatedProduct = await this.productService.updateProductData(
         productNewData,
-        productUuid,
+        uuid as string,
       );
 
       return res.status(200).json({

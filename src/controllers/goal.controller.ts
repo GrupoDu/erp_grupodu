@@ -52,7 +52,7 @@ class GoalController {
 
   async updateGoalData(req: Request, res: Response): Promise<Response> {
     try {
-      const { updateGoalValues } = req.body;
+      const updateGoalValues = req.body;
       const { uuid } = req.params;
 
       const updatedGoal = await this.goalService.updateGoalData(
