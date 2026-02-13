@@ -30,6 +30,8 @@ class UserService {
   }
 
   async getUserData(user_id: string): Promise<IUserPublic> {
+    if (!user_id) throw new Error("ID do usuário não fornecido.");
+
     const userData = await this.prisma.users.findUnique({
       where: {
         user_id,
@@ -49,17 +51,13 @@ class UserService {
 
   async registerNewUser(userInfos: IUserCreate): Promise<IUserPublic> {
     const saltRounds = process.env.SALT_ROUNDS;
+    const { name, email, password, user_type } = userInfos;
 
     if (!saltRounds) {
       throw new Error("Variável de ambiente SALT_ROUNDS não encontrada.");
     }
 
-    if (
-      !userInfos.name ||
-      !userInfos.email ||
-      !userInfos.password ||
-      !userInfos.user_type
-    ) {
+    if (!name || !email || !password || !user_type) {
       throw new Error(responseMessages.fillAllFieldMessage);
     }
 
@@ -112,7 +110,7 @@ class UserService {
   }
 
   async deleteUserData(userUuid: string): Promise<string> {
-    if (!userUuid) throw new Error("id do usuário não fornecido.");
+    if (!userUuid) throw new Error("ID do usuário não fornecido.");
 
     const deletedUser = await this.prisma.users.delete({
       where: {
