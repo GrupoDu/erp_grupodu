@@ -11,7 +11,7 @@ const goalsAnalysisController = new GoalsAnalysisController(
   goalsAnalysisService,
 );
 
-router.get("/", authMiddleware, (req: Request, res: Response) =>
+router.get("/", (req: Request, res: Response) =>
   goalsAnalysisController.getGoalsAnalysis(req, res),
 );
 
