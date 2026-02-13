@@ -3,6 +3,7 @@ import type { IEmployeeProductionAnalysis } from "../types/dataAnalysis.interfac
 import { cacheInstance } from "../utils/cache.util.js";
 import type { IEmployee } from "../types/employee.interface.js";
 import { getMonthRange } from "../utils/getMonthRange.util.js";
+import { getTodayDate } from "../utils/getTodayDate.js";
 
 class EmployeeAnalysisService {
   private readonly CACHE_TTL = 300;
@@ -57,8 +58,8 @@ class EmployeeAnalysisService {
       deliveredRegisterQuantity: delivered,
       notDeliveredRegisterQuantity: notDelivered,
       employeeName: employeeData.name,
-      actualMonth: getMonthRange(this.getTodayDate()).actualMonth,
-      nextMonth: getMonthRange(this.getTodayDate()).nextMonth,
+      actualMonth: getMonthRange(getTodayDate()).actualMonth,
+      nextMonth: getMonthRange(getTodayDate()).nextMonth,
     };
 
     cache.set<IEmployeeProductionAnalysis>(
@@ -92,18 +93,17 @@ class EmployeeAnalysisService {
     employee_id: string,
     status: string,
   ): Promise<number> {
-    const employeeDeliveredRegisters: number = await this.prisma.production_order.count(
-      {
+    const employeeDeliveredRegisters: number =
+      await this.prisma.production_order.count({
         where: {
           employee_uuid: employee_id,
           production_order_status: status,
           production_order_deadline: {
-            gte: getMonthRange(this.getTodayDate()).actualMonth,
-            lt: getMonthRange(this.getTodayDate()).nextMonth,
+            gte: getMonthRange(getTodayDate()).actualMonth,
+            lt: getMonthRange(getTodayDate()).nextMonth,
           },
         },
-      },
-    );
+      });
 
     return employeeDeliveredRegisters;
   }
@@ -118,10 +118,6 @@ class EmployeeAnalysisService {
     if (!employeeData) throw new Error("Funcionário não encontrado.");
 
     return employeeData;
-  }
-
-  private getTodayDate() {
-    return new Date();
   }
 }
 
