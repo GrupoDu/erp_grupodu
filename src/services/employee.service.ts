@@ -22,6 +22,10 @@ class EmployeeService {
   }
 
   async getEmployeeData(employeeUuid: string): Promise<IEmployee> {
+    if (!employeeUuid) {
+      throw new Error("ID do funcionário nao fornecido.");
+    }
+
     const employeeData: IEmployee | null =
       await this.prisma.employees.findUnique({
         where: {
@@ -93,6 +97,10 @@ class EmployeeService {
   async incrementEmployeeActivitiesQuantity(
     employeeUuid: string,
   ): Promise<IEmployee> {
+    if (!employeeUuid) {
+      throw new Error("ID do funcionário não fornecido.");
+    }
+
     const updatedEmployee: IEmployee = await this.prisma.employees.update({
       where: {
         employee_id: employeeUuid as string,
@@ -111,6 +119,10 @@ class EmployeeService {
     employeeUuid: string,
     productProducedQuantity: number,
   ): Promise<IEmployee> {
+    if (!employeeUuid) {
+      throw new Error("ID do funcionário não fornecido.");
+    }
+
     if (!productProducedQuantity) {
       throw new Error(responseMessages.fillAllFieldMessage);
     }
