@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import type { IUserPublic } from "../types/user.interface.js";
+import { getToken } from "../utils/getToken.js";
 
 dotenv.config();
 
@@ -46,15 +47,4 @@ export function adminAuthMiddleware(
       .status(500)
       .json({ message: "Erro no servidor.", error: error.message });
   }
-}
-
-function getToken(req: Request, res: Response): string {
-  const auth = req.cookies?.token;
-
-  if (!auth) {
-    console.log("Cookie token não encontrado. req.cookies:", req.cookies);
-    throw new Error("TOKEN_NOT_PROVIDED");
-  }
-
-  return auth;
 }
