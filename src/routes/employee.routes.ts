@@ -27,7 +27,14 @@ router.put(
   "/activity/:uuid",
   adminAuthMiddleware,
   (req: Request, res: Response) => {
-    employeeController.updateEmployeeActivityQuantity(req, res);
+    employeeController.incrementEmployeeActivityQuantity(req, res);
+  },
+);
+router.put(
+  "/producedQuantity/:uuid",
+  adminAuthMiddleware,
+  (req: Request, res: Response) => {
+    employeeController.incrementEmployeeProductsProducedQuantity(req, res);
   },
 );
 
