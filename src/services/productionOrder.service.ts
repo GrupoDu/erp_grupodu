@@ -2,6 +2,7 @@ import { PrismaClient } from "../../generated/prisma/client.ts";
 import type {
   IProductionOrder,
   IProductionOrderCreate,
+  IProductionOrderDeliver,
   IProductionOrderUpdate,
 } from "../types/productionOrder.interface.ts";
 import { responseMessages } from "../constants/messages.constants.ts";
@@ -11,7 +12,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 class ProductionOrderService {
-  private prisma: PrismaClient;  
+  private prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
@@ -82,6 +83,11 @@ class ProductionOrderService {
     if (productionOrderUpdatedFields.length < 1)
       throw new Error("Nenhum campo fornecido.");
 
+    this.verifyDeliveredProductQuantity(
+      productionOrderUpdatedFields.delivered_product_quantity,
+      productionOrderUpdatedFields.requested_product_quantity
+    ) 
+
     const updatedProductionOrder: IProductionOrder =
       await this.prisma.production_order.update({
         where: {
@@ -91,6 +97,48 @@ class ProductionOrderService {
       });
 
     return updatedProductionOrder;
+  }
+
+  async deliverProductionOrder(
+    productionOrder_id: string,
+    delivered_product_quantity: number,
+    requested_product_quantity: number,
+  ): Promise<IProductionOrderDeliver> {
+    if (
+      !productionOrder_id ||
+      !delivered_product_quantity ||
+      !requested_product_quantity
+    )
+      throw new Error(responseMessages.fillAllFieldMessage);
+
+    this.verifyDeliveredProductQuantity(
+      delivered_product_quantity,
+      requested_product_quantity,
+    );
+
+    const deliveredProductOrder: IProductionOrder | null =
+      await this.prisma.production_order.update({
+        data: {
+          delivered_at: new Date(),
+          delivered_product_quantity: delivered_product_quantity,
+          production_order_status: "Entregue",
+        },
+        where: {
+          production_order_id: productionOrder_id,
+        },
+      });
+
+    return deliveredProductOrder;
+  }
+
+  private verifyDeliveredProductQuantity(
+    delivered_product_quantity: number,
+    requested_product_quantity: number,
+  ) {
+    if (delivered_product_quantity > requested_product_quantity)
+      throw new Error(
+        "Quantidade entregue maior que a quantidade requisitada.",
+      );
   }
 }
 
