@@ -4,7 +4,7 @@ import type UserService from "../services/user.service.ts";
 
 class UserController {
   private userService: UserService;
-  
+
   constructor(userService: UserService) {
     this.userService = userService;
   }
@@ -34,7 +34,23 @@ class UserController {
     } catch (err) {
       return res
         .status(500)
-        .json({ message: "Erro no servido.", error: (err as Error).message });
+        .json({
+          message: responseMessages.catchErrorMessage,
+          error: (err as Error).message,
+        });
+    }
+  }
+
+  async getAllSupervisorsUser(req: Request, res: Response): Promise<Response> {
+    try {
+      const allSupervisors = await this.userService.getAllSupervisorsUsers();
+
+      return res.status(200).json(allSupervisors);
+    } catch (err) {
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
     }
   }
 
@@ -85,12 +101,10 @@ class UserController {
         update: updatedUser,
       });
     } catch (err) {
-      return res
-        .status(500)
-        .json({
-          message: responseMessages.catchErrorMessage,
-          error: (err as Error).message,
-        });
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
     }
   }
 }
