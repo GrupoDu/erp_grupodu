@@ -8,7 +8,7 @@ const router: Router = express.Router();
 const userService = new UserService(prisma);
 const userController = new UserController(userService);
 
-router.get("/", (req: Request, res: Response) =>
+router.get("/", adminAuthMiddleware, (req: Request, res: Response) =>
   userController.getAllUsers(req, res),
 );
 router.post("/", adminAuthMiddleware, (req: Request, res: Response) =>
@@ -18,7 +18,7 @@ router.get("/supervisors", (req: Request, res: Response) =>
   userController.getAllSupervisorsUser(req, res),
 );
 router.get("/:uuid", adminAuthMiddleware, (req: Request, res: Response) =>
-  userController.getUserData(req, res),
+  userController.getUserById(req, res),
 );
 router.delete("/:uuid", adminAuthMiddleware, (req: Request, res: Response) =>
   userController.deleteUser(req, res),
