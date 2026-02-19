@@ -33,6 +33,22 @@ class UserService {
     return allUsersData;
   }
 
+  async getAllSupervisorsUsers(): Promise<IUserPublic[]> {
+    const allSupervisors: IUserPublic[] = await this.prisma.users.findMany({
+      where: {
+        user_type: "supervisor",
+      },
+      select: {
+        email: true,
+        name: true,
+        user_id: true,
+        user_type: true,
+      },
+    });
+
+    return allSupervisors;
+  }
+
   async getUserData(user_id: string): Promise<IUserPublic> {
     if (!user_id) throw new Error("ID do usuário não fornecido.");
 
