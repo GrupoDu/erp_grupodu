@@ -26,11 +26,8 @@ router.delete("/:uuid", adminAuthMiddleware, (req: Request, res: Response) =>
 router.put("/:uuid", (req: Request, res: Response) =>
   productionOrderController.updateProductionOrder(req, res),
 );
-router.put(
-  "/deliver/:production_order_id",
-  adminAuthMiddleware,
-  (req: Request, res: Response) =>
-    productionOrderController.deliverProductionOrder(req, res),
+router.put("/deliver/:production_order_id", (req: Request, res: Response) =>
+  productionOrderController.deliverProductionOrder(req, res),
 );
 
 export default router;
