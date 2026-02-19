@@ -1,9 +1,8 @@
 import express, { type Request, type Response } from "express";
-import GoalController from "../controllers/goal.controller.js";
-import GoalService from "../services/goal.service.js";
-import { prisma } from "../../lib/prisma.js";
-import { adminAuthMiddleware } from "../middlewares/adminAuth.middleware.js";
-import authMiddleware from "../middlewares/auth.middleware.js";
+import GoalController from "../controllers/goal.controller.ts";
+import GoalService from "../services/goal.service.ts";
+import { prisma } from "../../lib/prisma.ts";
+import { adminAuthMiddleware } from "../middlewares/adminAuth.middleware.ts";
 
 const router = express.Router();
 const goalService = new GoalService(prisma);

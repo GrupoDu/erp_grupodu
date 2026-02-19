@@ -1,11 +1,11 @@
-import type { PrismaClient } from "../../generated/prisma/client.js";
+import type { PrismaClient } from "../../generated/prisma/client.ts";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import type {
   IUserPublic,
   IUserWithPassword,
-} from "../types/user.interface.js";
+} from "../types/user.interface.ts";
 
 dotenv.config();
 

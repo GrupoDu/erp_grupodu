@@ -1,16 +1,16 @@
 import express, { type Request, type Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import ProductRoutes from "./routes/product.routes.js";
-import UserRoutes from "./routes/user.routes.js";
-import GoalRoutes from "./routes/goal.routes.js";
-import ProductionOrderRoutes from "./routes/productionOrder.routes.js";
-import EmployeeRoutes from "./routes/employee.routes.js";
-import AuthRoutes from "./routes/auth.routes.js";
-import EmployeeAnalysisRoutes from "./routes/employeeAnalysis.routes.js";
-import ProductionOrderAnalysisRoutes from "./routes/productionOrderAnalysis.routes.js";
-import GoalsAnalysisRoutes from "./routes/goalsAnalysis.routes.js";
-import AnualAnaylsisRoutes from "./routes/anualAnalysis.router.js";
+import ProductRoutes from "./routes/product.routes.ts";
+import UserRoutes from "./routes/user.routes.ts";
+import GoalRoutes from "./routes/goal.routes.ts";
+import ProductionOrderRoutes from "./routes/productionOrder.routes.ts";
+import EmployeeRoutes from "./routes/employee.routes.ts";
+import AuthRoutes from "./routes/auth.routes.ts";
+import EmployeeAnalysisRoutes from "./routes/employeeAnalysis.routes.ts";
+import ProductionOrderAnalysisRoutes from "./routes/productionOrderAnalysis.routes.ts";
+import GoalsAnalysisRoutes from "./routes/goalsAnalysis.routes.ts";
+import AnualAnaylsisRoutes from "./routes/anualAnalysis.router.ts";
 import cookieParser from "cookie-parser";
 
 dotenv.config();

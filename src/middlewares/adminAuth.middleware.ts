@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import type { IUserPublic } from "../types/user.interface.js";
-import { getToken } from "../utils/getToken.js";
+import type { IUserPublic } from "../types/user.interface.ts";
+import { getToken } from "../utils/getToken.ts";
 
 dotenv.config();
 

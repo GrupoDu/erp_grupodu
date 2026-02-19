@@ -1,9 +1,9 @@
 import express from "express";
 import { type Request, type Response } from "express";
-import RegisterAnalysisService from "../services/productionOrderAnalysis.service.js";
-import { prisma } from "../../lib/prisma.js";
-import RegisterAnalysisController from "../controllers/productionOrderAnalysis.controller.js";
-import { adminAuthMiddleware } from "../middlewares/adminAuth.middleware.js";
+import RegisterAnalysisService from "../services/productionOrderAnalysis.service.ts";
+import { prisma } from "../../lib/prisma.ts";
+import RegisterAnalysisController from "../controllers/productionOrderAnalysis.controller.ts";
+import { adminAuthMiddleware } from "../middlewares/adminAuth.middleware.ts";
 
 const router = express.Router();
 const registerAnalysisService = new RegisterAnalysisService(prisma);
