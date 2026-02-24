@@ -3,7 +3,7 @@ import type { IGoal } from "../types/goal.interface.ts";
 import { getTodayDate } from "../utils/getTodayDate.ts";
 
 class GoalsAnalysisService {
-  private prisma: PrismaClient;  
+  private prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
@@ -29,15 +29,15 @@ class GoalsAnalysisService {
 
     if (!allGoals) throw new Error("Nenhuma meta encontrada.");
 
-    const allPendingGoals: IGoal[] = allGoals.filter(
-      (goal) => goal.goal_status === "Pendente",
-    );
-
-    const allBeatenGoals: IGoal[] = allGoals.filter(
+    const goalsAchieved: number = allGoals.filter(
       (goal) => goal.goal_status === "Batida",
-    );
+    ).length;
 
-    return { allPendingGoals, allBeatenGoals };
+    const goalsNotAchieved: number = allGoals.filter(
+      (goal) => goal.goal_status === "Pendente",
+    ).length;
+
+    return { goalsAchieved, goalsNotAchieved };
   }
 }
 
