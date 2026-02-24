@@ -4,6 +4,7 @@ import type { Request, Response, Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware.ts";
 import { prisma } from "../../lib/prisma.ts";
 import AuthService from "../services/auth.service.ts";
+import accessTokenMiddleware from "../middlewares/accessToken.middleware.ts";
 
 const router: Router = express.Router();
 const authService = new AuthService(prisma);
@@ -12,7 +13,13 @@ const authController = new AuthController(authService);
 router.post("/", authMiddleware, (req: Request, res: Response) =>
   authController.userLogin(req, res),
 );
-router.post("/logout", (req: Request, res: Response) =>
+router.post("/refresh", (req: Request, res: Response) =>
+  authController.refresh(req, res),
+);
+router.get("/verify", (req: Request, res: Response) =>
+  authController.isTokenStillValid(req, res),
+);
+router.post("/logout", accessTokenMiddleware, (req: Request, res: Response) =>
   authController.userLogout(req, res),
 );
 
