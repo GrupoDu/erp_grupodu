@@ -13,5 +13,11 @@ const anualAnalysisController = new AnualAnalysisController(
 router.get("/", adminAuthMiddleware, (req: Request, res: Response) =>
   anualAnalysisController.getAllAnualAnalysisService(req, res),
 );
+router.put(
+  "/updateAnalysis",
+  adminAuthMiddleware,
+  (req: Request, res: Response) =>
+    anualAnalysisController.updateDeliveredAnualAnalysis(req, res),
+);
 
 export default router;
