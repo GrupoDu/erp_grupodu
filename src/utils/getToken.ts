@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 
 export function getToken(req: Request, res: Response): string {
-  const auth = req.cookies?.token;
+  const auth = req.cookies?.access_token;
 
   if (!auth) {
     console.log("Cookie token não encontrado. req.cookies:", req.cookies);
