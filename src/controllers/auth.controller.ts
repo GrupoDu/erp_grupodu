@@ -2,6 +2,9 @@ import type { CookieOptions, Request, Response } from "express";
 import type AuthService from "../services/auth.service.ts";
 import { responseMessages } from "../constants/messages.constants.ts";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 class AuthController {
   private authService: AuthService;
@@ -10,7 +13,6 @@ class AuthController {
     this.authService = authService;
   }
 
-  // ==================== LOGIN (MODIFICADO) ====================
   async userLogin(req: Request, res: Response) {
     try {
       const { email, password, user_type } = req.body;
@@ -25,11 +27,10 @@ class AuthController {
       const { user, accessToken, refreshToken } =
         await this.authService.userLogin(email, password, user_type);
 
-      // Configuração dos cookies
       const isProduction = process.env.NODE_ENV === "production";
       const cookieOptions: CookieOptions = {
         httpOnly: true,
-        secure: isProduction,
+        secure: true,
         sameSite: isProduction ? "strict" : "none",
         path: "/",
       };
@@ -44,10 +45,8 @@ class AuthController {
       const REFRESH_SEC = 60;
       const REFRESH_MS = REFRESH_MIN * REFRESH_SEC * 1000;
 
-      // Access token: dura 15 minutos (mesmo tempo do JWT)
-      const accessTokenMaxAge = ACCESS_MIN * ACCESS_SEC * ACCESS_MS; // 15 minutos em ms
-      // Refresh token: dura 7 dias
-      const refreshTokenMaxAge = REFRESH_DAYS * REFRESH_HOURS * REFRESH_MS; // 7 dias em ms
+      const accessTokenMaxAge = ACCESS_MIN * ACCESS_SEC * ACCESS_MS; // 15 minutos
+      const refreshTokenMaxAge = REFRESH_DAYS * REFRESH_HOURS * REFRESH_MS; // 7 dias
 
       res
         .status(200)
@@ -59,7 +58,7 @@ class AuthController {
           ...cookieOptions,
           maxAge: refreshTokenMaxAge,
           path: "/",
-        }) // restrito à rota de refresh
+        })
         .json({
           message: "Usuário logado com sucesso.",
           user,
@@ -72,7 +71,6 @@ class AuthController {
     }
   }
 
-  // ==================== REFRESH ====================
   async refresh(req: Request, res: Response) {
     try {
       // Pega o refresh token do cookie (enviado automaticamente)
@@ -89,8 +87,8 @@ class AuthController {
       const isProduction = process.env.NODE_ENV === "production";
       const cookieOptions: CookieOptions = {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? "strict" : "lax",
+        secure: true,
+        sameSite: isProduction ? "strict" : "none",
         path: "/",
       };
       const accessTokenMaxAge = 15 * 60 * 1000; // 15 minutos
@@ -122,7 +120,6 @@ class AuthController {
     }
   }
 
-  // ==================== LOGOUT (APRIMORADO) ====================
   async userLogout(req: Request, res: Response): Promise<Response> {
     try {
       const refreshToken = req.cookies.refresh_token;
@@ -134,13 +131,13 @@ class AuthController {
       res
         .clearCookie("access_token", {
           httpOnly: true,
-          secure: isProduction,
+          secure: true,
           sameSite: "strict",
           path: "/",
         })
         .clearCookie("refresh_token", {
           httpOnly: true,
-          secure: isProduction,
+          secure: true,
           sameSite: "strict",
           path: "/",
         });
@@ -189,13 +186,13 @@ class AuthController {
   // ==================== MÉTODO EXISTENTE (AJUSTADO) ====================
   isTokenStillValid(req: Request, res: Response) {
     // Agora verifica o access_token
-    const token = req.cookies.access_token;
-    if (!token) {
+    const access_token = req.cookies.access_token;
+    if (!access_token) {
       return res.status(401).json({ message: "Token inválido." });
     }
 
     try {
-      jwt.verify(token, process.env.JWT_SECRET as string);
+      jwt.verify(access_token, process.env.JWT_SECRET as string);
       return res.status(200).json({ status: "ok" });
     } catch {
       return res.status(401).json({ message: "Token expirado ou inválido." });
