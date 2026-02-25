@@ -29,6 +29,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.16.3",
+    "trello-node-api": "^0.0.9",
     "vitest": "^4.0.18"
   },
   "devDependencies": {
