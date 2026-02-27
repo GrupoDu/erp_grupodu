@@ -4,6 +4,7 @@ import type { Request, Response, Router } from "express";
 import ProductionOrderService from "../services/productionOrder.service.ts";
 import { prisma } from "../../lib/prisma.ts";
 import { adminAuthMiddleware } from "../middlewares/adminAuth.middleware.ts";
+import { getTokenMiddleware } from "../middlewares/getToken.middleware.ts";
 
 const router: Router = express.Router();
 const productionOrderService = new ProductionOrderService(prisma);
@@ -20,8 +21,12 @@ router.post("/", (req: Request, res: Response) =>
 router.get("/:uuid", (req: Request, res: Response) =>
   productionOrderController.getProductionOrderById(req, res),
 );
-router.delete("/:uuid", adminAuthMiddleware, (req: Request, res: Response) =>
-  productionOrderController.removeTask(req, res),
+router.delete(
+  "/:uuid",
+  getTokenMiddleware,
+  adminAuthMiddleware,
+  (req: Request, res: Response) =>
+    productionOrderController.removeTask(req, res),
 );
 router.put("/:uuid", (req: Request, res: Response) =>
   productionOrderController.updateProductionOrder(req, res),
