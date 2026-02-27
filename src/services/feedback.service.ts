@@ -8,6 +8,14 @@ class FeedbackService {
   constructor(trello: TrelloNodeApi) {
     this.trello = trello;
   }
+
+  // async getAllLists() {
+  //   const ListID = process.env.TRELLO_LIST_ID || "";
+
+  //   const lists = await this.trello.list.search(ListID);
+  //   return lists;
+  // }
+
   async createFeedbackCard(card_name: string, card_description: string) {
     const newCard = await this.trello.card.create({
       name: card_name,

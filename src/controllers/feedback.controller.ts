@@ -8,6 +8,18 @@ class TrelloApiController {
     this.trelloApiService = trelloApiService;
   }
 
+  // async getAllLists(req: Request, res: Response): Promise<Response> {
+  //   try {
+  //     const lists = await this.trelloApiService.getAllLists();
+  //     return res.status(200).json(lists);
+  //   } catch (err) {
+  //     return res.status(500).json({
+  //       message: "Ocorreu um erro ao buscar as listas.",
+  //       error: (err as Error).message,
+  //     });
+  //   }
+  // }  
+
   async createFeedbackCard(req: Request, res: Response): Promise<Response> {
     try {
       const { card_name, card_description } = req.body;

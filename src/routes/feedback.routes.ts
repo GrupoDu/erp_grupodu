@@ -7,6 +7,9 @@ const router: Router = express.Router();
 const feedbackService = new FeedbackService(trello);
 const feedbackController = new FeedbackController(feedbackService);
 
+// router.get("/", (req: Request, res: Response) =>
+//   feedbackController.getAllLists(req, res),
+// );
 router.post("/", (req: Request, res: Response) =>
   feedbackController.createFeedbackCard(req, res),
 );
