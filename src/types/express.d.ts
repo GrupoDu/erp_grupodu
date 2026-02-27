@@ -7,7 +7,8 @@ declare global {
       user?: IUserPayload;
       tokenResponse?: {
         token: string;
-        payload: ITokenPayloadResponse | null
+        payload: ITokenPayloadResponse | null;
+        token_type?: string;
       };
     }
   }
