@@ -1,11 +1,11 @@
 // services/AuthService.ts
-import type { PrismaClient } from "@prisma/client/extension";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type {
   IUserPublic,
   IUserWithPassword,
 } from "../types/user.interface.ts";
+import type { PrismaClient } from "../../generated/prisma/client.ts";
 
 class AuthService {
   private prisma: PrismaClient;
@@ -35,7 +35,10 @@ class AuthService {
     );
 
     // Gera REFRESH token (longa duração) e salva no banco
-    const refreshToken = await this.saveRefreshToken(userTryingToLogin.user_id);
+    const refreshToken = await this.saveRefreshToken(
+      userTryingToLogin.user_id,
+      userTryingToLogin.user_type,
+    );
 
     return {
       user: userPublic,
@@ -51,18 +54,21 @@ class AuthService {
     const secret = process.env.JWT_SECRET;
     if (!secret) throw new Error("JWT_SECRET não definida.");
 
-    return jwt.sign({ user_id, user_type }, secret, { expiresIn: "15m" });
+    return jwt.sign({ user_id, user_type }, secret, { expiresIn: "10s" });
   }
 
-  async generateRefreshToken(user_id: string): Promise<string> {
+  async generateRefreshToken(
+    user_id: string,
+    user_type: string,
+  ): Promise<string> {
     const secret = process.env.REFRESH_SECRET;
     if (!secret) throw new Error("REFRESH_SECRET não definida.");
 
-    return jwt.sign({ user_id }, secret, { expiresIn: "7d" });
+    return jwt.sign({ user_id, user_type }, secret, { expiresIn: "7d" });
   }
 
-  async saveRefreshToken(user_id: string): Promise<string> {
-    const refreshToken = await this.generateRefreshToken(user_id);
+  async saveRefreshToken(user_id: string, user_type: string): Promise<string> {
+    const refreshToken = await this.generateRefreshToken(user_id, user_type);
 
     // Calcula data de expiração (7 dias a partir de agora)
     const expiresAt = new Date();
@@ -84,31 +90,39 @@ class AuthService {
   // ==================== REFRESH ====================
   async refreshAccessToken(
     refreshToken: string,
-    req?: Request,
-  ): Promise<{ accessToken: string; refreshToken?: string }> {
-    // 1. Busca o token no banco
-    const tokenRecord = await this.prisma.refresh_tokens.findUnique({
-      where: { token: refreshToken },
-    });
+  ): Promise<{ accessToken: string }> {
+    return await this.prisma.$transaction(async (prisma) => {
+      // Verifica JWT primeiro
+      let decoded: { user_id: string };
+      try {
+        const secret = process.env.REFRESH_SECRET;
+        if (!secret) throw new Error("REFRESH_SECRET não definida.");
 
-    if (!tokenRecord) {
-      throw new Error("Refresh token não encontrado.");
-    }
+        decoded = jwt.verify(refreshToken, secret) as { user_id: string };
+      } catch (jwtError) {
+        // JWT inválido - revoga no banco se existir
+        await prisma.refresh_tokens.updateMany({
+          where: { token: refreshToken },
+          data: { revoked: true },
+        });
+        throw new Error("Refresh token inválido.");
+      }
 
-    // 2. Verifica se está revogado ou expirado
-    if (tokenRecord.revoked || tokenRecord.expires_at < new Date()) {
-      throw new Error("Refresh token inválido ou expirado.");
-    }
+      // Verifica no banco (com lock para evitar condições de corrida)
+      const tokenRecord = await prisma.refresh_tokens.findUnique({
+        where: { token: refreshToken },
+      });
 
-    try {
-      // 3. Verifica a assinatura JWT
-      const secret = process.env.REFRESH_SECRET;
-      if (!secret) throw new Error("REFRESH_SECRET não definida.");
+      if (
+        !tokenRecord ||
+        tokenRecord.revoked ||
+        tokenRecord.expires_at < new Date()
+      ) {
+        throw new Error("Refresh token revogado ou expirado.");
+      }
 
-      const decoded = jwt.verify(refreshToken, secret) as { user_id: string };
-
-      // 4. Gera novo access token
-      const user = await this.prisma.users.findUnique({
+      // Busca usuário
+      const user = await prisma.users.findUnique({
         where: { user_id: decoded.user_id },
         select: { user_id: true, user_type: true },
       });
@@ -117,34 +131,15 @@ class AuthService {
         throw new Error("Usuário não encontrado.");
       }
 
-      const newAccessToken = await this.generateAccessToken(
-        user.user_id,
-        user.user_type,
+      // Gera novo access token
+      const newAccessToken = jwt.sign(
+        { user_id: user.user_id, user_type: user.user_type },
+        process.env.JWT_SECRET!,
+        { expiresIn: "15m" },
       );
 
-      // 5. (Opcional) Rotação do refresh token: gera um novo e revoga o antigo
-      //    Isso aumenta a segurança. Vamos implementar como opcional.
-      const shouldRotate = true; // Pode virar uma configuração
-      if (shouldRotate) {
-        const newRefreshToken = await this.saveRefreshToken(user.user_id);
-        // Revoga o antigo
-        await this.prisma.refresh_tokens.update({
-          where: { id: tokenRecord.id },
-          data: { revoked: true },
-        });
-        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
-      }
-
-      // Se não rotacionar, apenas retorna o novo access token
       return { accessToken: newAccessToken };
-    } catch (error) {
-      // Se o JWT for inválido, revoga o token no banco por segurança
-      await this.prisma.refresh_tokens.update({
-        where: { id: tokenRecord.id },
-        data: { revoked: true },
-      });
-      throw new Error("Refresh token inválido.");
-    }
+    });
   }
 
   async revokeRefreshToken(refreshToken: string): Promise<void> {
