@@ -4,6 +4,7 @@ import RegisterAnalysisService from "../services/productionOrderAnalysis.service
 import { prisma } from "../../lib/prisma.ts";
 import RegisterAnalysisController from "../controllers/productionOrderAnalysis.controller.ts";
 import { adminAuthMiddleware } from "../middlewares/adminAuth.middleware.ts";
+import { getTokenMiddleware } from "../middlewares/getToken.middleware.ts";
 
 const router: Router = express.Router();
 const registerAnalysisService = new RegisterAnalysisService(prisma);
@@ -11,8 +12,12 @@ const registerAnalysisController = new RegisterAnalysisController(
   registerAnalysisService,
 );
 
-router.get("/", adminAuthMiddleware, (req: Request, res: Response) =>
-  registerAnalysisController.getProductionOrderAnalysis(req, res),
+router.get(
+  "/",
+  getTokenMiddleware,
+  adminAuthMiddleware,
+  (req: Request, res: Response) =>
+    registerAnalysisController.getProductionOrderAnalysis(req, res),
 );
 
 export default router;

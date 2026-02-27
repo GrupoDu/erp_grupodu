@@ -1,8 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import type { IUserPublic } from "../types/user.interface.ts";
-import { getToken } from "../utils/getToken.ts";
+import { tokenErrorCases } from "../utils/tokenErrorCases.ts";
 
 dotenv.config();
 
@@ -12,37 +11,38 @@ export function adminAuthMiddleware(
   next: NextFunction,
 ) {
   try {
-    const token = getToken(req, res);
+    const token = req.tokenResponse?.payload;
 
-    if (!process.env.JWT_SECRET) throw new Error("SECRET faltando.");
     if (!token) throw new Error("Token não fornecido.");
 
-    const payload = jwt.verify(
-      token,
-      process.env.JWT_SECRET,
-    ) as unknown as IUserPublic;
+    if (!token) {
+      return res.status(401).json({ message: "Token inválido." });
+    }
 
-    if (payload.user_type !== "admin") {
+    // @ts-expect-error token.payload?.user_type existe
+    if (token.payload?.user_type !== "admin") {
       return res.status(403).json({ message: "não autorizado." });
     }
 
-    req.user = payload;
+    req.user = token.payload as IUserPublic;
 
     next();
   } catch (err) {
     const error = err as Error;
+    const { isTokenExpiredError, isTokenInvalidError } = tokenErrorCases(error);
 
-    if (error.name === "TokenExpiredError") {
-      return res
+    if (isTokenExpiredError) {
+      res
         .status(401)
         .json({ message: "Token expirado. Faça login novamente." });
+      return;
     }
 
-    if (error.name === "JsonWebTokenError") {
-      return res.status(401).json({ message: "Token inválido." });
+    if (isTokenInvalidError) {
+      res.status(401).json({ message: "Token inválido." });
+      return;
     }
 
-    console.error("Erro no middleware de autenticação:", error);
     return res
       .status(500)
       .json({ message: "Erro no servidor.", error: error.message });

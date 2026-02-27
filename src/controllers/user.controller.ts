@@ -1,8 +1,9 @@
 import type { Request, Response } from "express";
 import { responseMessages } from "../constants/messages.constants.ts";
 import type UserService from "../services/user.service.ts";
-import { getToken } from "../utils/getToken.ts";
-import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 class UserController {
   private userService: UserService;
@@ -46,26 +47,6 @@ class UserController {
       const allSupervisors = await this.userService.getAllSupervisorsUsers();
 
       return res.status(200).json(allSupervisors);
-    } catch (err) {
-      return res.status(500).json({
-        message: responseMessages.catchErrorMessage,
-        error: (err as Error).message,
-      });
-    }
-  }
-
-  async tokenValidator(req: Request, res: Response): Promise<Response> {
-    try {
-      const token = getToken(req, res);
-      const decodedToken = jwt.verify(token, process.env.JWT_SECRET!);
-
-      if (!decodedToken) {
-        return res.status(401).json({ message: "Token inválido." });
-      }
-
-      const { user_type } = decodedToken as { user_type: string };
-
-      return res.status(200).json(user_type);
     } catch (err) {
       return res.status(500).json({
         message: responseMessages.catchErrorMessage,
@@ -120,6 +101,25 @@ class UserController {
         message: "Usuário editado com successo.",
         update: updatedUser,
       });
+    } catch (err) {
+      return res.status(500).json({
+        message: responseMessages.catchErrorMessage,
+        error: (err as Error).message,
+      });
+    }
+  }
+
+  async tokenValidator(req: Request, res: Response): Promise<Response> {
+    try {
+      const token = req.tokenResponse?.payload;
+
+      if (!token?.isValid) {
+        return res.status(401).json({ message: "Token expirado." });
+      }
+
+      if (token?.payload) return res.status(200).json(token.payload);
+
+      return res.status(401).json({ message: "Token inválido." });
     } catch (err) {
       return res.status(500).json({
         message: responseMessages.catchErrorMessage,

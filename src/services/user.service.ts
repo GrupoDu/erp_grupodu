@@ -24,6 +24,7 @@ class UserService {
         user_id: true,
         user_type: true,
       },
+      orderBy: { name: "asc" },
     });
 
     if (allUsersData.length < 1) {
@@ -44,6 +45,7 @@ class UserService {
         user_id: true,
         user_type: true,
       },
+      orderBy: { name: "asc" },
     });
 
     return allSupervisors;

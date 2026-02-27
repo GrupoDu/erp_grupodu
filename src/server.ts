@@ -11,6 +11,7 @@ import EmployeeAnalysisRoutes from "./routes/employeeAnalysis.routes.ts";
 import ProductionOrderAnalysisRoutes from "./routes/productionOrderAnalysis.routes.ts";
 import GoalsAnalysisRoutes from "./routes/goalsAnalysis.routes.ts";
 import AnualAnaylsisRoutes from "./routes/anualAnalysis.routes.ts";
+import FeedbackRoutes from "./routes/feedback.routes.ts";
 import cookieParser from "cookie-parser";
 
 dotenv.config();
@@ -22,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["https://192.168.1.8:3001", "http://localhost:3000"],
+    origin: ["https://192.168.1.2:3001", "http://localhost:3000"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -38,6 +39,7 @@ app.use("/employees-analysis", EmployeeAnalysisRoutes);
 app.use("/productionOrderAnalysis", ProductionOrderAnalysisRoutes);
 app.use("/anualAnalysis", AnualAnaylsisRoutes);
 app.use("/goalsAnalysis", GoalsAnalysisRoutes);
+app.use("/feedback", FeedbackRoutes);
 
 app.get("/status", (req: Request, res: Response) => res.json({ status: "ok" }));
 
