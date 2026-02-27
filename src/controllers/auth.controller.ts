@@ -3,8 +3,6 @@ import type AuthService from "../services/auth.service.ts";
 import { responseMessages } from "../constants/messages.constants.ts";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { tryAccessToken } from "../utils/tryAccessToken.ts";
-import { tryRefreshToken } from "../utils/tryRefreshToken.ts";
 
 dotenv.config();
 
