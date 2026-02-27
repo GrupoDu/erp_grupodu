@@ -1,9 +1,14 @@
-import type { IUserPublic } from "./user.interface.ts";
+import type { ITokenPayloadResponse } from "./tokenPayloadResponse.interface.ts";
+import type { IUserPayload } from "./user.interface.ts";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: IUserPublic;
+      user?: IUserPayload;
+      tokenResponse?: {
+        token: string;
+        payload: ITokenPayloadResponse | null
+      };
     }
   }
 }
