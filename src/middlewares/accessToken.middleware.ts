@@ -20,6 +20,7 @@ export async function accessTokenMiddleware(
       throw new Error("JWT_SECRET não definida nas variáveis de ambiente.");
     }
 
+    req.tokenResponse = { token: token, payload: null };
     next();
   } catch (err) {
     if (err instanceof jwt.TokenExpiredError) {
