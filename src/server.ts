@@ -6,14 +6,10 @@ const HTTP_PORT = 8001;
 
 export const io = new Server(httpServer, {
   cors: {
-<<<<<<< HEAD
     origin: [
       `https://192.168.1.7:${HTTPS_PORT}`,
       `http://localhost:${HTTP_PORT}`,
     ],
-=======
-    origin: ["https://192.168.1.7:3003"],
->>>>>>> b5f63a8 (fix: Alterações para rodar https e resolver problema de conexão)
     credentials: true,
   },
 });
