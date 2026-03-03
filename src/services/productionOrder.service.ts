@@ -25,9 +25,6 @@ class ProductionOrderService {
         orderBy: { production_order_status: "desc" },
       });
 
-    if (allProductionOrders.length < 1)
-      throw new Error("Nenhuma ordem de produção encontrada.");
-
     return allProductionOrders;
   }
 
