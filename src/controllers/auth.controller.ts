@@ -23,8 +23,9 @@ class AuthController {
     const isProduction = process.env.NODE_ENV === "production";
     return {
       httpOnly: true,
-      secure: true, // true apenas em produção (HTTPS)
-      sameSite: isProduction ? "lax" : "none", // "lax" funciona para localhost com portas diferentes
+      secure: isProduction,
+      sameSite: isProduction ? "strict" : "none",
+      domain: isProduction ? process.env.BACK_HOST : undefined,
       path: "/",
     };
   }
