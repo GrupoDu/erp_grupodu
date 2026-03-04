@@ -1,5 +1,5 @@
+import type { Decimal } from "@prisma/client/runtime/wasm-compiler-edge";
 import type { Prisma } from "../../generated/prisma/client.js";
-import type { Decimal } from "../../generated/prisma/internal/prismaNamespace.js";
 
 export interface IProduct {
   uuid: string;

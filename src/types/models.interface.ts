@@ -1,4 +1,4 @@
-import type { Decimal } from "../../generated/prisma/internal/prismaNamespace.js";
+import type { Decimal } from "@prisma/client/runtime/wasm-compiler-edge";
 
 export interface IRegister {
   register_id: string;
