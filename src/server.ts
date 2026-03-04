@@ -5,12 +5,7 @@ const HTTPS_PORT = 8003;
 const HTTP_PORT = 8001;
 const FRONT_HOST = process.env.FRONT_HOST || "http://localhost:8000";
 
-const ALLOWED_ORIGINS = [
-  FRONT_HOST,
-  `http://localhost:${HTTP_PORT}`,
-  process.env.FRONTEND_URL || "",
-  process.env.VERCEL_URL || `https://${process.env.VERCEL_URL}`,
-];
+const ALLOWED_ORIGINS = [FRONT_HOST, `http://localhost:${HTTP_PORT}`];
 
 export const io = new Server(httpServer, {
   cors: {
