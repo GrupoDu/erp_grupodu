@@ -24,7 +24,7 @@ class AuthController {
     return {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? "lax" : "none",
+      sameSite: "none",
       path: "/",
     };
   }
