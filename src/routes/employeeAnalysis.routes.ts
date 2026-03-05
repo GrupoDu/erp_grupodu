@@ -3,6 +3,8 @@ import EmployeeAnalysisController from "../controllers/employeeAnalysis.controll
 import EmployeeAnalysisService from "../services/employeeAnalysis.service.js";
 import { prisma } from "../../lib/prisma.js";
 import { dataAnalysisAuthorizationMiddleware } from "../middlewares/dataAnalysisAuthorization.middleware.js";
+import { getTokenMiddleware } from "../middlewares/getToken.middleware.js";
+import { adminAuthMiddleware } from "../middlewares/adminAuth.middleware.js";
 
 const router: Router = express.Router();
 const employeeAnalysisService = new EmployeeAnalysisService(prisma);
@@ -12,7 +14,8 @@ const employeeAnalysisController = new EmployeeAnalysisController(
 
 router.get(
   "/",
-  dataAnalysisAuthorizationMiddleware,
+  getTokenMiddleware,
+  adminAuthMiddleware,
   (req: Request, res: Response) =>
     employeeAnalysisController.getEmployeeActivityAnalysis(req, res),
 );
