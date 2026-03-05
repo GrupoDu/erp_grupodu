@@ -53,9 +53,7 @@ class ProductionOrderService {
         data: newProductionOrderValues,
       });
 
-    io.on("connection", () => {
-      io.emit("productionOrderNotify", newProductionOrder);
-    });
+    io.emit("productionOrderNotify", newProductionOrder);
 
     return newProductionOrder;
   }
