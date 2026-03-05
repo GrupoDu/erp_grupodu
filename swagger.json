@@ -1,0 +1,1065 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "GCP Backend API",
+    "description": "API para gerenciamento de metas, usuários, produtos, funcionários e análises",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://gcp-backend-gnxf.onrender.com",
+      "description": "Servidor de Produção"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "token",
+        "description": "Autenticação via cookie HttpOnly contendo o token JWT"
+      }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "senha", "user_type"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "senha": { "type": "string", "format": "password" },
+          "user_type": { "type": "string" }
+        }
+      },
+      "Goal": {
+        "type": "object",
+        "required": ["goal_id", "goal_title", "goal_type", "goal_deadline", "goal_status"],
+        "properties": {
+          "goal_id": { "type": "string" },
+          "goal_title": { "type": "string" },
+          "goal_description": { "type": "string", "nullable": true },
+          "goal_type": { "type": "string" },
+          "goal_deadline": { "type": "string", "format": "date-time" },
+          "employee_goal": { "type": "string", "nullable": true },
+          "goal_status": { "type": "string" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": ["name", "email", "password", "user_type"],
+        "properties": {
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "format": "password" },
+          "user_type": { "type": "string" }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "required": ["name", "description", "product_type", "image"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "product_type": { "type": "string" },
+          "image": { "type": "string" },
+          "features": { 
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "acronym": { "type": "string", "nullable": true },
+          "composition": { 
+            "type": "object",
+            "description": "Campo JSON flexível"
+          },
+          "stock_quantity": { 
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "Employee": {
+        "type": "object",
+        "required": ["name", "employee_type"],
+        "properties": {
+          "name": { "type": "string" },
+          "employee_type": { "type": "string" }
+        }
+      },
+      "ProducedQuantity": {
+        "type": "object",
+        "required": ["productsQuantity"],
+        "properties": {
+          "productsQuantity": { "type": "number" }
+        }
+      },
+      "Feedback": {
+        "type": "object",
+        "required": ["card_name", "card_description"],
+        "properties": {
+          "card_name": { "type": "string" },
+          "card_description": { "type": "string" }
+        }
+      },
+      "ProductionOrder": {
+        "type": "object",
+        "required": ["production_order_title", "production_order_deadline", "product_quantity", "product_uuid", "client_uuid"],
+        "properties": {
+          "production_order_title": { "type": "string" },
+          "production_order_description": { "type": "string", "nullable": true },
+          "production_order_deadline": { "type": "string", "format": "date-time" },
+          "product_quantity": { "type": "number", "format": "decimal" },
+          "cut_assistant": { "type": "string", "nullable": true },
+          "fold_assistant": { "type": "string", "nullable": true },
+          "finishing_assistant": { "type": "string", "nullable": true },
+          "paint_assistant": { "type": "string", "nullable": true },
+          "employee_uuid": { "type": "string", "nullable": true },
+          "product_uuid": { "type": "string" },
+          "client_uuid": { "type": "string" }
+        }
+      },
+      "DeliveryOrder": {
+        "type": "object",
+        "required": ["delivered_product_quantity", "requested_product_quantity"],
+        "properties": {
+          "delivered_product_quantity": { "type": "number" },
+          "requested_product_quantity": { "type": "number" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "code": { "type": "integer" }
+        }
+      }
+    }
+  },
+  "security": [
+    { "cookieAuth": [] }
+  ],
+  "paths": {
+    "/login": {
+      "post": {
+        "summary": "Realiza login do usuário",
+        "tags": ["Login"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login realizado com sucesso"
+          },
+          "401": {
+            "description": "Credenciais inválidas"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/login/refresh": {
+      "post": {
+        "summary": "Renova o token de acesso",
+        "tags": ["Login"],
+        "responses": {
+          "200": {
+            "description": "Token renovado com sucesso"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/login/verify": {
+      "get": {
+        "summary": "Verifica se o token é válido",
+        "tags": ["Login"],
+        "responses": {
+          "200": {
+            "description": "Token válido"
+          },
+          "401": {
+            "description": "Token inválido"
+          }
+        }
+      }
+    },
+    "/login/logout": {
+      "post": {
+        "summary": "Realiza logout do usuário",
+        "tags": ["Login"],
+        "responses": {
+          "200": {
+            "description": "Logout realizado com sucesso"
+          }
+        }
+      }
+    },
+    "/goals": {
+      "get": {
+        "summary": "Lista todas as metas",
+        "tags": ["Goals"],
+        "responses": {
+          "200": {
+            "description": "Lista de metas retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Goal" }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "post": {
+        "summary": "Cria uma nova meta (Apenas Admin)",
+        "tags": ["Goals"],
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Goal" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Meta criada com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/goals/{uuid}": {
+      "delete": {
+        "summary": "Remove uma meta (Apenas Admin)",
+        "tags": ["Goals"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Meta removida com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "put": {
+        "summary": "Atualiza uma meta (Apenas Admin)",
+        "tags": ["Goals"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "properties": {
+                  "goal_id": { "type": "string" },
+                  "goal_title": { "type": "string" },
+                  "goal_description": { "type": "string", "nullable": true },
+                  "goal_type": { "type": "string" },
+                  "goal_deadline": { "type": "string", "format": "date-time" },
+                  "employee_goal": { "type": "string", "nullable": true },
+                  "goal_status": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Meta atualizada com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "Lista todos os usuários (Apenas Admin)",
+        "tags": ["Users"],
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de usuários retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "post": {
+        "summary": "Cria um novo usuário (Apenas Admin)",
+        "tags": ["Users"],
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/User" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário criado com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/users/supervisors": {
+      "get": {
+        "summary": "Lista todos os supervisores",
+        "tags": ["Users"],
+        "responses": {
+          "200": {
+            "description": "Lista de supervisores retornada com sucesso"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/users/validator": {
+      "get": {
+        "summary": "Valida informações do usuário",
+        "tags": ["Users"],
+        "responses": {
+          "200": {
+            "description": "Validação realizada com sucesso"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/users/{uuid}": {
+      "get": {
+        "summary": "Busca um usuário por UUID (Apenas Admin)",
+        "tags": ["Users"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário encontrado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove um usuário (Apenas Admin)",
+        "tags": ["Users"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário removido com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "put": {
+        "summary": "Atualiza um usuário (Apenas Admin)",
+        "tags": ["Users"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "format": "password" },
+                  "user_type": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário atualizado com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "summary": "Lista todos os produtos",
+        "tags": ["Products"],
+        "responses": {
+          "200": {
+            "description": "Lista de produtos retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Product" }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "post": {
+        "summary": "Cria um novo produto (Apenas Admin)",
+        "tags": ["Products"],
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Product" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Produto criado com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/products/{uuid}": {
+      "put": {
+        "summary": "Atualiza um produto",
+        "tags": ["Products"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "product_type": { "type": "string" },
+                  "image": { "type": "string" },
+                  "features": { "type": "array", "items": { "type": "string" } },
+                  "acronym": { "type": "string", "nullable": true },
+                  "composition": { "type": "object" },
+                  "stock_quantity": { "type": "number", "format": "decimal" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Produto atualizado com sucesso"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove um produto (Apenas Admin)",
+        "tags": ["Products"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Produto removido com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/employees": {
+      "get": {
+        "summary": "Lista todos os funcionários",
+        "tags": ["Employees"],
+        "responses": {
+          "200": {
+            "description": "Lista de funcionários retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Employee" }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "post": {
+        "summary": "Cria um novo funcionário (Apenas Admin)",
+        "tags": ["Employees"],
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Employee" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Funcionário criado com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/employees/{uuid}": {
+      "get": {
+        "summary": "Busca um funcionário por UUID (Apenas Admin)",
+        "tags": ["Employees"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Funcionário encontrado"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove um funcionário (Apenas Admin)",
+        "tags": ["Employees"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Funcionário removido com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "put": {
+        "summary": "Atualiza um funcionário (Apenas Admin)",
+        "tags": ["Employees"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "properties": {
+                  "name": { "type": "string" },
+                  "employee_type": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Funcionário atualizado com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/employees/activity/{uuid}": {
+      "put": {
+        "summary": "Atualiza a atividade de um funcionário",
+        "tags": ["Employees"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Atividade atualizada com sucesso"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/employees/producedQuantity/{uuid}": {
+      "put": {
+        "summary": "Atualiza a quantidade produzida por um funcionário",
+        "tags": ["Employees"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProducedQuantity" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Quantidade atualizada com sucesso"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/feedback": {
+      "post": {
+        "summary": "Envia um feedback",
+        "tags": ["Feedback"],
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Feedback" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Feedback enviado com sucesso"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/anualAnalysis": {
+      "get": {
+        "summary": "Obtém análise anual (Apenas Admin)",
+        "tags": ["AnualAnalysis"],
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Análise anual retornada com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/anualAnalysis/updateAnalysis": {
+      "put": {
+        "summary": "Atualiza a análise anual",
+        "tags": ["AnualAnalysis"],
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Análise anual atualizada com sucesso"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/goalsAnalysis": {
+      "get": {
+        "summary": "Obtém análise de metas (Apenas Admin)",
+        "tags": ["GoalsAnalysis"],
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Análise de metas retornada com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/productionOrder": {
+      "get": {
+        "summary": "Lista todas as ordens de produção",
+        "tags": ["ProductionOrder"],
+        "responses": {
+          "200": {
+            "description": "Lista de ordens retornada com sucesso"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "post": {
+        "summary": "Cria uma nova ordem de produção",
+        "tags": ["ProductionOrder"],
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProductionOrder" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ordem de produção criada com sucesso"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/productionOrder/{uuid}": {
+      "get": {
+        "summary": "Busca uma ordem de produção por UUID",
+        "tags": ["ProductionOrder"],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ordem de produção encontrada"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove uma ordem de produção (Apenas Admin)",
+        "tags": ["ProductionOrder"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ordem removida com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      },
+      "put": {
+        "summary": "Atualiza uma ordem de produção",
+        "tags": ["ProductionOrder"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "properties": {
+                  "production_order_title": { "type": "string" },
+                  "production_order_description": { "type": "string", "nullable": true },
+                  "production_order_deadline": { "type": "string", "format": "date-time" },
+                  "product_quantity": { "type": "number", "format": "decimal" },
+                  "cut_assistant": { "type": "string", "nullable": true },
+                  "fold_assistant": { "type": "string", "nullable": true },
+                  "finishing_assistant": { "type": "string", "nullable": true },
+                  "paint_assistant": { "type": "string", "nullable": true },
+                  "employee_uuid": { "type": "string", "nullable": true },
+                  "product_uuid": { "type": "string" },
+                  "client_uuid": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ordem atualizada com sucesso"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/productionOrder/deliver/{production_order_id}": {
+      "put": {
+        "summary": "Registra a entrega de uma ordem de produção",
+        "tags": ["ProductionOrder"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "production_order_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DeliveryOrder" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entrega registrada com sucesso"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/employees-analysis": {
+      "get": {
+        "summary": "Obtém análise de funcionários (Apenas Admin)",
+        "tags": ["EmployeesAnalysis"],
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Análise de funcionários retornada com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/productionOrderAnalysis": {
+      "get": {
+        "summary": "Obtém análise de ordens de produção (Apenas Admin)",
+        "tags": ["ProductionOrderAnalysis"],
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Análise de ordens retornada com sucesso"
+          },
+          "403": {
+            "description": "Acesso negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    }
+  }
+}
