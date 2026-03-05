@@ -1,5 +1,8 @@
 import { Server } from "socket.io";
 import { httpServer, PORT } from "./app.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const FRONT_URL = process.env.FRONTEND_URL || "http://localhost:8000";
 
