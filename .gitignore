@@ -4,6 +4,10 @@ database.types.ts
 /generated/prisma
 /dist
 
+# IDE folders
+.idea/
+.vscode/
+
 # Packages lock
 /package-lock.json
 /pnpm-lock.yaml
