@@ -13,6 +13,7 @@ import GoalsAnalysisRoutes from "./routes/goalsAnalysis.routes.js";
 import AnualAnaylsisRoutes from "./routes/anualAnalysis.routes.js";
 import FeedbackRoutes from "./routes/feedback.routes.js";
 import InOutStockRoutes from "./routes/inoutStock.routes.js";
+import StockUpdatesRoutes from "./routes/stockUpdates.routes.js";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 
@@ -45,6 +46,7 @@ app.use("/anualAnalysis", AnualAnaylsisRoutes);
 app.use("/goalsAnalysis", GoalsAnalysisRoutes);
 app.use("/feedback", FeedbackRoutes);
 app.use("/inoutStock", InOutStockRoutes);
+app.use("/stockUpdates", StockUpdatesRoutes);
 
 app.get("/status", (req: Request, res: Response) => res.json({ status: "ok" }));
 
