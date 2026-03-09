@@ -23,7 +23,7 @@ class AuthController {
     const isProduction = process.env.NODE_ENV === "production";
     return {
       httpOnly: true,
-      secure: !isProduction,
+      secure: isProduction,
       sameSite: isProduction ? "none" : "lax",
       path: "/",
     };
