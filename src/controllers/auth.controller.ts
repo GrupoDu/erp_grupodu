@@ -23,8 +23,8 @@ class AuthController {
     const isProduction = process.env.NODE_ENV === "production";
     return {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: "none",
+      secure: false,
+      sameSite: "lax",
       path: "/",
     };
   }
@@ -35,13 +35,10 @@ class AuthController {
 
       const isMissingField = !email || !password || !user_type;
       if (isMissingField) {
-        return res
-          .status(400)
-          .json({ message: responseMessages.fillAllFieldMessage });
+        return res.status(400).json({ message: responseMessages.fillAllFieldMessage });
       }
 
-      const { user, accessToken, refreshToken } =
-        await this.authService.userLogin(email, password, user_type);
+      const { user, accessToken, refreshToken } = await this.authService.userLogin(email, password, user_type);
 
       const cookieOptions = this.getCookieOptions();
 
@@ -78,14 +75,11 @@ class AuthController {
 
       const isRefreshTokenMissing = !refreshToken;
       if (isRefreshTokenMissing) {
-        return res
-          .status(401)
-          .json({ message: "Refresh token não fornecido." });
+        return res.status(401).json({ message: "Refresh token não fornecido." });
       }
 
       // O service agora retorna AMBOS os tokens (rotação)
-      const { accessToken, refreshToken: newRefreshToken } =
-        await this.authService.refreshAccessToken(refreshToken);
+      const { accessToken, refreshToken: newRefreshToken } = await this.authService.refreshAccessToken(refreshToken);
 
       const cookieOptions = this.getCookieOptions();
 
@@ -123,9 +117,7 @@ class AuthController {
 
       const cookieOptions = this.getCookieOptions();
 
-      res
-        .clearCookie("access_token", cookieOptions)
-        .clearCookie("refresh_token", cookieOptions);
+      res.clearCookie("access_token", cookieOptions).clearCookie("refresh_token", cookieOptions);
 
       return res.json({ message: "Usuário deslogado com sucesso." });
     } catch (err) {
@@ -148,9 +140,7 @@ class AuthController {
 
       const cookieOptions = this.getCookieOptions();
 
-      res
-        .clearCookie("access_token", cookieOptions)
-        .clearCookie("refresh_token", cookieOptions);
+      res.clearCookie("access_token", cookieOptions).clearCookie("refresh_token", cookieOptions);
 
       return res.json({ message: "Todos os dispositivos desconectados." });
     } catch (err) {
