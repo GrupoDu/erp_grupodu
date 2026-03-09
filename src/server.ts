@@ -4,9 +4,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const FRONT_URL = process.env.FRONTEND_URL || "http://localhost:8000";
+const FRONT_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
 const ALLOWED_ORIGINS = [FRONT_URL];
+const isProduction = process.env.NODE_ENV === "production";
 
 export const io = new Server(httpServer, {
   cors: {
@@ -25,14 +26,13 @@ export const io = new Server(httpServer, {
   cookie: {
     name: "io",
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: isProduction ? "lax" : "none",
   },
 });
 
 // Middleware de autenticação (se precisar)
 io.use((socket, next) => {
-  const token =
-    socket.handshake.auth.token || socket.handshake.headers.authorization;
+  const token = socket.handshake.auth.token || socket.handshake.headers.authorization;
 
   if (token) {
     // Validar token aqui se necessário
@@ -45,9 +45,7 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-  console.log(
-    `Cliente conectado: ${socket.id} | Transporte: ${socket.conn.transport.name}`,
-  );
+  console.log(`Cliente conectado: ${socket.id} | Transporte: ${socket.conn.transport.name}`);
 
   // Join na sala (corrigindo a string template)
   socket.join(`connection_id:${socket.id}`);
