@@ -45,7 +45,7 @@ export default class AssistantsPORegistersController {
           .json({ message: responseMessages.fillAllFieldMessage });
 
       const assistantsPORegistersByProductionOrderId =
-        this.assistantsPoRegistersService.getAssistantsPORegistersByProductionOrderId(
+        await this.assistantsPoRegistersService.getAssistantsPORegistersByProductionOrderId(
           production_order_uuid as string,
         );
       return res.status(200).json(assistantsPORegistersByProductionOrderId);
