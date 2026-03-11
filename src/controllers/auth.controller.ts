@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const ACCESS_TOKEN_EXPIRY_MIN = 15;
+const ACCESS_TOKEN_EXPIRY_MIN = 120;
 const ACCESS_TOKEN_EXPIRY_MS = ACCESS_TOKEN_EXPIRY_MIN * 60 * 1000;
 
 const REFRESH_TOKEN_EXPIRY_DAYS = 7;
