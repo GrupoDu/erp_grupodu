@@ -13,14 +13,14 @@ export default class AssistantsPoRegistersService {
   }
 
   async getAllAssistantsPORegisters(): Promise<IAssistantsPORegisters[]> {
-    return this.prisma.assitants_po_register.findMany();
+    return this.prisma.assistants_po_register.findMany();
   }
 
   async getAssistantsPORegistersByProductionOrderId(
     production_order_uuid: string,
   ): Promise<IAssistantsPORegisters[]> {
     const assistantPORegisterProductionOrder: IAssistantsPORegisters[] =
-      await this.prisma.assitants_po_register.findMany({
+      await this.prisma.assistants_po_register.findMany({
         where: {
           production_order_uuid,
         },
@@ -33,7 +33,7 @@ export default class AssistantsPoRegistersService {
     newAssistantPORegisterValues: IAssistantsPORegisterCreate,
   ): Promise<IAssistantsPORegisters> {
     const newAssistantPORegister =
-      await this.prisma.assitants_po_register.create({
+      await this.prisma.assistants_po_register.create({
         data: newAssistantPORegisterValues,
       });
 
@@ -43,7 +43,7 @@ export default class AssistantsPoRegistersService {
   async updateAssistantPORegisterAsDelivered(
     identifiers: IAssistantPORegisterIdentifiers,
   ): Promise<string> {
-    await this.prisma.assitants_po_register.updateMany({
+    await this.prisma.assistants_po_register.updateMany({
       where: {
         assistant_uuid: identifiers.assistant_uuid,
         production_order_uuid: identifiers.production_order_uuid,
