@@ -36,7 +36,7 @@ export default class AssistantsPORegistersController {
     req: Request,
     res: Response,
   ): Promise<Response> {
-    const { production_order_uuid } = req.body;
+    const { production_order_uuid } = req.params;
 
     try {
       if (!production_order_uuid)
@@ -46,7 +46,7 @@ export default class AssistantsPORegistersController {
 
       const assistantsPORegistersByProductionOrderId =
         this.assistantsPoRegistersService.getAssistantsPORegistersByProductionOrderId(
-          production_order_uuid,
+          production_order_uuid as string,
         );
       return res.status(200).json(assistantsPORegistersByProductionOrderId);
     } catch (err) {
