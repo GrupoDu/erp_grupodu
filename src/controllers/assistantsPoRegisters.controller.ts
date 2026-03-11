@@ -19,7 +19,7 @@ export default class AssistantsPORegistersController {
   ): Promise<Response> {
     try {
       const allAssistantsPORegisters =
-        await this.assistantsPoRegistersService.getAllAssistantsPoRegisters();
+        await this.assistantsPoRegistersService.getAllAssistantsPORegisters();
 
       return res.status(200).json(allAssistantsPORegisters);
     } catch (err) {
@@ -29,6 +29,35 @@ export default class AssistantsPORegistersController {
         message: responseMessages.catchErrorMessage,
         error: error.message,
       });
+    }
+  }
+
+  async getAssistantsPORegistersByProductionOrderId(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const { production_order_uuid } = req.body;
+
+    try {
+      if (!production_order_uuid)
+        return res
+          .status(400)
+          .json({ message: responseMessages.fillAllFieldMessage });
+
+      const assistantsPORegistersByProductionOrderId =
+        this.assistantsPoRegistersService.getAssistantsPORegistersByProductionOrderId(
+          production_order_uuid,
+        );
+      return res.status(200).json(assistantsPORegistersByProductionOrderId);
+    } catch (err) {
+      const error = err as Error;
+
+      return res
+        .status(500)
+        .json({
+          message: responseMessages.catchErrorMessage,
+          error: error.message,
+        });
     }
   }
 

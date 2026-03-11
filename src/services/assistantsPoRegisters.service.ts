@@ -12,8 +12,21 @@ export default class AssistantsPoRegistersService {
     this.prisma = prisma;
   }
 
-  async getAllAssistantsPoRegisters(): Promise<IAssistantsPORegisters[]> {
+  async getAllAssistantsPORegisters(): Promise<IAssistantsPORegisters[]> {
     return this.prisma.assitants_po_register.findMany();
+  }
+
+  async getAssistantsPORegistersByProductionOrderId(
+    production_order_uuid: string,
+  ): Promise<IAssistantsPORegisters[]> {
+    const assistantPORegisterProductionOrder: IAssistantsPORegisters[] =
+      await this.prisma.assitants_po_register.findMany({
+        where: {
+          production_order_uuid,
+        },
+      });
+
+    return assistantPORegisterProductionOrder;
   }
 
   async createAssistantPORegister(

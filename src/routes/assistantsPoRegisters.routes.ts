@@ -21,5 +21,14 @@ router.put("/deliver", getTokenMiddleware, (req: Request, res: Response) =>
     res,
   ),
 );
+router.get(
+  "/:production_order_uuid",
+  getTokenMiddleware,
+  (req: Request, res: Response) =>
+    assistantsPORegistersController.getAssistantsPORegistersByProductionOrderId(
+      req,
+      res,
+    ),
+);
 
 export default router;
