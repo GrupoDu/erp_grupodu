@@ -4,9 +4,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const FRONT_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const FRONT_URL = process.env.FRONTEND_URL;
+const DEV_URL = process.env.DEV_URL || "http://localhost:8000"
 
-const ALLOWED_ORIGINS = [FRONT_URL, "http://192.168.1.3:3001"];
+const ALLOWED_ORIGINS = FRONT_URL || DEV_URL;
 const isProduction = process.env.NODE_ENV === "production";
 
 export const io = new Server(httpServer, {
