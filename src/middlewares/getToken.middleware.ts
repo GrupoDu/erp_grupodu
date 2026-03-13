@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { tryAccessToken } from "../utils/tryAccessToken.js";
 import { tokenErrorCases } from "../utils/tokenErrorCases.js";
 import { responseMessages } from "../constants/messages.constants.js";
+import { tryRefreshToken } from "../utils/tryRefreshToken.js";
 
 export function getTokenMiddleware(
   req: Request,
@@ -10,6 +11,7 @@ export function getTokenMiddleware(
 ) {
   try {
     const accessToken = req.cookies.access_token;
+    const refreshToken = req.cookies.refresh_token;
 
     // Primeiro, tenta ver se o access_token é válido
     if (accessToken) {
@@ -24,6 +26,18 @@ export function getTokenMiddleware(
         return next();
       }
       // console.log("Access_token expirado ou inválido");
+    }
+
+    if (refreshToken) {
+      const refreshResult = tryRefreshToken(refreshToken);
+      if (refreshResult.isValid) {
+        req.tokenResponse = {
+          token: refreshToken,
+          payload: refreshResult,
+          token_type: "refresh",
+        };
+        return next();
+      }
     }
 
     console.log("Nenhum token válido encontrado");
