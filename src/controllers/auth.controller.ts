@@ -170,8 +170,9 @@ class AuthController {
     }
 
     try {
-      jwt.verify(token, process.env.JWT_SECRET as string);
-      return res.status(200).json({ status: "ok" });
+      const payload = jwt.verify(token, process.env.JWT_SECRET as string);
+
+      return res.status(200).json({ status: "ok", payload });
     } catch {
       return res.status(401).json({ message: "Token expirado ou inválido." });
     }
