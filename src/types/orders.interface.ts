@@ -9,14 +9,9 @@ export interface IOrder {
   product_uuid: string;
 }
 
-export interface IOrderCreate extends Omit<IOrder, "order_id" | "created_at"> {}
+export interface IOrderCreate extends Omit<
+  IOrder,
+  "order_id" | "created_at" | "order_status"
+> {}
 
 export interface IOrderUpdate extends Partial<IOrder> {}
-
-export type OrderStatus =
-  | "Ainda não confirmado"
-  | "Em produção"
-  | "Disponível"
-  | "Enviado"
-  | "Produzido"
-  | "Finalizado";
