@@ -43,6 +43,11 @@ router.put(
   (req: Request, res: Response) =>
     productionOrderController.deliverProductionOrder(req, res),
 );
-router.patch("/validate/:production_order_id");
+router.patch(
+  "/validate/:production_order_id",
+  getTokenMiddleware,
+  (req: Request, res: Response) =>
+    productionOrderController.stockProductionValidation(req, res),
+);
 
 export default router;
