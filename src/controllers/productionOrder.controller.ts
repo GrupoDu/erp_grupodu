@@ -147,7 +147,7 @@ class ProductionOrderController {
     req: Request,
     res: Response,
   ): Promise<Response> {
-    const { production_order_id } = req.body;
+    const { production_order_id } = req.params;
 
     try {
       if (!production_order_id)
