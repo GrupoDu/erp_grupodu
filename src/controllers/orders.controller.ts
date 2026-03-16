@@ -59,12 +59,9 @@ export default class OrdersController {
       const orderData: IOrderCreate = req.body;
 
       const isAllFieldsFilled =
-        !!orderData.order_status ||
-        !!orderData.order_description ||
         !!orderData.product_quantity ||
         !!orderData.product_type ||
-        !!orderData.product_uuid ||
-        !!orderData.delivery_observation;
+        !!orderData.product_uuid;
 
       if (!isAllFieldsFilled) {
         return res.status(400).json({
@@ -129,21 +126,35 @@ export default class OrdersController {
   async updateOrderStatus(req: Request, res: Response): Promise<Response> {
     try {
       const { order_id } = req.params;
+      const { status } = req.body;
 
-      if (!order_id || typeof order_id !== "string") {
+      const isOrderIdNotValid: boolean =
+        !order_id || typeof order_id !== "string";
+      if (isOrderIdNotValid) {
         return res.status(400).json({
           success: false,
           message: "ID do pedido é obrigatório e deve ser uma string válida",
         });
       }
 
-      const result = await this.ordersService.updateOrderStatus(order_id);
+      const isStatusNotValid = !status || typeof status !== "string";
+      if (isStatusNotValid) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Status do pedido é obrigatório e deve ser uma string válida",
+        });
+      }
+
+      const result = await this.ordersService.updateOrderStatus(
+        order_id as string,
+        status,
+      );
 
       return res.status(200).json({
         success: true,
-        data: result.order,
-        nextStatus: result.nextStatus,
-        message: `Status do pedido atualizado para: ${result.nextStatus}`,
+        data: result,
+        message: `Status do pedido atualizado para: ${status}`,
       });
     } catch (err) {
       const error = err as Error;
