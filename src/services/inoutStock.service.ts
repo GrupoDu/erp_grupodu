@@ -1,5 +1,6 @@
 import type { PrismaClient } from "../../generated/prisma/client.js";
 import type { IInOutStockAnalysis } from "../types/inOutStockAnalysis.interface.js";
+import { io } from "../server.js";
 
 class InOutStockService {
   private prisma: PrismaClient;
@@ -18,6 +19,8 @@ class InOutStockService {
         select: {
           in_quantity: true,
           out_quantity: true,
+          month: true,
+          year: true,
         },
       });
     return inOutStockAnalysis;
@@ -44,6 +47,9 @@ class InOutStockService {
         where: { month: MONTH, year: YEAR },
         data: { out_quantity: { increment: quantity } },
       });
+
+    io.emit("outStock", quantity);
+
     return updatedOutStockQuantityAnalysis;
   }
 }
