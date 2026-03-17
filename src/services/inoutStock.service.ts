@@ -35,6 +35,9 @@ class InOutStockService {
         where: { month: MONTH, year: YEAR },
         data: { in_quantity: { increment: quantity } },
       });
+
+    io.emit("inStock", quantity);
+
     return updatedInStockQuantityAnalysis;
   }
 
