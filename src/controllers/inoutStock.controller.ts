@@ -68,8 +68,6 @@ class InOutStockController {
 
       await this.inoutStockService.incrementMonthlyOutStockQuantity(quantity);
 
-      io.emit("outStock", quantity);
-
       return res
         .status(200)
         .json({ message: "Estoque incrementado com sucesso." });
