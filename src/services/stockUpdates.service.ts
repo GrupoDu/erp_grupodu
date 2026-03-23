@@ -1,6 +1,6 @@
 import type { PrismaClient } from "../../generated/prisma/client.js";
 import type { IStockUpdates } from "../types/stockUpdates.interface.js";
-import { io } from "../server.ts";
+import { io } from "../server.js";
 
 class StockUpdatesService {
   private prisma: PrismaClient;
