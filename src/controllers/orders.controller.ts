@@ -93,7 +93,6 @@ export default class OrdersController {
     try {
       const { order_id } = req.params;
       const updateData: IOrderUpdate = req.body;
-      const fields = Object.keys(updateData);
 
       if (!order_id) {
         return res
