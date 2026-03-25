@@ -5,7 +5,6 @@ import type {
   IProductionOrderDeliver,
   IProductionOrderUpdate,
 } from "../types/productionOrder.interface.js";
-import { responseMessages } from "../constants/messages.constants.js";
 import removeUndefinedUpdateFields from "../utils/removeUndefinedUpdateFields.utils.js";
 import dotenv from "dotenv";
 import { io } from "../server.js";
@@ -13,15 +12,15 @@ import { io } from "../server.js";
 dotenv.config();
 
 class ProductionOrderService {
-  private prisma: PrismaClient;
+  private _prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
+    this._prisma = prisma;
   }
 
   async getAllProductionOrders(): Promise<IProductionOrder[]> {
     const allProductionOrders: IProductionOrder[] =
-      await this.prisma.production_order.findMany({
+      await this._prisma.production_order.findMany({
         orderBy: { production_order_status: "desc" },
       });
 
@@ -30,7 +29,7 @@ class ProductionOrderService {
 
   async getProductionOrderById(production_order_id: string) {
     const targetProductionOrder: IProductionOrder | null =
-      await this.prisma.production_order.findUnique({
+      await this._prisma.production_order.findUnique({
         where: {
           production_order_id,
         },
@@ -45,11 +44,8 @@ class ProductionOrderService {
   async createNewProductionOrder(
     newProductionOrderValues: IProductionOrderCreate,
   ) {
-    if (!newProductionOrderValues)
-      throw new Error(responseMessages.fillAllFieldMessage);
-
     const newProductionOrder: IProductionOrder =
-      await this.prisma.production_order.create({
+      await this._prisma.production_order.create({
         data: newProductionOrderValues,
       });
 
@@ -59,17 +55,14 @@ class ProductionOrderService {
   }
 
   async removeProductionOrder(production_order_id: string): Promise<string> {
-    if (!production_order_id)
-      throw new Error(responseMessages.fillAllFieldMessage);
-
-    await this.prisma.$transaction(async (prisma) => {
-      await prisma.assistants_po_register.deleteMany({
+    await this._prisma.$transaction(async (tx) => {
+      await tx.assistants_po_register.deleteMany({
         where: {
           production_order_uuid: production_order_id,
         },
       });
 
-      await prisma.production_order.delete({
+      await tx.production_order.delete({
         where: {
           production_order_id,
         },
@@ -83,9 +76,6 @@ class ProductionOrderService {
     productionOrderNewValues: IProductionOrderUpdate,
     production_order_id: string,
   ): Promise<IProductionOrder> {
-    if (!production_order_id)
-      throw new Error(responseMessages.fillAllFieldMessage);
-
     const productionOrderUpdatedFields = removeUndefinedUpdateFields(
       productionOrderNewValues,
     );
@@ -99,7 +89,7 @@ class ProductionOrderService {
     );
 
     const updatedProductionOrder: IProductionOrder =
-      await this.prisma.production_order.update({
+      await this._prisma.production_order.update({
         where: {
           production_order_id,
         },
@@ -114,20 +104,13 @@ class ProductionOrderService {
     delivered_product_quantity: number,
     requested_product_quantity: number,
   ): Promise<IProductionOrderDeliver> {
-    if (
-      !productionOrder_id ||
-      !delivered_product_quantity ||
-      !requested_product_quantity
-    )
-      throw new Error(responseMessages.fillAllFieldMessage);
-
     this.verifyDeliveredProductQuantity(
       delivered_product_quantity,
       requested_product_quantity,
     );
 
     const deliveredProductOrder: IProductionOrder | null =
-      await this.prisma.production_order.update({
+      await this._prisma.production_order.update({
         data: {
           delivered_at: new Date(),
           delivered_product_quantity: delivered_product_quantity,
@@ -144,7 +127,7 @@ class ProductionOrderService {
   async stockProductionValidation(
     production_order_id: string,
   ): Promise<IProductionOrder> {
-    return this.prisma.production_order.update({
+    return this._prisma.production_order.update({
       where: {
         production_order_id,
       },
