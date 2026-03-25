@@ -19,12 +19,9 @@ class ProductionOrderService {
   }
 
   async getAllProductionOrders(): Promise<IProductionOrder[]> {
-    const allProductionOrders: IProductionOrder[] =
-      await this._prisma.production_order.findMany({
-        orderBy: { production_order_status: "desc" },
-      });
-
-    return allProductionOrders;
+    return this._prisma.production_order.findMany({
+      orderBy: { production_order_status: "desc" },
+    });
   }
 
   async getProductionOrderById(production_order_id: string) {
@@ -88,15 +85,12 @@ class ProductionOrderService {
       productionOrderUpdatedFields.requested_product_quantity,
     );
 
-    const updatedProductionOrder: IProductionOrder =
-      await this._prisma.production_order.update({
-        where: {
-          production_order_id,
-        },
-        data: productionOrderUpdatedFields,
-      });
-
-    return updatedProductionOrder;
+    return this._prisma.production_order.update({
+      where: {
+        production_order_id,
+      },
+      data: productionOrderUpdatedFields,
+    });
   }
 
   async deliverProductionOrder(
@@ -109,19 +103,16 @@ class ProductionOrderService {
       requested_product_quantity,
     );
 
-    const deliveredProductOrder: IProductionOrder | null =
-      await this._prisma.production_order.update({
-        data: {
-          delivered_at: new Date(),
-          delivered_product_quantity: delivered_product_quantity,
-          production_order_status: "Entregue",
-        },
-        where: {
-          production_order_id: productionOrder_id,
-        },
-      });
-
-    return deliveredProductOrder;
+    return this._prisma.production_order.update({
+      data: {
+        delivered_at: new Date(),
+        delivered_product_quantity: delivered_product_quantity,
+        production_order_status: "Entregue",
+      },
+      where: {
+        production_order_id: productionOrder_id,
+      },
+    });
   }
 
   async stockProductionValidation(
