@@ -3,13 +3,24 @@ import OrdersService from "../services/orders.service.js";
 import type { IOrderCreate, IOrderUpdate } from "../types/orders.interface.js";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
-import isMissingFields from "../utils/isMissingFields.js";
 import {
-  ARBITRARY_FIELDS_MESSAGE,
+  REQUIRED_FIELDS_MESSAGE,
   MISSING_FIELDS_MESSAGE,
 } from "../constants/messages.constants.js";
+import { hasValidString } from "../utils/hasValidString.js";
+import checkMissingFields from "../utils/checkMissingFields.js";
+import { OrderSchema, OrderUpdateSchema } from "../schemas/order.schema.js";
 
-export default class OrdersController {
+/**
+ * Controller responsável por gerenciar pedidos
+ * @see OrdersService
+ * @method getOrders
+ * @method getOrderById
+ * @method createOrder
+ * @method updateOrder
+ * @method updateOrderStatus
+ */
+class OrdersController {
   private _ordersService: OrdersService;
 
   constructor(ordersService: OrdersService) {
@@ -29,15 +40,15 @@ export default class OrdersController {
   }
 
   async getOrderById(req: Request, res: Response): Promise<Response> {
-    try {
-      const { order_id } = req.params;
+    const { order_id } = req.params;
 
-      if (!order_id || typeof order_id !== "string") {
+    try {
+      if (!hasValidString(order_id)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["order_id"]),
+              REQUIRED_FIELDS_MESSAGE(["order_id"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -63,22 +74,17 @@ export default class OrdersController {
 
   async createOrder(req: Request, res: Response): Promise<Response> {
     try {
-      const orderData: IOrderCreate = req.body;
-      const fields = Object.keys(orderData);
+      const newOrderData = req.body as IOrderCreate;
+      const { schemaErr, isMissingFields, requiredFieldsMessage } =
+        checkMissingFields(newOrderData, OrderSchema);
 
-      if (isMissingFields(orderData)) {
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
-      const newOrder = await this._ordersService.createOrder(orderData);
+      const newOrder = await this._ordersService.createOrder(newOrderData);
 
       return res
         .status(201)
@@ -90,23 +96,28 @@ export default class OrdersController {
   }
 
   async updateOrder(req: Request, res: Response): Promise<Response> {
-    try {
-      const { order_id } = req.params;
-      const updateData: IOrderUpdate = req.body;
+    const { order_id } = req.params;
+    const updateData = req.body as IOrderUpdate;
 
-      if (!order_id) {
+    try {
+      const { isMissingFields } = checkMissingFields(
+        updateData,
+        OrderUpdateSchema,
+      );
+
+      if (!hasValidString(order_id)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["order_id"]),
+              REQUIRED_FIELDS_MESSAGE(["order_id"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      if (isMissingFields(updateData)) {
+      if (isMissingFields) {
         return res
           .status(400)
           .json(
@@ -118,7 +129,7 @@ export default class OrdersController {
       }
 
       const updatedOrder = await this._ordersService.updateOrder(
-        order_id as string,
+        order_id,
         updateData,
       );
 
@@ -140,29 +151,16 @@ export default class OrdersController {
   }
 
   async updateOrderStatus(req: Request, res: Response): Promise<Response> {
+    const { order_id } = req.params;
+    const { status } = req.body as { status: string };
+
     try {
-      const { order_id } = req.params;
-      const { status } = req.body;
-      const statusData = { status };
-
-      if (!order_id) {
+      if (!hasValidString(order_id) || !hasValidString(status)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["order_id"]),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
-      }
-
-      if (isMissingFields(statusData)) {
-        return res
-          .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["status"]),
+              REQUIRED_FIELDS_MESSAGE(["order_id", "status"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -170,7 +168,7 @@ export default class OrdersController {
       }
 
       const result = await this._ordersService.updateOrderStatus(
-        order_id as string,
+        order_id,
         status,
       );
 
@@ -219,3 +217,5 @@ export default class OrdersController {
     return { isOrderNotFound, isCurrentStatusInvalid, isOrderOnFinalStatus };
   }
 }
+
+export default OrdersController;

@@ -2,16 +2,28 @@ import type AssistantsPoRegistersService from "../services/assistantsPoRegisters
 import type { Request, Response } from "express";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
-import isMissingFields from "../utils/isMissingFields.js";
 import {
-  ARBITRARY_FIELDS_MESSAGE,
+  REQUIRED_FIELDS_MESSAGE,
   MISSING_FIELDS_MESSAGE,
 } from "../constants/messages.constants.js";
 import type {
   IAssistantPORegisterIdentifiers,
   IAssistantsPORegisterCreate,
 } from "../types/assistantsPoRegisters.interface.js";
+import checkMissingFields from "../utils/checkMissingFields.js";
+import AssistantPORegisterIdentifiers, {
+  AssistantsPORegisterCreateSchema,
+} from "../schemas/AssistantsPORegisters.schema.js";
+import { hasValidString } from "../utils/hasValidString.js";
 
+/**
+ * Controller responsável por registrar atividade dos assistentes
+ * @see AssistantsPoRegistersService
+ * @method getAllAssistantsPORegisters
+ * @method getAssistantsPORegistersByProductionOrderId
+ * @method createAssistantPORegister
+ * @method updateAssistantPORegisterAsDelivered
+ */
 export default class AssistantsPORegistersController {
   private _assistantsPoRegistersService: AssistantsPoRegistersService;
 
@@ -48,12 +60,12 @@ export default class AssistantsPORegistersController {
     const { production_order_uuid } = req.params;
 
     try {
-      if (!production_order_uuid) {
+      if (!hasValidString(production_order_uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["production_order_uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["production_order_uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -62,7 +74,7 @@ export default class AssistantsPORegistersController {
 
       const assistantsPORegistersByProductionOrderId =
         await this._assistantsPoRegistersService.getAssistantsPORegistersByProductionOrderId(
-          production_order_uuid as string,
+          production_order_uuid,
         );
       return res
         .status(200)
@@ -82,20 +94,19 @@ export default class AssistantsPORegistersController {
     req: Request,
     res: Response,
   ): Promise<Response> {
-    const newAssistantPORegisterValues: IAssistantsPORegisterCreate = req.body;
-    const fields = Object.keys(newAssistantPORegisterValues);
+    const newAssistantPORegisterValues =
+      req.body as IAssistantsPORegisterCreate;
+    const { isMissingFields, requiredFieldsMessage, schemaErr } =
+      checkMissingFields(
+        newAssistantPORegisterValues,
+        AssistantsPORegisterCreateSchema,
+      );
 
     try {
-      if (isMissingFields(newAssistantPORegisterValues)) {
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
       const newAssistantPORegister =
@@ -122,20 +133,15 @@ export default class AssistantsPORegistersController {
     req: Request,
     res: Response,
   ): Promise<Response> {
-    const identifierValues: IAssistantPORegisterIdentifiers = req.body;
-    const fields = Object.keys(identifierValues);
+    const identifierValues = req.body as IAssistantPORegisterIdentifiers;
+    const { isMissingFields, requiredFieldsMessage, schemaErr } =
+      checkMissingFields(identifierValues, AssistantPORegisterIdentifiers);
 
     try {
-      if (isMissingFields(identifierValues)) {
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
       const assistantPORegisterUpdateResponse =

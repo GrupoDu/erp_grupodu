@@ -4,17 +4,23 @@ import type { IAnualAnalysis } from "../types/anualAnalysis.interface.js";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
 
+/**
+ * Controller responsável por gerenciar a análise anual.
+ * @see AnualAnalysisService
+ * @method getAllAnualAnalysisService
+ * @method updateDeliveredAnualAnalysis
+ */
 class AnualAnalysisController {
-  private anualAnalysisService: AnualAnalysisService;
+  private _anualAnalysisService: AnualAnalysisService;
 
   constructor(anualAnalysisService: AnualAnalysisService) {
-    this.anualAnalysisService = anualAnalysisService;
+    this._anualAnalysisService = anualAnalysisService;
   }
 
   async getAllAnualAnalysisService(req: Request, res: Response) {
     try {
       const anualAnalysisData: IAnualAnalysis[] =
-        await this.anualAnalysisService.getMontlyAnalysis();
+        await this._anualAnalysisService.getMontlyAnalysis();
 
       return res
         .status(200)
@@ -33,7 +39,7 @@ class AnualAnalysisController {
   async updateDeliveredAnualAnalysis(req: Request, res: Response) {
     try {
       const anualAnalysisUpdateResponse: string =
-        await this.anualAnalysisService.updateDeliveredMontlyAnalysis();
+        await this._anualAnalysisService.updateDeliveredMontlyAnalysis();
 
       return res
         .status(200)

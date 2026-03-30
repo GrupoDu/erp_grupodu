@@ -2,22 +2,40 @@ import { type Request, type Response } from "express";
 import type ProductService from "../services/product.service.js";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
-import isMissingFields from "../utils/isMissingFields.js";
 import {
-  ARBITRARY_FIELDS_MESSAGE,
+  REQUIRED_FIELDS_MESSAGE,
   MISSING_FIELDS_MESSAGE,
 } from "../constants/messages.constants.js";
+import { hasValidString } from "../utils/hasValidString.js";
+import type {
+  IProductCreate,
+  IProductUpdate,
+} from "../types/product.interface.js";
+import checkMissingFields from "../utils/checkMissingFields.js";
+import {
+  ProductCreateSchema,
+  ProductUpdateSchema,
+} from "../schemas/product.schema.js";
 
+/**
+ * Controller responsável por gerenciar produtos
+ * @see ProductService
+ * @method getAllProductsData
+ * @method getProductById
+ * @method registerProduct
+ * @method deleteProduct
+ * @method updateProductData
+ */
 class ProductController {
-  private productService: ProductService;
+  private _productService: ProductService;
 
   constructor(productService: ProductService) {
-    this.productService = productService;
+    this._productService = productService;
   }
 
   async getAllProductsData(req: Request, res: Response): Promise<Response> {
     try {
-      const allProducts = await this.productService.getAllProductsData();
+      const allProducts = await this._productService.getAllProductsData();
 
       return res
         .status(200)
@@ -34,21 +52,19 @@ class ProductController {
     const { product_uuid } = req.params;
 
     try {
-      if (!product_uuid) {
+      if (!hasValidString(product_uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["product_uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["product_uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      const product = await this.productService.getProductById(
-        product_uuid as string,
-      );
+      const product = await this._productService.getProductById(product_uuid);
 
       return res
         .status(200)
@@ -60,24 +76,22 @@ class ProductController {
   }
 
   async registerProduct(req: Request, res: Response): Promise<Response> {
-    try {
-      const productInfos = req.body;
-      const fields = Object.keys(productInfos);
+    const productInfos = req.body as IProductCreate;
 
-      if (isMissingFields(productInfos)) {
+    try {
+      const productRecord = productInfos as unknown as Record<string, unknown>;
+
+      const { schemaErr, requiredFieldsMessage, isMissingFields } =
+        checkMissingFields(productRecord, ProductCreateSchema);
+
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
       const newProduct =
-        await this.productService.registerNewProduct(productInfos);
+        await this._productService.registerNewProduct(productInfos);
 
       return res
         .status(201)
@@ -98,19 +112,19 @@ class ProductController {
     try {
       const { uuid } = req.params;
 
-      if (!uuid) {
+      if (!hasValidString(uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      await this.productService.deleteProduct(uuid as string);
+      await this._productService.deleteProduct(uuid);
 
       return res
         .status(200)
@@ -122,38 +136,39 @@ class ProductController {
   }
 
   async updateProductData(req: Request, res: Response): Promise<Response> {
+    const productNewData = req.body as IProductUpdate;
+    const { uuid } = req.params;
+
     try {
-      const productNewData = req.body;
-      const { uuid } = req.params;
-      const fields = Object.keys(productNewData);
+      const productRecord = productNewData as unknown as Record<
+        string,
+        unknown
+      >;
 
-      if (!uuid) {
+      const { schemaErr, requiredFieldsMessage, isMissingFields } =
+        checkMissingFields(productRecord, ProductUpdateSchema);
+
+      if (!hasValidString(uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      if (isMissingFields(productNewData)) {
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
-      const updatedProduct = await this.productService.updateProductData(
+      const updatedProduct = await this._productService.updateProductData(
         productNewData,
-        uuid as string,
+        uuid,
       );
 
       return res

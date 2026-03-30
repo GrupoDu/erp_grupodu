@@ -2,12 +2,31 @@ import type { Request, Response } from "express";
 import type EmployeeService from "../services/employee.service.js";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
-import isMissingFields from "../utils/isMissingFields.js";
 import {
-  ARBITRARY_FIELDS_MESSAGE,
+  REQUIRED_FIELDS_MESSAGE,
   MISSING_FIELDS_MESSAGE,
 } from "../constants/messages.constants.js";
+import checkMissingFields from "../utils/checkMissingFields.js";
+import {
+  EmployeeCreateSchema,
+  EmployeeUpdateSchema,
+} from "../schemas/employee.schema.js";
+import type {
+  IEmployeeCreate,
+  IEmployeeUpdate,
+} from "../types/employee.interface.js";
+import { isNumber } from "class-validator";
+import { hasValidString } from "../utils/hasValidString.js";
 
+/**
+ * Controller relacionado a operações de funcionários.
+ * @method getAllEmployeesData
+ * @method getEmployeeData
+ * @method createNewEmployee
+ * @method removeEmployeeData
+ * @method updateEmployeeData
+ * @see EmployeeService
+ */
 class EmployeeController {
   private _employeeService: EmployeeService;
 
@@ -35,24 +54,23 @@ class EmployeeController {
   }
 
   async getEmployeeData(req: Request, res: Response): Promise<Response> {
-    try {
-      const { uuid } = req.params;
+    const { employee_uuid } = req.params;
 
-      if (!uuid) {
+    try {
+      if (!hasValidString(employee_uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["employee_uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      const employeeData = await this._employeeService.getEmployeeData(
-        uuid as string,
-      );
+      const employeeData =
+        await this._employeeService.getEmployeeData(employee_uuid);
 
       return res
         .status(200)
@@ -69,20 +87,16 @@ class EmployeeController {
   }
 
   async createNewEmployee(req: Request, res: Response): Promise<Response> {
-    try {
-      const newEmployeeData = req.body;
-      const fields = Object.keys(newEmployeeData);
+    const newEmployeeData = req.body as IEmployeeCreate;
 
-      if (isMissingFields(newEmployeeData)) {
+    try {
+      const { isMissingFields, requiredFieldsMessage, schemaErr } =
+        checkMissingFields(newEmployeeData, EmployeeCreateSchema);
+
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
       const newEmployee =
@@ -105,21 +119,21 @@ class EmployeeController {
 
   async removeEmployeeData(req: Request, res: Response): Promise<Response> {
     try {
-      const { uuid } = req.params;
+      const { employee_uuid } = req.params;
 
-      if (!uuid) {
+      if (!hasValidString(employee_uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      await this._employeeService.removeEmployeeData(uuid as string);
+      await this._employeeService.removeEmployeeData(employee_uuid);
 
       return res
         .status(200)
@@ -132,37 +146,26 @@ class EmployeeController {
 
   async updateEmployeeData(req: Request, res: Response): Promise<Response> {
     try {
-      const updateEmployeeValues = req.body;
-      const { uuid } = req.params;
-      const fields = Object.keys(updateEmployeeValues);
+      const updateEmployeeValues = req.body as IEmployeeUpdate;
+      const { employee_uuid } = req.params;
+      const { schemaErr, isMissingFields, requiredFieldsMessage } =
+        checkMissingFields(updateEmployeeValues, EmployeeUpdateSchema);
 
-      if (!uuid) {
+      if (!hasValidString(employee_uuid)) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
-      if (isMissingFields(updateEmployeeValues)) {
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
       const updatedEmployee = await this._employeeService.updateEmployeeData(
         updateEmployeeValues,
-        uuid as string,
+        employee_uuid,
       );
 
       return res
@@ -184,14 +187,14 @@ class EmployeeController {
     res: Response,
   ): Promise<Response> {
     try {
-      const { uuid } = req.params;
+      const { employee_uuid } = req.params;
 
-      if (!uuid) {
+      if (!hasValidString(employee_uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["employee_uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -200,7 +203,7 @@ class EmployeeController {
 
       const updatedEmployeeActivity =
         await this._employeeService.incrementEmployeeActivitiesQuantity(
-          uuid as string,
+          employee_uuid,
         );
 
       return res
@@ -221,29 +224,16 @@ class EmployeeController {
     req: Request,
     res: Response,
   ): Promise<Response> {
+    const { employee_uuid } = req.params;
+    const { products_quantity } = req.body as { products_quantity: number };
+
     try {
-      const { uuid } = req.params;
-      const { productsQuantity } = req.body;
-      const productData = { productsQuantity };
-
-      if (!uuid) {
+      if (!hasValidString(employee_uuid) || !isNumber(products_quantity)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
-      }
-
-      if (isMissingFields(productData)) {
-        return res
-          .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["productsQuantity"]),
+              REQUIRED_FIELDS_MESSAGE(["employee_uuid", "products_quantity"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -252,8 +242,8 @@ class EmployeeController {
 
       const updatedEmployee =
         await this._employeeService.incrementEmployeeProductsProducedQuantity(
-          uuid as string,
-          productsQuantity,
+          employee_uuid,
+          products_quantity,
         );
 
       return res

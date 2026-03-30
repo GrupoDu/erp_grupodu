@@ -4,25 +4,31 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
-import isMissingFields from "../utils/isMissingFields.js";
-import {
-  ARBITRARY_FIELDS_MESSAGE,
-  MISSING_FIELDS_MESSAGE,
-} from "../constants/messages.constants.js";
+import type { IUserLogin } from "../types/auth.interface.js";
+import checkMissingFields from "../utils/checkMissingFields.js";
+import { UserLoginSchema } from "../schemas/auth.schema.js";
+import debbugLogger from "../utils/debugLogger.js";
 
 dotenv.config();
 
-const ACCESS_TOKEN_EXPIRY_MIN = 120;
-const ACCESS_TOKEN_EXPIRY_MS = ACCESS_TOKEN_EXPIRY_MIN * 60 * 1000;
-
-const REFRESH_TOKEN_EXPIRY_DAYS = 7;
-const REFRESH_TOKEN_EXPIRY_MS = REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
-
+/**
+ * Controller responsável por autenticação e autorização.
+ * @see AuthService
+ * @method userLogin
+ * @method refresh
+ * @method userLogout
+ */
 class AuthController {
-  private authService: AuthService;
+  private _authService: AuthService;
+  private static ACCESS_TOKEN_EXPIRY_MIN = 120;
+  private static ACCESS_TOKEN_EXPIRY_MS =
+    AuthController.ACCESS_TOKEN_EXPIRY_MIN * 60 * 1000;
+  private static REFRESH_TOKEN_EXPIRY_DAYS = 7;
+  private static REFRESH_TOKEN_EXPIRY_MS =
+    AuthController.REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
 
   constructor(authService: AuthService) {
-    this.authService = authService;
+    this._authService = authService;
   }
 
   private getCookieOptions(): CookieOptions {
@@ -36,24 +42,21 @@ class AuthController {
   }
 
   async userLogin(req: Request, res: Response) {
-    try {
-      const { email, password, user_type } = req.body;
-      const loginData = { email, password, user_type };
+    const { email, password, user_type } = req.body as IUserLogin;
 
-      if (isMissingFields(loginData)) {
+    try {
+      const loginValues = { email, password, user_type };
+      const { schemaErr, isMissingFields, requiredFieldsMessage } =
+        checkMissingFields(loginValues, UserLoginSchema);
+
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["email", "password", "user_type"]),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
       const { user, accessToken, refreshToken } =
-        await this.authService.userLogin(email, password, user_type);
+        await this._authService.userLogin(email, password, user_type);
 
       const cookieOptions = this.getCookieOptions();
 
@@ -61,29 +64,30 @@ class AuthController {
         .status(200)
         .cookie("access_token", accessToken, {
           ...cookieOptions,
-          maxAge: ACCESS_TOKEN_EXPIRY_MS,
+          maxAge: AuthController.ACCESS_TOKEN_EXPIRY_MS,
         })
         .cookie("refresh_token", refreshToken, {
           ...cookieOptions,
-          maxAge: REFRESH_TOKEN_EXPIRY_MS,
+          maxAge: AuthController.REFRESH_TOKEN_EXPIRY_MS,
         })
         .json(successResponseWith({ user }, "Usuário logado com sucesso."));
     } catch (err) {
       const error = err as Error;
       const isInvalidCredentials = error.message === "Credenciais inválidas.";
+
       if (isInvalidCredentials) {
         return res.status(401).json(errorResponseWith(error.message, 401));
       }
+
       return res.status(500).json(errorResponseWith(error.message, 500));
     }
   }
 
   async refresh(req: Request, res: Response) {
-    try {
-      const refreshToken = req.cookies.refresh_token;
+    const refreshToken = String(req.cookies.refresh_token);
 
-      const isRefreshTokenMissing = !refreshToken;
-      if (isRefreshTokenMissing) {
+    try {
+      if (!refreshToken) {
         return res
           .status(401)
           .json(errorResponseWith("Refresh token não fornecido.", 401));
@@ -91,18 +95,18 @@ class AuthController {
 
       // O service agora retorna AMBOS os tokens (rotação)
       const { accessToken, refreshToken: newRefreshToken } =
-        await this.authService.refreshAccessToken(refreshToken);
+        await this._authService.refreshAccessToken(refreshToken);
 
       const cookieOptions = this.getCookieOptions();
 
       res
         .cookie("access_token", accessToken, {
           ...cookieOptions,
-          maxAge: ACCESS_TOKEN_EXPIRY_MS,
+          maxAge: AuthController.ACCESS_TOKEN_EXPIRY_MS,
         })
         .cookie("refresh_token", newRefreshToken, {
           ...cookieOptions,
-          maxAge: REFRESH_TOKEN_EXPIRY_MS,
+          maxAge: AuthController.REFRESH_TOKEN_EXPIRY_MS,
         });
 
       return res
@@ -112,6 +116,7 @@ class AuthController {
       // Em caso de erro, limpa os cookies por segurança
       res.clearCookie("access_token");
       res.clearCookie("refresh_token");
+
       return res
         .status(401)
         .json(
@@ -127,11 +132,11 @@ class AuthController {
   async userLogout(req: Request, res: Response): Promise<Response> {
     try {
       const token = req.tokenResponse;
-      console.log("token usado no logout: ", token);
+      debbugLogger([`token usado no logout: ${JSON.stringify(token)}`]);
 
       const isRefreshToken = token?.token_type === "refresh";
       if (isRefreshToken) {
-        await this.authService.revokeRefreshToken(token.token);
+        await this._authService.revokeRefreshToken(token.token);
       }
 
       const cookieOptions = this.getCookieOptions();
@@ -144,59 +149,17 @@ class AuthController {
         .status(200)
         .json(successResponseWith(null, "Usuário deslogado com sucesso."));
     } catch (err) {
+      const error = err as Error;
       return res
         .status(500)
-        .json(
-          errorResponseWith(
-            "Erro ao fazer logout.",
-            500,
-            (err as Error).message,
-          ),
-        );
-    }
-  }
-
-  async logoutAll(req: Request, res: Response) {
-    try {
-      const userId = (req as any).user?.user_id;
-      const isUserIdMissing = !userId;
-      if (isUserIdMissing) {
-        return res
-          .status(401)
-          .json(errorResponseWith("Usuário não autenticado.", 401));
-      }
-
-      await this.authService.revokeAllUserRefreshTokens(userId);
-
-      const cookieOptions = this.getCookieOptions();
-
-      res
-        .clearCookie("access_token", cookieOptions)
-        .clearCookie("refresh_token", cookieOptions);
-
-      return res
-        .status(200)
-        .json(
-          successResponseWith(null, "Todos os dispositivos desconectados."),
-        );
-    } catch (err) {
-      return res
-        .status(500)
-        .json(
-          errorResponseWith(
-            "Erro ao desconectar dispositivos.",
-            500,
-            (err as Error).message,
-          ),
-        );
+        .json(errorResponseWith("Erro ao fazer logout.", 500, error.message));
     }
   }
 
   isTokenStillValid(req: Request, res: Response) {
     const token = req.tokenResponse?.token;
 
-    const isTokenMissing = !token;
-    if (isTokenMissing) {
+    if (!token) {
       return res.status(401).json(errorResponseWith("Token inválido.", 401));
     }
 

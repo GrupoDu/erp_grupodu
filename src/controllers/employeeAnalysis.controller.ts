@@ -3,10 +3,16 @@ import type EmployeeAnalysisService from "../services/employeeAnalysis.service.j
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
 import {
-  ARBITRARY_FIELDS_MESSAGE,
+  REQUIRED_FIELDS_MESSAGE,
   MISSING_FIELDS_MESSAGE,
 } from "../constants/messages.constants.js";
+import { hasValidString } from "../utils/hasValidString.js";
 
+/**
+ * Controller responsável por gerenciar as operações de análise de funcionários
+ * @see EmployeeAnalysisService
+ * @method getEmployeeActivityAnalysis
+ */
 class EmployeeAnalysisController {
   private _employeeAnalysisService: EmployeeAnalysisService;
 
@@ -18,15 +24,15 @@ class EmployeeAnalysisController {
     req: Request,
     res: Response,
   ): Promise<Response> {
-    try {
-      const { employee_id } = req.body;
+    const { employee_uuid } = req.params;
 
-      if (!employee_id) {
+    try {
+      if (!hasValidString(employee_uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["employee_id"]),
+              REQUIRED_FIELDS_MESSAGE(["employee_uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -35,7 +41,7 @@ class EmployeeAnalysisController {
 
       const employeeAnalysis =
         await this._employeeAnalysisService.employeeActivityAnalysis(
-          employee_id,
+          employee_uuid,
         );
 
       return res

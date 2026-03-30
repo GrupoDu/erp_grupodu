@@ -2,12 +2,14 @@ import type TrelloApiService from "../services/feedback.service.js";
 import type { Request, Response } from "express";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
-import isMissingFields from "../utils/isMissingFields.js";
-import {
-  ARBITRARY_FIELDS_MESSAGE,
-  MISSING_FIELDS_MESSAGE,
-} from "../constants/messages.constants.js";
+import checkMissingFields from "../utils/checkMissingFields.js";
+import { TrelloCardSchema } from "../schemas/trelloCard.schema.js";
 
+/**
+ * Controller responsável por gerenciar as operações relacionadas ao feedback.
+ * @see TrelloApiService
+ * @method createFeedbackCard
+ */
 class TrelloApiController {
   private _trelloApiService: TrelloApiService;
 
@@ -29,23 +31,19 @@ class TrelloApiController {
 
   async createFeedbackCard(req: Request, res: Response): Promise<Response> {
     try {
-      const cardData = req.body;
+      const cardData = req.body as ICardParams;
+      const { isMissingFields, requiredFieldsMessage, schemaErr } =
+        checkMissingFields(cardData, TrelloCardSchema);
 
-      if (isMissingFields(cardData)) {
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["card_name", "card_description"]),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
       const newCard = await this._trelloApiService.createFeedbackCard(
-        cardData.card_name as string,
-        cardData.card_description as string,
+        cardData.card_name,
+        cardData.card_description,
       );
 
       return res
@@ -66,6 +64,11 @@ class TrelloApiController {
         );
     }
   }
+}
+
+interface ICardParams extends Record<string, unknown> {
+  card_name: string;
+  card_description: string;
 }
 
 export default TrelloApiController;

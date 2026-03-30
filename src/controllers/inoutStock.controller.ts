@@ -3,21 +3,29 @@ import type { Request, Response } from "express";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
 import {
-  ARBITRARY_FIELDS_MESSAGE,
+  REQUIRED_FIELDS_MESSAGE,
   MISSING_FIELDS_MESSAGE,
 } from "../constants/messages.constants.js";
+import { isNumber } from "class-validator";
 
+/**
+ * Controller responsável por gerenciar as operações de estoque.
+ * @see InOutStockService
+ * @method getInOutStockAnalysis
+ * @method incrementMonthlyInStockQuantity
+ * @method incrementMonthlyOutStockQuantity
+ */
 class InOutStockController {
-  private inoutStockService: InOutStockService;
+  private _inoutStockService: InOutStockService;
 
   constructor(inoutStockService: InOutStockService) {
-    this.inoutStockService = inoutStockService;
+    this._inoutStockService = inoutStockService;
   }
 
   async getInOutStockAnalysis(req: Request, res: Response): Promise<Response> {
     try {
       const inOutStockAnalysis =
-        await this.inoutStockService.getInOutStockAnalysis();
+        await this._inoutStockService.getInOutStockAnalysis();
 
       return res
         .status(200)
@@ -37,22 +45,22 @@ class InOutStockController {
     req: Request,
     res: Response,
   ): Promise<Response> {
-    const { quantity } = req.body;
+    const { quantity } = req.body as { quantity: number };
 
     try {
-      if (!quantity) {
+      if (!quantity || !isNumber(quantity)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["quantity"]),
+              REQUIRED_FIELDS_MESSAGE(["quantity"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      await this.inoutStockService.incrementMonthlyInStockQuantity(quantity);
+      await this._inoutStockService.incrementMonthlyInStockQuantity(quantity);
 
       return res
         .status(200)
@@ -67,22 +75,22 @@ class InOutStockController {
     req: Request,
     res: Response,
   ): Promise<Response> {
-    const { quantity } = req.body;
+    const { quantity } = req.body as { quantity: number };
 
     try {
-      if (!quantity) {
+      if (!quantity || !isNumber(quantity)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["quantity"]),
+              REQUIRED_FIELDS_MESSAGE(["quantity"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      await this.inoutStockService.incrementMonthlyOutStockQuantity(quantity);
+      await this._inoutStockService.incrementMonthlyOutStockQuantity(quantity);
 
       return res
         .status(200)

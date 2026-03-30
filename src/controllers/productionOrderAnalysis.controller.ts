@@ -3,11 +3,16 @@ import type RegisterAnalysisService from "../services/productionOrderAnalysis.se
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
 
+/**
+ * Controller responsável por gerenciar a análise de ordem de produção.
+ * @see RegisterAnalysisService
+ * @method getProductionOrderAnalysis
+ */
 class ProductionOrderAnalysisController {
-  private registerAnalysisService: RegisterAnalysisService;
+  private _registerAnalysisService: RegisterAnalysisService;
 
   constructor(registerAnalysisService: RegisterAnalysisService) {
-    this.registerAnalysisService = registerAnalysisService;
+    this._registerAnalysisService = registerAnalysisService;
   }
 
   async getProductionOrderAnalysis(
@@ -16,9 +21,13 @@ class ProductionOrderAnalysisController {
   ): Promise<Response> {
     try {
       const registersDataAnalysis =
-        await this.registerAnalysisService.registerDataAnalysis();
+        await this._registerAnalysisService.registerDataAnalysis();
+      const hasNoDeliveredRegister =
+        registersDataAnalysis.deliveredRegisterQuantity < 0;
+      const hasNoNotDeliveredRegisters =
+        registersDataAnalysis.notDeliveredRegisterQuantity < 0;
 
-      if (registersDataAnalysis.deliveredRegisterQuantity < 0) {
+      if (hasNoDeliveredRegister) {
         return res
           .status(200)
           .json(
@@ -29,7 +38,7 @@ class ProductionOrderAnalysisController {
           );
       }
 
-      if (registersDataAnalysis.notDeliveredRegisterQuantity < 0) {
+      if (hasNoNotDeliveredRegisters) {
         return res
           .status(200)
           .json(

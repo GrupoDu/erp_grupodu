@@ -2,50 +2,45 @@ import type { Request, Response } from "express";
 import type DeliverProductionOrderService from "../services/deliverProductionOrder.service.js";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
-import isMissingFields from "../utils/isMissingFields.js";
-import {
-  ARBITRARY_FIELDS_MESSAGE,
-  MISSING_FIELDS_MESSAGE,
-} from "../constants/messages.constants.js";
+import { DeliverProductionOrderSchema } from "../schemas/deliverProductionOrder.schema.js";
+import checkMissingFields from "../utils/checkMissingFields.js";
+import { hasValidString } from "../utils/hasValidString.js";
 
+/**
+ * Controller responsável por gerenciar a quantidade de produtos entregues.
+ * @see DeliverProductionOrderService
+ * @method deliverProductionOrder
+ */
 class DeliverProductionOrderController {
-  private deliverProductionOrderService: DeliverProductionOrderService;
+  private _deliverProductionOrderService: DeliverProductionOrderService;
 
   constructor(deliverProductionOrderService: DeliverProductionOrderService) {
-    this.deliverProductionOrderService = deliverProductionOrderService;
+    this._deliverProductionOrderService = deliverProductionOrderService;
   }
 
   async deliverProductionOrder(req: Request, res: Response): Promise<Response> {
-    try {
-      const { production_order_id } = req.params;
-      const { delivered_product_quantity, requested_product_quantity } =
-        req.body;
-      const deliveryData = {
-        delivered_product_quantity,
-        requested_product_quantity,
-      };
+    const { production_order_id } = req.params;
+    const { delivered_product_quantity, requested_product_quantity } =
+      req.body as IDeliverValuesType;
+    const deliveryData = {
+      delivered_product_quantity,
+      requested_product_quantity,
+    };
+    const { isMissingFields, requiredFieldsMessage, schemaErr } =
+      checkMissingFields(deliveryData, DeliverProductionOrderSchema);
 
-      if (isMissingFields(deliveryData) || !production_order_id) {
+    try {
+      if (!hasValidString(production_order_id) || isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE([
-                "delivered_product_quantity",
-                "requested_product_quantity",
-                "prodution_order_id",
-              ]),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
       const deliveredProductionOrder =
-        await this.deliverProductionOrderService.deliverProductionOrder(
-          production_order_id as string,
-          delivered_product_quantity as number,
-          requested_product_quantity as number,
+        await this._deliverProductionOrderService.deliverProductionOrder(
+          production_order_id,
+          delivered_product_quantity,
+          requested_product_quantity,
         );
 
       return res
@@ -58,13 +53,20 @@ class DeliverProductionOrderController {
         );
     } catch (err) {
       const error = err as Error;
+      const assistantsTaskNotDelivered =
+        error.message.includes("não concluíram");
 
-      if (error.message.includes("não concluíram"))
+      if (assistantsTaskNotDelivered)
         return res.status(400).json(errorResponseWith(error.message, 400));
 
       return res.status(500).json(errorResponseWith(error.message, 500));
     }
   }
+}
+
+interface IDeliverValuesType {
+  delivered_product_quantity: number;
+  requested_product_quantity: number;
 }
 
 export default DeliverProductionOrderController;

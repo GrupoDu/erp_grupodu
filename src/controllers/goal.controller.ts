@@ -2,22 +2,37 @@ import type { Request, Response } from "express";
 import type GoalService from "../services/goal.service.js";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
-import isMissingFields from "../utils/isMissingFields.js";
 import {
-  ARBITRARY_FIELDS_MESSAGE,
+  REQUIRED_FIELDS_MESSAGE,
   MISSING_FIELDS_MESSAGE,
 } from "../constants/messages.constants.js";
+import type {
+  IGoal,
+  IGoalCreate,
+  IGoalUpdate,
+} from "../types/goal.interface.js";
+import checkMissingFields from "../utils/checkMissingFields.js";
+import { GoalSchema, GoalUpdateSchema } from "../schemas/goal.schema.js";
+import { hasValidString } from "../utils/hasValidString.js";
 
+/**
+ * Controller responsável por gerenciar as operações relacionadas a meta.
+ * @see GoalService
+ * @method getAllGoalsData
+ * @method createNewGoal
+ * @method removeGoalData
+ * @method updateGoalData
+ */
 class GoalController {
-  private goalService: GoalService;
+  private _goalService: GoalService;
 
   constructor(goalService: GoalService) {
-    this.goalService = goalService;
+    this._goalService = goalService;
   }
 
   async getAllGoalsData(req: Request, res: Response): Promise<Response> {
     try {
-      const allGoalsData = await this.goalService.getAllGoalsData();
+      const allGoalsData = await this._goalService.getAllGoalsData();
 
       return res
         .status(200)
@@ -31,23 +46,19 @@ class GoalController {
   }
 
   async createNewGoal(req: Request, res: Response): Promise<Response> {
-    try {
-      const newGoalInfos = req.body;
-      const fields = Object.keys(newGoalInfos);
+    const newGoalInfos = req.body as IGoalCreate;
 
-      if (isMissingFields(newGoalInfos)) {
+    try {
+      const { requiredFieldsMessage, isMissingFields, schemaErr } =
+        checkMissingFields(newGoalInfos, GoalSchema);
+
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
-      const newGoal = await this.goalService.createNewGoal(newGoalInfos);
+      const newGoal = await this._goalService.createNewGoal(newGoalInfos);
 
       return res
         .status(201)
@@ -60,21 +71,21 @@ class GoalController {
 
   async removeGoalData(req: Request, res: Response): Promise<Response> {
     try {
-      const { uuid } = req.params;
+      const { goal_uuid } = req.params;
 
-      if (!uuid) {
+      if (!hasValidString(goal_uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["goal_uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      await this.goalService.deleteGoal(uuid as string);
+      await this._goalService.deleteGoal(goal_uuid);
 
       return res
         .status(200)
@@ -91,38 +102,34 @@ class GoalController {
   }
 
   async updateGoalData(req: Request, res: Response): Promise<Response> {
+    const updateGoalValues = req.body as IGoalUpdate;
+    const { goal_uuid } = req.params;
+
     try {
-      const updateGoalValues = req.body;
-      const { uuid } = req.params;
-      const fields = Object.keys(updateGoalValues);
+      const { requiredFieldsMessage, schemaErr, isMissingFields } =
+        checkMissingFields(updateGoalValues, GoalUpdateSchema);
 
-      if (!uuid) {
+      if (!hasValidString(goal_uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["goal_uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      if (isMissingFields(updateGoalValues)) {
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
-      const updatedGoal = await this.goalService.updateGoalData(
+      const updatedGoal = await this._goalService.updateGoalData(
         updateGoalValues,
-        uuid as string,
+        goal_uuid,
       );
 
       return res

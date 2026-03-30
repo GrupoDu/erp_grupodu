@@ -3,16 +3,21 @@ import type GoalsAnalysisService from "../services/goalsAnalysis.service.js";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
 
+/**
+ * Controller responsável por gerenciar as operações relacionadas à análise de metas.
+ * @see GoalsAnalysisService
+ * @method getGoalsAnalysis
+ */
 class GoalsAnalysisController {
-  private goalsAnalysisService: GoalsAnalysisService;
+  private _goalsAnalysisService: GoalsAnalysisService;
 
   constructor(goalsAnalysisService: GoalsAnalysisService) {
-    this.goalsAnalysisService = goalsAnalysisService;
+    this._goalsAnalysisService = goalsAnalysisService;
   }
 
   async getGoalsAnalysis(req: Request, res: Response) {
     try {
-      const goalsAnalysis = await this.goalsAnalysisService.getGoalsAnalysis();
+      const goalsAnalysis = await this._goalsAnalysisService.getGoalsAnalysis();
 
       return res
         .status(200)
