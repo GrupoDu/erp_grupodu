@@ -2,15 +2,20 @@ import type { PrismaClient } from "../../generated/prisma/client.js";
 import type { IGoal } from "../types/goal.interface.js";
 import { getTodayDate } from "../utils/getTodayDate.js";
 
+/**
+ * Service responsável por gerenciar análises de metas.
+ * @see GoalsAnalysisController
+ * @method getGoalsAnalysis
+ */
 class GoalsAnalysisService {
-  private prisma: PrismaClient;
+  private _prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
+    this._prisma = prisma;
   }
 
   async getGoalsAnalysis() {
-    const allGoals: IGoal[] = await this.prisma.goals.findMany({
+    const allGoals: IGoal[] = await this._prisma.goals.findMany({
       where: {
         goal_deadline: {
           gte: new Date(

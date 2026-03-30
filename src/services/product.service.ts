@@ -7,21 +7,30 @@ import type {
 import type { PrismaClient } from "../../generated/prisma/client.js";
 import removeUndefinedUpdateFields from "../utils/removeUndefinedUpdateFields.utils.js";
 
+/**
+ * Service responsável por gerenciar produtos.
+ * @see ProductController
+ * @method getAllProductsData
+ * @method getProductById
+ * @method registerNewProduct
+ * @method updateProductData
+ * @method deleteProduct
+ */
 class ProductService {
-  private prisma: PrismaClient;
+  private _prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
+    this._prisma = prisma;
   }
 
   async getAllProductsData(): Promise<IProduct[]> {
-    const allProducts: IProduct[] = await this.prisma.products.findMany();
+    const allProducts: IProduct[] = await this._prisma.products.findMany();
 
     return allProducts;
   }
 
   async getProductById(product_uuid: string): Promise<IProduct> {
-    const product: IProduct | null = await this.prisma.products.findUnique({
+    const product: IProduct | null = await this._prisma.products.findUnique({
       where: {
         uuid: product_uuid,
       },
@@ -39,7 +48,7 @@ class ProductService {
       throw new Error(responseMessages.fillAllFieldMessage);
     }
 
-    const newProduct: IProduct = await this.prisma.products.create({
+    const newProduct: IProduct = await this._prisma.products.create({
       data: newProductData,
     });
 
@@ -58,7 +67,7 @@ class ProductService {
     if (Object.keys(updateFields).length < 1)
       throw new Error("Nenhum campo fornecido");
 
-    const updatedProduct: IProduct = await this.prisma.products.update({
+    const updatedProduct: IProduct = await this._prisma.products.update({
       where: {
         uuid: productUuid,
       },
@@ -69,7 +78,7 @@ class ProductService {
   }
 
   async deleteProduct(productUuid: string): Promise<string> {
-    await this.prisma.products.delete({
+    await this._prisma.products.delete({
       where: {
         uuid: productUuid,
       },

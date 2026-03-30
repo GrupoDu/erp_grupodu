@@ -7,34 +7,40 @@ import type {
 import { responseMessages } from "../constants/messages.constants.js";
 import removeUndefinedUpdateFields from "../utils/removeUndefinedUpdateFields.utils.js";
 
+/**
+ * Service de gestão de dados de empregados.
+ * @see EmployeeController
+ * @method getAllEmployeesData
+ * @method getEmployeeDataById
+ */
 class EmployeeService {
-  private prisma: PrismaClient;
+  private _prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
+    this._prisma = prisma;
   }
 
   async getAllEmployeesData(): Promise<IEmployee[]> {
-    const allEmployeesData: IEmployee[] = await this.prisma.employees.findMany({
-      orderBy: {
-        name: "asc",
+    const allEmployeesData: IEmployee[] = await this._prisma.employees.findMany(
+      {
+        orderBy: {
+          name: "asc",
+        },
       },
-    });
+    );
 
-    if (!allEmployeesData) {
-      throw new Error("Nenhum funcionário encontrado.");
-    }
+    if (!allEmployeesData) throw new Error("Nenhum funcionário encontrado.");
 
     return allEmployeesData;
   }
 
-  async getEmployeeData(employeeUuid: string): Promise<IEmployee> {
+  async getEmployeeDataById(employeeUuid: string): Promise<IEmployee> {
     if (!employeeUuid) {
       throw new Error("ID do funcionário nao fornecido.");
     }
 
     const employeeData: IEmployee | null =
-      await this.prisma.employees.findUnique({
+      await this._prisma.employees.findUnique({
         where: {
           employee_id: employeeUuid,
         },
@@ -54,11 +60,9 @@ class EmployeeService {
   }
 
   async registerNewEmployee(employeeData: IEmployeeCreate): Promise<IEmployee> {
-    if (!employeeData) {
-      throw new Error(responseMessages.fillAllFieldMessage);
-    }
+    if (!employeeData) throw new Error(responseMessages.fillAllFieldMessage);
 
-    const newEmployee: IEmployee = await this.prisma.employees.create({
+    const newEmployee: IEmployee = await this._prisma.employees.create({
       data: employeeData,
     });
 
@@ -69,15 +73,13 @@ class EmployeeService {
     employeeNewData: IEmployeeUpdate,
     employeeUuid: string,
   ): Promise<IEmployee> {
-    if (!employeeUuid) {
-      throw new Error(responseMessages.fillAllFieldMessage);
-    }
+    if (!employeeUuid) throw new Error(responseMessages.fillAllFieldMessage);
 
     const updateFields = removeUndefinedUpdateFields(employeeNewData);
 
     if (updateFields.length < 1) throw new Error("Nenhum campo fornecido.");
 
-    const updatedEmployee: IEmployee = await this.prisma.employees.update({
+    const updatedEmployee: IEmployee = await this._prisma.employees.update({
       where: {
         employee_id: employeeUuid as string,
       },
@@ -92,7 +94,7 @@ class EmployeeService {
       throw new Error(responseMessages.fillAllFieldMessage);
     }
 
-    await this.prisma.employees.delete({
+    await this._prisma.employees.delete({
       where: {
         employee_id: employeeUuid,
       },
@@ -104,13 +106,11 @@ class EmployeeService {
   async incrementEmployeeActivitiesQuantity(
     employeeUuid: string,
   ): Promise<IEmployee> {
-    if (!employeeUuid) {
-      throw new Error("ID do funcionário não fornecido.");
-    }
+    if (!employeeUuid) throw new Error("ID do funcionário não fornecido.");
 
-    const updatedEmployee: IEmployee = await this.prisma.employees.update({
+    const updatedEmployee: IEmployee = await this._prisma.employees.update({
       where: {
-        employee_id: employeeUuid as string,
+        employee_id: employeeUuid,
       },
       data: {
         delivered_activities_quantity: {
@@ -126,21 +126,18 @@ class EmployeeService {
     employeeUuid: string,
     productProducedQuantity: number,
   ): Promise<IEmployee> {
-    if (!employeeUuid) {
-      throw new Error("ID do funcionário não fornecido.");
-    }
+    if (!employeeUuid) throw new Error("ID do funcionário não fornecido.");
 
-    if (!productProducedQuantity) {
+    if (!productProducedQuantity)
       throw new Error(responseMessages.fillAllFieldMessage);
-    }
 
-    const updatedEmployee: IEmployee = await this.prisma.employees.update({
+    const updatedEmployee: IEmployee = await this._prisma.employees.update({
       where: {
-        employee_id: employeeUuid as string,
+        employee_id: employeeUuid,
       },
       data: {
         produced_quantity: {
-          increment: productProducedQuantity as number,
+          increment: productProducedQuantity,
         },
       },
     });

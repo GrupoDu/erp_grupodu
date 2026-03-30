@@ -3,11 +3,16 @@ import { getMonthRange } from "../utils/getMonthRange.util.js";
 import type { IProductionAnalysis } from "../types/dataAnalysis.interface.js";
 import { getTodayDate } from "../utils/getTodayDate.js";
 
+/**
+ * Service responsável por gerenciar análises de produção.
+ * @see ProductionOrderAnalysisController
+ * @method registerDataAnalysis
+ */
 class ProductionOrderAnalysisService {
-  private prisma: PrismaClient;
+  private _prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
+    this._prisma = prisma;
   }
 
   async registerDataAnalysis(): Promise<IProductionAnalysis> {
@@ -29,7 +34,7 @@ class ProductionOrderAnalysisService {
   }
 
   private async getDeliveredRegistersData(): Promise<number> {
-    const deliveredRegistersQuantity = await this.prisma.production_order.count(
+    const deliveredRegistersQuantity = await this._prisma.production_order.count(
       {
         where: {
           production_order_status: "Entregue",
@@ -46,7 +51,7 @@ class ProductionOrderAnalysisService {
 
   private async getNotDeliveredRegistersData(): Promise<number> {
     const notDeliveredRegistersQuantity =
-      await this.prisma.production_order.count({
+      await this._prisma.production_order.count({
         where: {
           production_order_status: "Não entregue",
           production_order_deadline: {
@@ -61,7 +66,7 @@ class ProductionOrderAnalysisService {
 
   private async getPendingRegistersData(): Promise<number> {
     const notDeliveredRegistersQuantity =
-      await this.prisma.production_order.count({
+      await this._prisma.production_order.count({
         where: {
           production_order_status: "Pendente",
           production_order_deadline: {

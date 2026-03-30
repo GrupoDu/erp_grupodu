@@ -1,14 +1,19 @@
 import type { PrismaClient } from "../../generated/prisma/client.js";
 import type { IProductionOrder } from "../types/productionOrder.interface.js";
-import { responseMessages } from "../constants/messages.constants.js";
 import AssistantsPoRegistersService from "./assistantsPoRegisters.service.js";
 
+/**
+ * Service responsável por entregar uma ordem de produção.
+ * @see DeliverProductionOrderController
+ * @see AssistantsPoRegistersService
+ * @method deliverProductionOrder
+ */
 class DeliverProductionOrderService {
-  private prisma: PrismaClient;
+  private _prisma: PrismaClient;
   private assistantsPoRegistersService: AssistantsPoRegistersService;
 
   constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
+    this._prisma = prisma;
     this.assistantsPoRegistersService = new AssistantsPoRegistersService(
       prisma,
     );
@@ -36,7 +41,7 @@ class DeliverProductionOrderService {
     }
 
     const deliveredProductOrder: IProductionOrder =
-      await this.prisma.production_order.update({
+      await this._prisma.production_order.update({
         data: {
           delivered_at: new Date(),
           delivered_product_quantity: delivered_product_quantity,

@@ -38,7 +38,7 @@ class ProductionOrderService {
     return targetProductionOrder;
   }
 
-  async createNewProductionOrder(
+  async createProductionOrder(
     newProductionOrderValues: IProductionOrderCreate,
   ) {
     const newProductionOrder: IProductionOrder =

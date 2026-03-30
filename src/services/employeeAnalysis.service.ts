@@ -4,30 +4,35 @@ import { cacheInstance } from "../utils/cache.util.js";
 import type { IEmployee } from "../types/employee.interface.js";
 import { getMonthRange } from "../utils/getMonthRange.util.js";
 import { getTodayDate } from "../utils/getTodayDate.js";
+import debbugLogger from "../utils/debugLogger.js";
 
+/**
+ * Service para análise de dados de produção de um funcionário.
+ * @see EmployeeAnalysisService
+ * @method employeeActivityAnalysis
+ */
 class EmployeeAnalysisService {
-  private prisma: PrismaClient;
-  private readonly CACHE_TTL = 300;
-  private readonly CACHE_PREFIX = "employee_analysis";
+  private _prisma: PrismaClient;
+  private static readonly CACHE_TTL = 300;
+  private static readonly CACHE_PREFIX = "employee_analysis";
 
   constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
+    this._prisma = prisma;
   }
 
   async employeeActivityAnalysis(
     employee_id: string,
   ): Promise<IEmployeeProductionAnalysis> {
     const month = new Date().getMonth() + 1;
-    const cacheKey = `${this.CACHE_PREFIX}:${employee_id}:${month}`;
+    const cacheKey = `${EmployeeAnalysisService.CACHE_PREFIX}:${employee_id}:${month}`;
     const dataAnalysis = this.getCachedData(cacheKey);
 
     if (dataAnalysis !== undefined) {
-      console.log(`== USANDO CACHE: ${cacheKey} ==`);
+      debbugLogger([`== USANDO CACHE: ${cacheKey} ==`]);
       return dataAnalysis;
     }
 
-    console.log("== CACHE EXPIRADO ==");
-    console.log("== BUSCANDO NOVOS DADOS... =");
+    debbugLogger(["== CACHE EXPIRADO ==", "== BUSCANDO NOVOS DADOS... ="]);
     const newDataAnalysis = await this.saveDataToCache(employee_id);
 
     return newDataAnalysis;
@@ -47,7 +52,7 @@ class EmployeeAnalysisService {
     employee_id: string,
   ): Promise<IEmployeeProductionAnalysis> {
     const month = new Date().getMonth() + 1;
-    const cacheKey = `${this.CACHE_PREFIX}:${employee_id}:${month}`;
+    const cacheKey = `${EmployeeAnalysisService.CACHE_PREFIX}:${employee_id}:${month}`;
     const cache = cacheInstance;
 
     const employeeData: IEmployee = await this.getEmployeeData(employee_id);
@@ -65,10 +70,10 @@ class EmployeeAnalysisService {
       nextMonth: getMonthRange(getTodayDate()).nextMonth,
     };
 
-    cache.set<IEmployeeProductionAnalysis>(
+    cache.set(
       cacheKey,
       fullEmployeeDataAnalysis,
-      this.CACHE_TTL,
+      EmployeeAnalysisService.CACHE_TTL,
     );
 
     return fullEmployeeDataAnalysis;
@@ -97,7 +102,7 @@ class EmployeeAnalysisService {
     status: string,
   ): Promise<number> {
     const employeeDeliveredRegisters: number =
-      await this.prisma.production_order.count({
+      await this._prisma.production_order.count({
         where: {
           employee_uuid: employee_id,
           production_order_status: status,
@@ -112,7 +117,7 @@ class EmployeeAnalysisService {
   }
 
   private async getEmployeeData(employee_id: string): Promise<IEmployee> {
-    const employeeData = await this.prisma.employees.findUnique({
+    const employeeData = await this._prisma.employees.findUnique({
       where: {
         employee_id: employee_id,
       },

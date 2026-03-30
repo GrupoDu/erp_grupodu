@@ -5,22 +5,30 @@ import type {
 } from "../types/assistantsPoRegisters.interface.js";
 import type { PrismaClient } from "../../generated/prisma/client.js";
 
+/**
+ * Service responsável por gerenciar registros de assistentes.
+ * @see AssistantsPoRegistersController
+ * @method getAllAssistantsPORegisters
+ * @method getAssistantsPORegistersByProductionOrderId
+ * @method createAssistantPORegister
+ * @method updateAssistantPORegisterAsDelivered
+ */
 export default class AssistantsPoRegistersService {
-  private prisma: PrismaClient;
+  private _prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
+    this._prisma = prisma;
   }
 
   async getAllAssistantsPORegisters(): Promise<IAssistantsPORegisters[]> {
-    return this.prisma.assistants_po_register.findMany();
+    return this._prisma.assistants_po_register.findMany();
   }
 
   async getAssistantsPORegistersByProductionOrderId(
     production_order_uuid: string,
   ): Promise<IAssistantsPORegisters[]> {
     const assistantPORegisterProductionOrder: IAssistantsPORegisters[] =
-      await this.prisma.assistants_po_register.findMany({
+      await this._prisma.assistants_po_register.findMany({
         where: {
           production_order_uuid,
         },
@@ -33,7 +41,7 @@ export default class AssistantsPoRegistersService {
     newAssistantPORegisterValues: IAssistantsPORegisterCreate,
   ): Promise<IAssistantsPORegisters> {
     const newAssistantPORegister =
-      await this.prisma.assistants_po_register.create({
+      await this._prisma.assistants_po_register.create({
         data: newAssistantPORegisterValues,
       });
 
@@ -43,7 +51,7 @@ export default class AssistantsPoRegistersService {
   async updateAssistantPORegisterAsDelivered(
     identifiers: IAssistantPORegisterIdentifiers,
   ): Promise<string> {
-    await this.prisma.assistants_po_register.updateMany({
+    await this._prisma.assistants_po_register.updateMany({
       where: {
         assistant_uuid: identifiers.assistant_uuid,
         production_order_uuid: identifiers.production_order_uuid,
@@ -60,7 +68,7 @@ export default class AssistantsPoRegistersService {
 
   async isEveryAssistantsPORegistersDone(production_order_id: string) {
     const assistantsPORegisters =
-      await this.prisma.assistants_po_register.findMany({
+      await this._prisma.assistants_po_register.findMany({
         where: {
           production_order_uuid: production_order_id,
         },

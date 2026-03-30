@@ -5,15 +5,24 @@ import type {
   IOrderUpdate,
 } from "../types/orders.interface.js";
 
+/**
+ * Service responsável por gerenciar pedidos.
+ * @see OrdersController
+ * @method getOrders
+ * @method getOrderById
+ * @method createOrder
+ * @method updateOrder
+ * @method updateOrderStatus
+ */
 export default class OrdersService {
-  private prisma: PrismaClient;
+  private _prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
+    this._prisma = prisma;
   }
 
   async getOrders() {
-    return this.prisma.orders.findMany({
+    return this._prisma.orders.findMany({
       orderBy: {
         order_status: "asc",
       },
@@ -21,7 +30,7 @@ export default class OrdersService {
   }
 
   async getOrderById(order_id: string): Promise<IOrder> {
-    const targetOrder: IOrder | null = await this.prisma.orders.findUnique({
+    const targetOrder: IOrder | null = await this._prisma.orders.findUnique({
       where: { order_id },
     });
 
@@ -31,7 +40,7 @@ export default class OrdersService {
   }
 
   async createOrder(order: IOrderCreate) {
-    return this.prisma.orders.create({
+    return this._prisma.orders.create({
       data: {
         ...order,
         order_status: "Ainda não confirmado",
@@ -52,7 +61,7 @@ export default class OrdersService {
     if (Object.keys(updateData).length === 0)
       return this.getOrderById(order_id);
 
-    return this.prisma.orders.update({
+    return this._prisma.orders.update({
       where: { order_id },
       data: updateData,
     });
@@ -77,7 +86,7 @@ export default class OrdersService {
 
     if (!isStatusValid) throw new Error("Invalid status");
 
-    return this.prisma.orders.update({
+    return this._prisma.orders.update({
       where: { order_id },
       data: { order_status: status },
     });

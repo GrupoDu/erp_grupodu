@@ -9,15 +9,25 @@ import { responseMessages } from "../constants/messages.constants.js";
 import removeUndefinedUpdateFields from "../utils/removeUndefinedUpdateFields.utils.js";
 import { isEmailFormatValid } from "../utils/emailFormatValidator.util.js";
 
+/**
+ * Service responsável por gerenciar usuários.
+ * @see UserController
+ * @method getAllUsersData
+ * @method getAllSupervisorsUsers
+ * @method getUserById
+ * @method registerNewUser
+ * @method updateUserData
+ * @method deleteUserData
+ */
 class UserService {
-  private prisma: PrismaClient;
+  private _prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
+    this._prisma = prisma;
   }
 
   async getAllUsersData(): Promise<IUserPublic[]> {
-    const allUsersData: IUserPublic[] = await this.prisma.users.findMany({
+    const allUsersData: IUserPublic[] = await this._prisma.users.findMany({
       select: {
         email: true,
         name: true,
@@ -40,7 +50,7 @@ class UserService {
   }
 
   async getAllSupervisorsUsers(): Promise<IUserPublic[]> {
-    const allSupervisors: IUserPublic[] = await this.prisma.users.findMany({
+    const allSupervisors: IUserPublic[] = await this._prisma.users.findMany({
       where: {
         user_type: "supervisor",
       },
@@ -59,7 +69,7 @@ class UserService {
   async getUserById(user_id: string): Promise<IUserPublic> {
     if (!user_id) throw new Error("ID do usuário não fornecido.");
 
-    const userData = await this.prisma.users.findUnique({
+    const userData = await this._prisma.users.findUnique({
       where: {
         user_id,
       },
@@ -97,7 +107,7 @@ class UserService {
       saltRoundsNumber,
     );
 
-    const newUser: IUserPublic = await this.prisma.users.create({
+    const newUser: IUserPublic = await this._prisma.users.create({
       data: {
         name: userInfos.name,
         email: userInfos.email,
@@ -122,7 +132,7 @@ class UserService {
     if (Object.keys(updateFields).length < 1)
       throw new Error("Nenhum campo fornecido");
 
-    const updatedUser: IUserPublic = await this.prisma.users.update({
+    const updatedUser: IUserPublic = await this._prisma.users.update({
       where: {
         user_id: userUuid,
       },
@@ -139,7 +149,7 @@ class UserService {
   async deleteUserData(userUuid: string): Promise<string> {
     if (!userUuid) throw new Error("ID do usuário não fornecido.");
 
-    const deletedUser = await this.prisma.users.delete({
+    const deletedUser = await this._prisma.users.delete({
       where: {
         user_id: userUuid,
       },
