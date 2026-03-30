@@ -84,8 +84,7 @@ class AuthService {
         select: { user_id: true, user_type: true },
       });
 
-      const isUserMissing = !user;
-      if (isUserMissing) {
+      if (!user) {
         throw new Error("Usuário não encontrado.");
       }
 
