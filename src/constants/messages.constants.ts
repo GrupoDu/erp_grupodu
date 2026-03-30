@@ -13,5 +13,5 @@ export const MISSING_FIELDS_MESSAGE =
  * Retorna uma string com os campos obrigatórios.
  * @param fields
  */
-export const ARBITRARY_FIELDS_MESSAGE = (fields: string[]): string =>
+export const REQUIRED_FIELDS_MESSAGE = (fields: string[]): string =>
   `Campos obrigatórios: ${fields.join(", ")}`;
