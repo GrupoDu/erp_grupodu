@@ -1,10 +1,10 @@
-import express, { Router, type Request, type Response } from "express";
+import { Router, type Request, type Response } from "express";
 import FeedbackController from "../controllers/feedback.controller.js";
 import FeedbackService from "../services/feedback.service.js";
 import { trello } from "../../trello/trello.js";
 import { getTokenMiddleware } from "../middlewares/getToken.middleware.js";
 
-const router: Router = express.Router();
+const router: Router = Router();
 const feedbackService = new FeedbackService(trello);
 const feedbackController = new FeedbackController(feedbackService);
 

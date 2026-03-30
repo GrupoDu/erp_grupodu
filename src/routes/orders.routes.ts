@@ -1,10 +1,10 @@
-import express, { type Request, type Response, type Router } from "express";
+import { Router, type Request, type Response } from "express";
 import OrdersController from "../controllers/orders.controller.js";
 import OrdersService from "../services/orders.service.js";
 import { prisma } from "../../lib/prisma.js";
 import { getTokenMiddleware } from "../middlewares/getToken.middleware.js";
 
-const router: Router = express.Router();
+const router: Router = Router();
 const ordersService = new OrdersService(prisma);
 const ordersController = new OrdersController(ordersService);
 

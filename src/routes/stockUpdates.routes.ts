@@ -1,11 +1,10 @@
-import express from "express";
-import type { Request, Response, Router } from "express";
+import { Router, type Request, type Response } from "express";
 import StockUpdatesController from "../controllers/stockUpdates.controller.js";
 import StockUpdatesService from "../services/stockUpdates.service.js";
 import { prisma } from "../../lib/prisma.js";
 import { getTokenMiddleware } from "../middlewares/getToken.middleware.js";
 
-const router: Router = express.Router();
+const router: Router = Router();
 const stockUpdatesService = new StockUpdatesService(prisma);
 const stockUpdatesController = new StockUpdatesController(stockUpdatesService);
 

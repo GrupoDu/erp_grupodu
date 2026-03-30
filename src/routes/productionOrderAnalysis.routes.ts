@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import { Router } from "express";
 import { type Request, type Response } from "express";
 import RegisterAnalysisService from "../services/productionOrderAnalysis.service.js";
 import { prisma } from "../../lib/prisma.js";
@@ -6,7 +6,7 @@ import RegisterAnalysisController from "../controllers/productionOrderAnalysis.c
 import { adminAuthMiddleware } from "../middlewares/adminAuth.middleware.js";
 import { getTokenMiddleware } from "../middlewares/getToken.middleware.js";
 
-const router: Router = express.Router();
+const router: Router = Router();
 const registerAnalysisService = new RegisterAnalysisService(prisma);
 const registerAnalysisController = new RegisterAnalysisController(
   registerAnalysisService,

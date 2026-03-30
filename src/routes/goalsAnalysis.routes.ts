@@ -1,12 +1,11 @@
-import express from "express";
-import type { Request, Response, Router } from "express";
+import { Router, type Request, type Response } from "express";
 import GoalsAnalysisController from "../controllers/goalsAnalysis.controller.js";
 import GoalsAnalysisService from "../services/goalsAnalysis.service.js";
 import { prisma } from "../../lib/prisma.js";
 import { getTokenMiddleware } from "../middlewares/getToken.middleware.js";
 import { adminAuthMiddleware } from "../middlewares/adminAuth.middleware.js";
 
-const router: Router = express.Router();
+const router: Router = Router();
 const goalsAnalysisService = new GoalsAnalysisService(prisma);
 const goalsAnalysisController = new GoalsAnalysisController(
   goalsAnalysisService,
