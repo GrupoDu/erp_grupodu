@@ -2,13 +2,30 @@ import type { Request, Response } from "express";
 import type ProductionOrderService from "../services/productionOrder.service.js";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
-import type { IProductionOrderCreate } from "../types/productionOrder.interface.js";
-import isMissingFields from "../utils/isMissingFields.js";
+import type {
+  IProductionOrderCreate,
+  IProductionOrderUpdate,
+} from "../types/productionOrder.interface.js";
 import {
-  ARBITRARY_FIELDS_MESSAGE,
+  REQUIRED_FIELDS_MESSAGE,
   MISSING_FIELDS_MESSAGE,
 } from "../constants/messages.constants.js";
+import checkMissingFields from "../utils/checkMissingFields.js";
+import {
+  CreateProductionOrderSchema,
+  UpdateProductionOrderSchema,
+} from "../schemas/productionOrder.schema.js";
+import { hasValidString } from "../utils/hasValidString.js";
 
+/**
+ * Controller responsável por gerenciar as ordens de produção.
+ * @see ProductionOrderService
+ * @method getAllProductionOrders
+ * @method getProductionOrderById
+ * @method createProductionOrder
+ * @method removeProductionOrder
+ * @method updateProductionOrder
+ */
 class ProductionOrderController {
   private _productionOrderService: ProductionOrderService;
 
@@ -39,12 +56,12 @@ class ProductionOrderController {
     const { production_order_id } = req.params;
 
     try {
-      if (!production_order_id) {
+      if (!hasValidString(production_order_id)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["production_order_id"]),
+              REQUIRED_FIELDS_MESSAGE(["production_order_id"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -53,7 +70,7 @@ class ProductionOrderController {
 
       const targetProductionOrder =
         await this._productionOrderService.getProductionOrderById(
-          production_order_id as string,
+          production_order_id,
         );
 
       return res
@@ -61,34 +78,33 @@ class ProductionOrderController {
         .json(
           successResponseWith(
             targetProductionOrder,
-            "Registro encontrado com sucesso.",
+            "Dado encontrado com sucesso.",
           ),
         );
     } catch (err) {
-      const error = err as Error;
+      const error: Error = err as Error;
       return res.status(500).json(errorResponseWith(error.message, 500));
     }
   }
 
   async createProductionOrder(req: Request, res: Response): Promise<Response> {
-    try {
-      const newProductionOrderValues: IProductionOrderCreate = req.body;
-      const fields = Object.keys(newProductionOrderValues);
+    const newProductionOrderValues = req.body as IProductionOrderCreate;
 
-      if (isMissingFields(newProductionOrderValues)) {
+    try {
+      const { isMissingFields, requiredFieldsMessage, schemaErr } =
+        checkMissingFields(
+          newProductionOrderValues,
+          CreateProductionOrderSchema,
+        );
+
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(requiredFieldsMessage, 422, schemaErr));
       }
 
       const newProductionOrder =
-        await this._productionOrderService.createNewProductionOrder(
+        await this._productionOrderService.createProductionOrder(
           newProductionOrderValues,
         );
 
@@ -109,15 +125,15 @@ class ProductionOrderController {
   }
 
   async removeProductionOrder(req: Request, res: Response): Promise<Response> {
-    try {
-      const { production_order_id } = req.params;
+    const { production_order_id } = req.params;
 
-      if (!production_order_id) {
+    try {
+      if (!hasValidString(production_order_id)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["production_order_id"]),
+              REQUIRED_FIELDS_MESSAGE(["production_order_id"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -126,7 +142,7 @@ class ProductionOrderController {
 
       const removeResponse =
         await this._productionOrderService.removeProductionOrder(
-          production_order_id as string,
+          production_order_id,
         );
 
       return res
@@ -144,16 +160,21 @@ class ProductionOrderController {
   }
 
   async updateProductionOrder(req: Request, res: Response): Promise<Response> {
-    try {
-      const ProductionOrderNewValues = req.body;
-      const { production_order_id } = req.params;
+    const ProductionOrderNewValues = req.body as IProductionOrderUpdate;
+    const { production_order_id } = req.params;
 
-      if (!production_order_id) {
+    try {
+      const { isMissingFields, requiredFieldsMessage } = checkMissingFields(
+        ProductionOrderNewValues,
+        UpdateProductionOrderSchema,
+      );
+
+      if (!hasValidString(production_order_id) || isMissingFields) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["production_order_id"]),
+              requiredFieldsMessage,
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -163,7 +184,7 @@ class ProductionOrderController {
       const updatedProductionOrder =
         await this._productionOrderService.updateProductionOrder(
           ProductionOrderNewValues,
-          production_order_id as string,
+          production_order_id,
         );
 
       return res
@@ -180,45 +201,53 @@ class ProductionOrderController {
     }
   }
 
-  async deliverProductionOrder(req: Request, res: Response): Promise<Response> {
-    const { production_order_id } = req.params;
-    const { delivered_product_quantity, requested_product_quantity } = req.body;
-
-    try {
-      const deliveredAndRequestedQuantity = {
-        delivered_product_quantity,
-        requested_product_quantity,
-      };
-      const fields = Object.keys(deliveredAndRequestedQuantity);
-
-      if (isMissingFields(deliveredAndRequestedQuantity)) {
-        return res
-          .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
-      }
-
-      const deliveredProductionOrder =
-        await this._productionOrderService.deliverProductionOrder(
-          production_order_id as string,
-          delivered_product_quantity as number,
-          requested_product_quantity as number,
-        );
-
-      return res.status(200).json({
-        message: "Ordem de produção entregue com sucesso.",
-        update: deliveredProductionOrder,
-      });
-    } catch (err) {
-      const error = err as Error;
-      return res.status(500).json(error.message);
-    }
-  }
+  // async deliverProductionOrder(req: Request, res: Response): Promise<Response> {
+  //   const { production_order_id } = req.params;
+  //   const { delivered_product_quantity, requested_product_quantity } =
+  //     req.body as IDeliverValuesType;
+  //
+  //   try {
+  //     const deliveredAndRequestedQuantity = {
+  //       delivered_product_quantity,
+  //       requested_product_quantity,
+  //     };
+  //     const { requiredFieldsMessage, isMissingFields } = checkMissingFields(
+  //       deliveredAndRequestedQuantity,
+  //       ,
+  //     );
+  //
+  //     if (isMissingFields) {
+  //       return res
+  //         .status(422)
+  //         .json(
+  //           errorResponseWith(
+  //             requiredFieldsMessage,
+  //             422,
+  //             MISSING_FIELDS_MESSAGE,
+  //           ),
+  //         );
+  //     }
+  //
+  //     const deliveredProductionOrder =
+  //       await this._productionOrderService.deliverProductionOrder(
+  //         production_order_id as string,
+  //         delivered_product_quantity,
+  //         requested_product_quantity,
+  //       );
+  //
+  //     return res
+  //       .status(200)
+  //       .json(
+  //         successResponseWith(
+  //           deliveredProductionOrder,
+  //           "Ordem de produção entregue com sucesso.",
+  //         ),
+  //       );
+  //   } catch (err) {
+  //     const error = err as Error;
+  //     return res.status(500).json(errorResponseWith(error.message, 500));
+  //   }
+  // }
 
   async stockProductionValidation(
     req: Request,
@@ -227,12 +256,12 @@ class ProductionOrderController {
     const { production_order_id } = req.params;
 
     try {
-      if (!production_order_id) {
+      if (!hasValidString(production_order_id)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["production_order_id"]),
+              REQUIRED_FIELDS_MESSAGE(["production_order_id"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -240,7 +269,7 @@ class ProductionOrderController {
       }
 
       await this._productionOrderService.stockProductionValidation(
-        production_order_id as string,
+        production_order_id,
       );
 
       return res

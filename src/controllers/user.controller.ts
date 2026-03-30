@@ -3,24 +3,37 @@ import type UserService from "../services/user.service.js";
 import dotenv from "dotenv";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
-import isMissingFields from "../utils/isMissingFields.js";
 import {
-  ARBITRARY_FIELDS_MESSAGE,
+  REQUIRED_FIELDS_MESSAGE,
   MISSING_FIELDS_MESSAGE,
 } from "../constants/messages.constants.js";
+import { hasValidString } from "../utils/hasValidString.js";
+import type { IUserCreate, IUserUpdate } from "../types/user.interface.js";
+import checkMissingFields from "../utils/checkMissingFields.js";
+import { UserCreateSchema, UserUpdateSchema } from "../schemas/user.schema.js";
 
 dotenv.config();
 
+/**
+ * Controller responsável por gerenciar as operações relacionadas ao usuário.
+ * @see UserService
+ * @method getAllUsers
+ * @method getUserById
+ * @method getAllSupervisorsUser
+ * @method createNewUser
+ * @method deleteUser
+ * @method updateUserData
+ */
 class UserController {
-  private userService: UserService;
+  private _userService: UserService;
 
   constructor(userService: UserService) {
-    this.userService = userService;
+    this._userService = userService;
   }
 
   async getAllUsers(req: Request, res: Response): Promise<Response> {
     try {
-      const allUsers = await this.userService.getAllUsersData();
+      const allUsers = await this._userService.getAllUsersData();
 
       return res
         .status(200)
@@ -35,21 +48,21 @@ class UserController {
 
   async getUserById(req: Request, res: Response): Promise<Response> {
     try {
-      const { uuid } = req.params;
+      const { user_uuid } = req.params;
 
-      if (!uuid) {
+      if (!hasValidString(user_uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["user_uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      const userData = await this.userService.getUserById(uuid as string);
+      const userData = await this._userService.getUserById(user_uuid);
 
       return res
         .status(200)
@@ -62,7 +75,7 @@ class UserController {
 
   async getAllSupervisorsUser(req: Request, res: Response): Promise<Response> {
     try {
-      const allSupervisors = await this.userService.getAllSupervisorsUsers();
+      const allSupervisors = await this._userService.getAllSupervisorsUsers();
 
       return res
         .status(200)
@@ -79,23 +92,19 @@ class UserController {
   }
 
   async createNewUser(req: Request, res: Response): Promise<Response> {
-    try {
-      const newUserInfos = req.body;
-      const fields = Object.keys(newUserInfos);
+    const newUserInfos = req.body as IUserCreate;
 
-      if (isMissingFields(newUserInfos)) {
+    try {
+      const { isMissingFields, requiredFieldsMessage, schemaErr } =
+        checkMissingFields(newUserInfos, UserCreateSchema);
+
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
-      const newUser = await this.userService.registerNewUser(newUserInfos);
+      const newUser = await this._userService.registerNewUser(newUserInfos);
 
       return res
         .status(201)
@@ -110,21 +119,21 @@ class UserController {
 
   async deleteUser(req: Request, res: Response): Promise<Response> {
     try {
-      const { uuid } = req.params;
+      const { user_uuid } = req.params;
 
-      if (!uuid) {
+      if (!hasValidString(user_uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["user_uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      await this.userService.deleteUserData(uuid as string);
+      await this._userService.deleteUserData(user_uuid);
 
       return res
         .status(200)
@@ -136,38 +145,34 @@ class UserController {
   }
 
   async updateUserData(req: Request, res: Response): Promise<Response> {
+    const updateInfos = req.body as IUserUpdate;
+    const { user_uuid } = req.params;
+
     try {
-      const updateInfos = req.body;
-      const { uuid } = req.params;
-      const fields = Object.keys(updateInfos);
+      const { isMissingFields, requiredFieldsMessage, schemaErr } =
+        checkMissingFields(updateInfos, UserUpdateSchema);
 
-      if (!uuid) {
+      if (!hasValidString(user_uuid)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(["uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["user_uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
           );
       }
 
-      if (isMissingFields(updateInfos)) {
+      if (isMissingFields) {
         return res
           .status(422)
-          .json(
-            errorResponseWith(
-              ARBITRARY_FIELDS_MESSAGE(fields),
-              422,
-              MISSING_FIELDS_MESSAGE,
-            ),
-          );
+          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
       }
 
-      const updatedUser = await this.userService.updateUserData(
+      const updatedUser = await this._userService.updateUserData(
         updateInfos,
-        uuid as string,
+        user_uuid,
       );
 
       return res
@@ -179,7 +184,7 @@ class UserController {
     }
   }
 
-  async tokenValidator(req: Request, res: Response): Promise<Response> {
+  tokenValidator(req: Request, res: Response): Response {
     try {
       const token = req.tokenResponse?.payload;
 
