@@ -91,9 +91,12 @@ class ProductionOrderController {
     const newProductionOrderValues = req.body as IProductionOrderCreate;
 
     try {
+      const newProductionOrderValuesRecord =
+        newProductionOrderValues as unknown as Record<string, unknown>;
+
       const { isMissingFields, requiredFieldsMessage, schemaErr } =
         checkMissingFields(
-          newProductionOrderValues,
+          newProductionOrderValuesRecord,
           CreateProductionOrderSchema,
         );
 
