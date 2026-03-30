@@ -5,8 +5,8 @@ import type { IErrorResponse } from "../types/response.interface.js";
  *
  * `status` tem `500` como valor padrão.
  *
- * Se for erro de campos faltantes, prefira usar `ARBITRARY_FIELDS_MESSAGE(fields)` como `error`.
- * @see ARBITRARY_FIELDS_MESSAGE
+ * Se for erro de campos faltantes, prefira usar `REQUIRED_FIELDS_MESSAGE(fields)` como `error`.
+ * @see REQUIRED_FIELDS_MESSAGE
  * @param error
  * @param status
  * @param message
