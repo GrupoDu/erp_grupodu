@@ -30,15 +30,13 @@ router.delete(
   "/:employee_uuid",
   getTokenMiddleware,
   adminAuthMiddleware,
-  (req: Request, res: Response) =>
-    employeeController.removeEmployeeData(req, res),
+  (req: Request, res: Response) => employeeController.removeEmployee(req, res),
 );
 router.put(
   "/:employee_uuid",
   getTokenMiddleware,
   adminAuthMiddleware,
-  (req: Request, res: Response) =>
-    employeeController.updateEmployeeData(req, res),
+  (req: Request, res: Response) => employeeController.updateEmployee(req, res),
 );
 router.put(
   "/activity/:employee_uuid",
