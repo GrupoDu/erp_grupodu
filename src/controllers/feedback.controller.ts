@@ -7,28 +7,26 @@ import { TrelloCardSchema } from "../schemas/trelloCard.schema.js";
 
 /**
  * Controller responsável por gerenciar as operações relacionadas ao feedback.
+ *
  * @see TrelloApiService
  * @method createFeedbackCard
  */
 class TrelloApiController {
   private _trelloApiService: TrelloApiService;
 
+  /** @param {TrelloApiService} trelloApiService - Serviço de feedback */
   constructor(trelloApiService: TrelloApiService) {
     this._trelloApiService = trelloApiService;
   }
 
-  // async getAllLists(req: Request, res: Response): Promise<Response> {
-  //   try {
-  //     const lists = await this.trelloApiService.getAllLists();
-  //     return res.status(200).json(lists);
-  //   } catch (err) {
-  //     return res.status(500).json({
-  //       message: "Ocorreu um erro ao buscar as listas.",
-  //       error: (err as Error).message,
-  //     });
-  //   }
-  // }
-
+  /**
+   * Cria um card no Trello com o feedback do usuário.
+   *
+   * @returns {Promise<Response>} - Retorna objeto com mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see TrelloApiService
+   */
   async createFeedbackCard(req: Request, res: Response): Promise<Response> {
     try {
       const cardData = req.body as ICardParams;

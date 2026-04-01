@@ -10,16 +10,26 @@ import { hasValidString } from "../utils/hasValidString.js";
 
 /**
  * Controller responsável por gerenciar as operações de análise de funcionários
+ *
+ * @class EmployeeAnalysisController
  * @see EmployeeAnalysisService
- * @method getEmployeeActivityAnalysis
  */
 class EmployeeAnalysisController {
   private _employeeAnalysisService: EmployeeAnalysisService;
 
+  /** @param {EmployeeAnalysisService} employeeAnalysisService - Serviço de análise de funcionários */
   constructor(employeeAnalysisService: EmployeeAnalysisService) {
     this._employeeAnalysisService = employeeAnalysisService;
   }
 
+  /**
+   * Método responsável por buscar análise de atividade de um funcionário
+   *
+   * @returns {Promise<Response>} - Retorna objeto com mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see EmployeeAnalysisService
+   */
   async getEmployeeActivityAnalysis(
     req: Request,
     res: Response,

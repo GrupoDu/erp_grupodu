@@ -18,19 +18,26 @@ import { hasValidString } from "../utils/hasValidString.js";
 
 /**
  * Controller responsável por registrar atividade dos assistentes
+ *
+ * @class AssistantsPORegistersController
  * @see AssistantsPoRegistersService
- * @method getAllAssistantsPORegisters
- * @method getAssistantsPORegistersByProductionOrderId
- * @method createAssistantPORegister
- * @method updateAssistantPORegisterAsDelivered
  */
 export default class AssistantsPORegistersController {
   private _assistantsPoRegistersService: AssistantsPoRegistersService;
 
+  /** @param {AssistantsPoRegistersService} assistantsPoRegistersService - Serviço de registros de atividade dos assistentes */
   constructor(assistantsPoRegistersService: AssistantsPoRegistersService) {
     this._assistantsPoRegistersService = assistantsPoRegistersService;
   }
 
+  /**
+   * Método responsável por buscar todos os registros de atividade dos assistentes
+   *
+   * @returns {Promise<Response>} Objeto com todos os registros de atividade dos assistentes
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see AssistantsPoRegistersController
+   */
   async getAllAssistantsPORegisters(
     req: Request,
     res: Response,
@@ -53,6 +60,14 @@ export default class AssistantsPORegistersController {
     }
   }
 
+  /**
+   * Método responsável por buscar todos os registros de atividade dos assistentes por ID de produção
+   *
+   * @returns {Promise<Response>} Objeto com todos os registros de atividade dos assistentes por ID de produção
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see AssistantsPoRegistersController
+   */
   async getAssistantsPORegistersByProductionOrderId(
     req: Request,
     res: Response,
@@ -90,6 +105,14 @@ export default class AssistantsPORegistersController {
     }
   }
 
+  /**
+   * Método responsável por criar um novo registro de atividade do assistente
+   *
+   * @returns {Promise<Response>} Objeto com o novo registro de atividade do assistente
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see AssistantsPoRegistersController
+   */
   async createAssistantPORegister(
     req: Request,
     res: Response,
@@ -129,6 +152,14 @@ export default class AssistantsPORegistersController {
     }
   }
 
+  /**
+   * Método responsável por atualizar um registro de atividade do assistente como entregue
+   *
+   * @returns {Promise<Response>} Objeto com o registro de atividade do assistente atualizado
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see AssistantsPoRegistersController
+   */
   async updateAssistantPORegisterAsDelivered(
     req: Request,
     res: Response,

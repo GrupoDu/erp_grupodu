@@ -13,20 +13,26 @@ import { OrderSchema, OrderUpdateSchema } from "../schemas/order.schema.js";
 
 /**
  * Controller responsável por gerenciar pedidos
+ *
+ * @class OrdersController
  * @see OrdersService
- * @method getOrders
- * @method getOrderById
- * @method createOrder
- * @method updateOrder
- * @method updateOrderStatus
  */
 class OrdersController {
   private _ordersService: OrdersService;
 
+  /** @param {OrdersService} ordersService - Instância do serviço de pedidos */
   constructor(ordersService: OrdersService) {
     this._ordersService = ordersService;
   }
 
+  /**
+   * Método responsável por retornar todos os pedidos
+   *
+   * @returns {Promise<Response>} - Objeto com todos os pedidos
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see OrdersController
+   */
   async getOrders(req: Request, res: Response): Promise<Response> {
     try {
       const orders = await this._ordersService.getOrders();
@@ -39,6 +45,13 @@ class OrdersController {
     }
   }
 
+  /**
+   * Método responsável por retornar um pedido por ID
+   *
+   * @returns {Promise<Response>} - Objeto com o pedido encontrado
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   */
   async getOrderById(req: Request, res: Response): Promise<Response> {
     const { order_id } = req.params;
 
@@ -72,6 +85,14 @@ class OrdersController {
     }
   }
 
+  /**
+   * Método responsável por criar um novo pedido
+   *
+   * @returns {Promise<Response>} - Objeto com o pedido criado
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see OrdersController
+   */
   async createOrder(req: Request, res: Response): Promise<Response> {
     try {
       const newOrderData = req.body as IOrderCreate;
@@ -95,6 +116,14 @@ class OrdersController {
     }
   }
 
+  /**
+   * Método responsável por atualizar um pedido
+   *
+   * @returns {Promise<Response>} - Objeto com o pedido atualizado
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see OrdersController
+   */
   async updateOrder(req: Request, res: Response): Promise<Response> {
     const { order_id } = req.params;
     const updateData = req.body as IOrderUpdate;
@@ -150,6 +179,14 @@ class OrdersController {
     }
   }
 
+  /**
+   * Método responsável por atualizar o status de um pedido
+   *
+   * @returns {Promise<Response>} - Objeto com o pedido atualizado
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see OrdersController
+   */
   async updateOrderStatus(req: Request, res: Response): Promise<Response> {
     const { order_id } = req.params;
     const { status } = req.body as { status: string };
@@ -208,6 +245,13 @@ class OrdersController {
     }
   }
 
+  /**
+   * Método responsável por verificar o tipo de erro
+   *
+   * @returns {Object} - Objeto com casos de erros diferentes
+   * @param error {Error}
+   * @private
+   */
   private errorsCase(error: Error) {
     const isOrderOnFinalStatus =
       error.message === "Order is already in final status";

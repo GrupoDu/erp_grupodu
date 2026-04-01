@@ -16,21 +16,26 @@ dotenv.config();
 
 /**
  * Controller responsável por gerenciar as operações relacionadas ao usuário.
+ *
+ * @class UserController
  * @see UserService
- * @method getAllUsers
- * @method getUserById
- * @method getAllSupervisorsUser
- * @method createNewUser
- * @method deleteUser
- * @method updateUserData
  */
 class UserController {
   private _userService: UserService;
 
+  /** @param {UserService} userService - Instância de UserService */
   constructor(userService: UserService) {
     this._userService = userService;
   }
 
+  /**
+   * Método responsável por retorna todos os usuários
+   *
+   * @returns {Promise<Response>} - Objeto com todos os usuários
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see UserService
+   */
   async getAllUsers(req: Request, res: Response): Promise<Response> {
     try {
       const allUsers = await this._userService.getAllUsersData();
@@ -46,6 +51,14 @@ class UserController {
     }
   }
 
+  /**
+   * Método responsável por buscar um usuário pelo seu UUID
+   *
+   * @returns {Promise<Response>} - Objeto com usuário encontrado
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see UserService
+   */
   async getUserById(req: Request, res: Response): Promise<Response> {
     try {
       const { user_uuid } = req.params;
@@ -73,6 +86,14 @@ class UserController {
     }
   }
 
+  /**
+   * Método responsável por buscar todos os supervisores
+   *
+   * @returns {Promise<Response>} - Objeto com todos os supervisores
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see UserController
+   */
   async getAllSupervisorsUser(req: Request, res: Response): Promise<Response> {
     try {
       const allSupervisors = await this._userService.getAllSupervisorsUsers();
@@ -91,6 +112,14 @@ class UserController {
     }
   }
 
+  /**
+   * Método responsável por registrar novo usuário
+   *
+   * @returns {Promise<Response>} - Objeto com usuário registrado
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see UserController
+   */
   async createNewUser(req: Request, res: Response): Promise<Response> {
     const newUserInfos = req.body as IUserCreate;
 
@@ -117,6 +146,14 @@ class UserController {
     }
   }
 
+  /**
+   * Método responsável por remover um usuário
+   *
+   * @returns {Promise<Response>} - Objeto com usuário removido e mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see {UserController}
+   */
   async deleteUser(req: Request, res: Response): Promise<Response> {
     try {
       const { user_uuid } = req.params;
@@ -144,6 +181,14 @@ class UserController {
     }
   }
 
+  /**
+   * Método responsável por atualizar dados de um usuário
+   *
+   * @returns {Promise<Response>} - Objeto com usuário atualizado e mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see {UserController}
+   */
   async updateUserData(req: Request, res: Response): Promise<Response> {
     const updateInfos = req.body as IUserUpdate;
     const { user_uuid } = req.params;
@@ -184,6 +229,14 @@ class UserController {
     }
   }
 
+  /**
+   * Método responsável por validar token
+   *
+   * @returns {Promise<Response>} - Objeto com token válido e mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see UserController
+   */
   tokenValidator(req: Request, res: Response): Response {
     try {
       const token = req.tokenResponse?.payload;

@@ -1,59 +1,43 @@
 import type { Request, Response } from "express";
-import type RegisterAnalysisService from "../services/productionOrderAnalysis.service.js";
+import type ProductionOrderAnalysisService from "../services/productionOrderAnalysis.service.js";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
 
 /**
  * Controller responsável por gerenciar a análise de ordem de produção.
+ *
+ * @class ProductionOrderAnalysisController
  * @see RegisterAnalysisService
- * @method getProductionOrderAnalysis
  */
 class ProductionOrderAnalysisController {
-  private _registerAnalysisService: RegisterAnalysisService;
+  private _productionOrderAnalysisService: ProductionOrderAnalysisService;
 
-  constructor(registerAnalysisService: RegisterAnalysisService) {
-    this._registerAnalysisService = registerAnalysisService;
+  /** @param {ProductionOrderAnalysisService} productionOrderAnalysisService - Instância do serviço de análise de registro */
+  constructor(productionOrderAnalysisService: ProductionOrderAnalysisService) {
+    this._productionOrderAnalysisService = productionOrderAnalysisService;
   }
 
+  /**
+   * Método responsável por buscar análise de ordem de produção.
+   *
+   * @returns {Promise<Response>} - Objeto com análise de ordem de produção
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see {ProductionOrderAnalysisController}
+   */
   async getProductionOrderAnalysis(
     req: Request,
     res: Response,
   ): Promise<Response> {
     try {
-      const registersDataAnalysis =
-        await this._registerAnalysisService.registerDataAnalysis();
-      const hasNoDeliveredRegister =
-        registersDataAnalysis.deliveredRegisterQuantity < 0;
-      const hasNoNotDeliveredRegisters =
-        registersDataAnalysis.notDeliveredRegisterQuantity < 0;
-
-      if (hasNoDeliveredRegister) {
-        return res
-          .status(200)
-          .json(
-            successResponseWith(
-              null,
-              "Não houve ordem de produção entregues esse mês",
-            ),
-          );
-      }
-
-      if (hasNoNotDeliveredRegisters) {
-        return res
-          .status(200)
-          .json(
-            successResponseWith(
-              null,
-              "Não houve ordem de produção não entregues esse mês",
-            ),
-          );
-      }
+      const productionOrderDataAnalysis =
+        await this._productionOrderAnalysisService.productionOrderDataAnalysis();
 
       return res
         .status(200)
         .json(
           successResponseWith(
-            registersDataAnalysis,
+            productionOrderDataAnalysis,
             "Análise de ordem de produção encontrada com sucesso.",
           ),
         );

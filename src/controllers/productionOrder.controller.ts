@@ -11,28 +11,31 @@ import {
   MISSING_FIELDS_MESSAGE,
 } from "../constants/messages.constants.js";
 import checkMissingFields from "../utils/checkMissingFields.js";
-import {
-  CreateProductionOrderSchema,
-  UpdateProductionOrderSchema,
-} from "../schemas/productionOrder.schema.js";
+import { CreateProductionOrderSchema } from "../schemas/productionOrder.schema.js";
 import { hasValidString } from "../utils/hasValidString.js";
 
 /**
  * Controller responsável por gerenciar as ordens de produção.
+ *
+ * @class ProductionOrderController
  * @see ProductionOrderService
- * @method getAllProductionOrders
- * @method getProductionOrderById
- * @method createProductionOrder
- * @method removeProductionOrder
- * @method updateProductionOrder
  */
 class ProductionOrderController {
   private _productionOrderService: ProductionOrderService;
 
+  /** @param {ProductionOrderService} productionOrderService - Instância do serviço de ordem de produção */
   constructor(productionOrderService: ProductionOrderService) {
     this._productionOrderService = productionOrderService;
   }
 
+  /**
+   * Método responsável por buscar todas as ordens de produção
+   *
+   * @returns {Promise<Response>} - Objeto com todas as ordens de produção
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see ProductionOrderController
+   */
   async getAllProductionOrders(req: Request, res: Response): Promise<Response> {
     try {
       const productionOrders =
@@ -52,6 +55,14 @@ class ProductionOrderController {
     }
   }
 
+  /**
+   * Método responsável por buscar uma ordem de produção pelo seu ID
+   *
+   * @returns {Promise<Response>} - Objeto com ordem de produção encontrada
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see {ProductionOrderController}
+   */
   async getProductionOrderById(req: Request, res: Response): Promise<Response> {
     const { production_order_id } = req.params;
 
@@ -87,6 +98,13 @@ class ProductionOrderController {
     }
   }
 
+  /**
+   * Método responável por criar ordem de produção
+   *
+   * @returns {Promise<Response>} - Objeto com ordem de produção criada
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   */
   async createProductionOrder(req: Request, res: Response): Promise<Response> {
     const newProductionOrderValues = req.body as IProductionOrderCreate;
 
@@ -127,6 +145,14 @@ class ProductionOrderController {
     }
   }
 
+  /**
+   * Método responável por remover ordem de produção
+   *
+   * @returns {Promise<Response>} - Objeto com ordem de produção removida
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see {ProductionOrderController}
+   */
   async removeProductionOrder(req: Request, res: Response): Promise<Response> {
     const { production_order_id } = req.params;
 
@@ -162,22 +188,25 @@ class ProductionOrderController {
     }
   }
 
+  /**
+   * Método responsável por atualizar ordem de produção
+   *
+   * @returns {Promise<Response>} - Objeto com ordem de produção atualizada
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see {ProductionOrderController}
+   */
   async updateProductionOrder(req: Request, res: Response): Promise<Response> {
     const ProductionOrderNewValues = req.body as IProductionOrderUpdate;
     const { production_order_id } = req.params;
 
     try {
-      const { isMissingFields, requiredFieldsMessage } = checkMissingFields(
-        ProductionOrderNewValues,
-        UpdateProductionOrderSchema,
-      );
-
-      if (!hasValidString(production_order_id) || isMissingFields) {
+      if (!hasValidString(production_order_id)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              requiredFieldsMessage,
+              REQUIRED_FIELDS_MESSAGE(["production_order_id"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -204,54 +233,14 @@ class ProductionOrderController {
     }
   }
 
-  // async deliverProductionOrder(req: Request, res: Response): Promise<Response> {
-  //   const { production_order_id } = req.params;
-  //   const { delivered_product_quantity, requested_product_quantity } =
-  //     req.body as IDeliverValuesType;
-  //
-  //   try {
-  //     const deliveredAndRequestedQuantity = {
-  //       delivered_product_quantity,
-  //       requested_product_quantity,
-  //     };
-  //     const { requiredFieldsMessage, isMissingFields } = checkMissingFields(
-  //       deliveredAndRequestedQuantity,
-  //       ,
-  //     );
-  //
-  //     if (isMissingFields) {
-  //       return res
-  //         .status(422)
-  //         .json(
-  //           errorResponseWith(
-  //             requiredFieldsMessage,
-  //             422,
-  //             MISSING_FIELDS_MESSAGE,
-  //           ),
-  //         );
-  //     }
-  //
-  //     const deliveredProductionOrder =
-  //       await this._productionOrderService.deliverProductionOrder(
-  //         production_order_id as string,
-  //         delivered_product_quantity,
-  //         requested_product_quantity,
-  //       );
-  //
-  //     return res
-  //       .status(200)
-  //       .json(
-  //         successResponseWith(
-  //           deliveredProductionOrder,
-  //           "Ordem de produção entregue com sucesso.",
-  //         ),
-  //       );
-  //   } catch (err) {
-  //     const error = err as Error;
-  //     return res.status(500).json(errorResponseWith(error.message, 500));
-  //   }
-  // }
-
+  /**
+   * Método responsável por validar estoque de uma ordem de produção
+   *
+   * @returns {Promise<Response>} - Objeto com ordem de produção atualizada
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see {ProductionOrderController}
+   */
   async stockProductionValidation(
     req: Request,
     res: Response,

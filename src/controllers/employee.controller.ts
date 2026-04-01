@@ -20,20 +20,26 @@ import { hasValidString } from "../utils/hasValidString.js";
 
 /**
  * Controller relacionado a operações de funcionários.
- * @method getAllEmployeesData
- * @method getEmployeeData
- * @method createNewEmployee
- * @method removeEmployeeData
- * @method updateEmployeeData
+ *
+ * @class EmployeeController
  * @see EmployeeService
  */
 class EmployeeController {
   private _employeeService: EmployeeService;
 
+  /** @param {EmployeeService} employeeService - Serviço de funcionários */
   constructor(employeeService: EmployeeService) {
     this._employeeService = employeeService;
   }
 
+  /**
+   * Método responsável por retornar dados de todos os funcionários.
+   *
+   * @returns {Promise<Response>} - Objeto com todos os funcionários.
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see EmployeeController
+   */
   async getAllEmployeesData(req: Request, res: Response): Promise<Response> {
     try {
       const allEmployeesData =
@@ -53,6 +59,14 @@ class EmployeeController {
     }
   }
 
+  /**
+   * Método responsável por buscar dados de um funcionário pelo seu UUID.
+   *
+   * @returns {Promise<Response>} - Objeto com todos os dados do funcionário.
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see EmployeeController
+   */
   async getEmployeeDataById(req: Request, res: Response): Promise<Response> {
     const { employee_uuid } = req.params;
 
@@ -86,6 +100,14 @@ class EmployeeController {
     }
   }
 
+  /**
+   * Método responsável por registrar um novo funcionário.
+   *
+   * @returns {Promise<Response>} - Retorna objeto com novo funcionário registrado
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see EmployeeController
+   */
   async createNewEmployee(req: Request, res: Response): Promise<Response> {
     const newEmployeeData = req.body as IEmployeeCreate;
 
@@ -117,7 +139,15 @@ class EmployeeController {
     }
   }
 
-  async removeEmployeeData(req: Request, res: Response): Promise<Response> {
+  /**
+   * Método responsável por remover um funcionário do sistema.
+   *
+   * @returns {Promise<Response>} - Retorna objeto com mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see EmployeeController
+   */
+  async removeEmployee(req: Request, res: Response): Promise<Response> {
     try {
       const { employee_uuid } = req.params;
 
@@ -144,12 +174,20 @@ class EmployeeController {
     }
   }
 
-  async updateEmployeeData(req: Request, res: Response): Promise<Response> {
+  /**
+   * Método responsável por atualizar dados de um funcionário.
+   *
+   * @returns {Promise<Response>} - Retorna objeto com mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see EmployeeController
+   */
+  async updateEmployee(req: Request, res: Response): Promise<Response> {
     try {
-      const updateEmployeeValues = req.body as IEmployeeUpdate;
+      const updatedEmployeeValues = req.body as IEmployeeUpdate;
       const { employee_uuid } = req.params;
       const { schemaErr, isMissingFields, requiredFieldsMessage } =
-        checkMissingFields(updateEmployeeValues, EmployeeUpdateSchema);
+        checkMissingFields(updatedEmployeeValues, EmployeeUpdateSchema);
 
       if (!hasValidString(employee_uuid)) {
         return res
@@ -164,7 +202,7 @@ class EmployeeController {
       }
 
       const updatedEmployee = await this._employeeService.updateEmployeeData(
-        updateEmployeeValues,
+        updatedEmployeeValues,
         employee_uuid,
       );
 
@@ -182,6 +220,14 @@ class EmployeeController {
     }
   }
 
+  /**
+   * Método responsável por incrementar a quantidade de atividades de um funcionário.
+   *
+   * @returns {Promise<Response>} - Retorna objeto com mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see EmployeeController
+   */
   async incrementEmployeeActivityQuantity(
     req: Request,
     res: Response,
@@ -220,6 +266,14 @@ class EmployeeController {
     }
   }
 
+  /**
+   * Método responsável por incrementar a quantidade de produtos produzidos de um funcionário.
+   *
+   * @returns {Promise<Response>} - Retorna objeto com mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see EmployeeController
+   */
   async incrementEmployeeProductsProducedQuantity(
     req: Request,
     res: Response,

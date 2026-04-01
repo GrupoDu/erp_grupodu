@@ -19,20 +19,26 @@ import {
 
 /**
  * Controller responsável por gerenciar produtos
+ *
+ * @class ProductController
  * @see ProductService
- * @method getAllProductsData
- * @method getProductById
- * @method registerProduct
- * @method deleteProduct
- * @method updateProductData
  */
 class ProductController {
   private _productService: ProductService;
 
+  /** @param {ProductService} productService - Instância do serviço de produtos */
   constructor(productService: ProductService) {
     this._productService = productService;
   }
 
+  /**
+   * Retorna todos os produtos
+   *
+   * @returns {Promise<Response>} - Objeto com todos os produtos
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see ProductController
+   */
   async getAllProductsData(req: Request, res: Response): Promise<Response> {
     try {
       const allProducts = await this._productService.getAllProductsData();
@@ -48,6 +54,14 @@ class ProductController {
     }
   }
 
+  /**
+   * Método responsável por buscar um produto pelo seu UUID
+   *
+   * @returns {Promise<Response>} - Objeto com produto encontrado
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see ProductController
+   */
   async getProductById(req: Request, res: Response): Promise<Response> {
     const { product_uuid } = req.params;
 
@@ -75,6 +89,14 @@ class ProductController {
     }
   }
 
+  /**
+   * Método responsável por registrar um novo produto
+   *
+   * @returns {Promise<Response>} - Objeto com produto registrado
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see ProductController
+   */
   async registerProduct(req: Request, res: Response): Promise<Response> {
     const productInfos = req.body as IProductCreate;
 
@@ -108,6 +130,14 @@ class ProductController {
     }
   }
 
+  /**
+   * Método responsável por remover um produto
+   *
+   * @returns {Promise<Response>} - Objeto com produto removido
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see ProductController
+   */
   async deleteProduct(req: Request, res: Response): Promise<Response> {
     try {
       const { product_uuid } = req.params;
@@ -135,6 +165,14 @@ class ProductController {
     }
   }
 
+  /**
+   * Método responsável por atualizar dados de um produto
+   *
+   * @returns {Promise<Response>} - Objeto com produto atualizado
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see ProductController
+   */
   async updateProductData(req: Request, res: Response): Promise<Response> {
     const productNewData = req.body as IProductUpdate;
     const { product_uuid } = req.params;

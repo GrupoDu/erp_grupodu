@@ -13,24 +13,33 @@ dotenv.config();
 
 /**
  * Controller responsável por autenticação e autorização.
+ *
  * @see AuthService
- * @method userLogin
- * @method refresh
- * @method userLogout
+ * @class AuthController
  */
 class AuthController {
   private _authService: AuthService;
-  private static ACCESS_TOKEN_EXPIRY_MIN = 120;
-  private static ACCESS_TOKEN_EXPIRY_MS =
+  /** @readonly Tempo de expiração do token de acesso em minutos */
+  private static readonly ACCESS_TOKEN_EXPIRY_MIN = 120;
+  /** @readonly Tempo de expiração do token de acesso em milissegundos */
+  private static readonly ACCESS_TOKEN_EXPIRY_MS =
     AuthController.ACCESS_TOKEN_EXPIRY_MIN * 60 * 1000;
-  private static REFRESH_TOKEN_EXPIRY_DAYS = 7;
-  private static REFRESH_TOKEN_EXPIRY_MS =
+  /** @readonly Tempo de expiração do refresh token em dias */
+  private static readonly REFRESH_TOKEN_EXPIRY_DAYS = 7;
+  /** @readonly Tempo de expiração do refresh token em milssegundos  */
+  private static readonly REFRESH_TOKEN_EXPIRY_MS =
     AuthController.REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
 
+  /** @param {AuthService} authService - Serviço de autenticação */
   constructor(authService: AuthService) {
     this._authService = authService;
   }
 
+  /**
+   * Retorna as opções de cookie para o token de acesso.
+   *
+   * @returns {CookieOptions} Opções de cookie
+   */
   private getCookieOptions(): CookieOptions {
     const isProduction = process.env.NODE_ENV === "production";
     return {
@@ -41,6 +50,14 @@ class AuthController {
     };
   }
 
+  /**
+   * Método responsável por gerenciar o login.
+   *
+   * @param {Request} req - Request Express
+   * @param {Response} res - Response Express
+   * @returns {Promise<Response>} Response com token de acesso e refresh
+   * @see AuthController
+   */
   async userLogin(req: Request, res: Response) {
     const { email, password, user_type } = req.body as IUserLogin;
 
@@ -83,6 +100,14 @@ class AuthController {
     }
   }
 
+  /**
+   * Método responsável por renovar o token de acesso.
+   *
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @returns {Promise<Response>} Response com token de acesso e refresh
+   * @see AuthController
+   */
   async refresh(req: Request, res: Response) {
     const refreshToken = String(req.cookies.refresh_token);
 
@@ -129,15 +154,22 @@ class AuthController {
     }
   }
 
+  /**
+   * Método responsável por gerenciar o logout.
+   *
+   * @param {Request} req - Request Express
+   * @param {Response} res - Response Express
+   * @returns {Promise<Response>} Mensagem de logout e limpa cookies
+   * @see AuthController
+   */
   async userLogout(req: Request, res: Response): Promise<Response> {
     try {
       const token = req.tokenResponse;
       debbugLogger([`token usado no logout: ${JSON.stringify(token)}`]);
 
       const isRefreshToken = token?.token_type === "refresh";
-      if (isRefreshToken) {
+      if (isRefreshToken)
         await this._authService.revokeRefreshToken(token.token);
-      }
 
       const cookieOptions = this.getCookieOptions();
 
@@ -156,12 +188,19 @@ class AuthController {
     }
   }
 
+  /**
+   * Método responsável por verificar se o token ainda é válido.
+   *
+   * @param {Request} req - Request Express
+   * @param {Response} res - Response Express
+   * @returns {Response<any | Record<string, any>>} Mensagem de token válido e payoad
+   * @see AuthController
+   */
   isTokenStillValid(req: Request, res: Response) {
     const token = req.tokenResponse?.token;
 
-    if (!token) {
+    if (!token)
       return res.status(401).json(errorResponseWith("Token inválido.", 401));
-    }
 
     try {
       const payload = jwt.verify(token, process.env.JWT_SECRET as string);

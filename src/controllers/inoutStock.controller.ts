@@ -10,18 +10,26 @@ import { isNumber } from "class-validator";
 
 /**
  * Controller responsável por gerenciar as operações de estoque.
+ *
+ * @class InOutStockController
  * @see InOutStockService
- * @method getInOutStockAnalysis
- * @method incrementMonthlyInStockQuantity
- * @method incrementMonthlyOutStockQuantity
  */
 class InOutStockController {
   private _inoutStockService: InOutStockService;
 
+  /** @param {InOutStockService} inoutStockService - Serviço de estoque */
   constructor(inoutStockService: InOutStockService) {
     this._inoutStockService = inoutStockService;
   }
 
+  /**
+   * Método responsável por buscar dados de análise de estoque.
+   *
+   * @returns {Promise<Response>} - Objeto com dados de análise de estoque
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see InOutStockController
+   */
   async getInOutStockAnalysis(req: Request, res: Response): Promise<Response> {
     try {
       const inOutStockAnalysis =
@@ -41,6 +49,14 @@ class InOutStockController {
     }
   }
 
+  /**
+   * Método responsável por incrementar a quantidade de estoque.
+   *
+   * @returns {Promise<Response>} - Objeto com dados de estoque incrementados
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see InOutStockController
+   */
   async incrementMonthlyInStockQuantity(
     req: Request,
     res: Response,
@@ -71,6 +87,14 @@ class InOutStockController {
     }
   }
 
+  /**
+   * Método responsável por incrementar a quantidade de estoque que saiu.
+   *
+   * @returns {Promise<Response>} - Objeto com dados de estoque decrementados
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see InOutStockController
+   */
   async incrementMonthlyOutStockQuantity(
     req: Request,
     res: Response,

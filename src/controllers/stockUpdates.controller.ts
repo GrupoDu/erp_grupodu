@@ -7,17 +7,26 @@ import { StockUpdateRegisterSchema } from "../schemas/stockUpdate.schema.js";
 
 /**
  * Controller responsável por gerenciar as operações relacionadas às atualizações de estoque.
+ *
+ * @class StockUpdatesController
  * @see StockUpdatesService
- * @method getStockUpdates
- * @method registerStockUpdate
  */
 class StockUpdatesController {
   private _stockUpdatesService: StockUpdatesService;
 
+  /** @param {StockUpdatesService} stockUpdatesService - Instância de StockUpdatesService */
   constructor(stockUpdatesService: StockUpdatesService) {
     this._stockUpdatesService = stockUpdatesService;
   }
 
+  /**
+   * Método responsável por buscar todas as atualizações de estoque.
+   *
+   * @returns {Promise<Response>} - Objeto com todas as atualizações de estoque
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see {StockUpdatesService}
+   */
   async getStockUpdates(req: Request, res: Response): Promise<Response> {
     try {
       const stockUpdates = await this._stockUpdatesService.getStockUpdates();
@@ -35,6 +44,14 @@ class StockUpdatesController {
     }
   }
 
+  /**
+   * Método responsável por registrar uma atualização de estoque.
+   *
+   * @returns {Promise<Response>} - Objeto com a atualização de estoque registrada
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see {StockUpdatesController}
+   */
   async registerStockUpdate(req: Request, res: Response): Promise<Response> {
     const { product_quantity_title, event } = req.body as {
       product_quantity_title: string;

@@ -8,24 +8,31 @@ import {
 } from "../constants/messages.constants.js";
 import type { IGoalCreate, IGoalUpdate } from "../types/goal.interface.js";
 import checkMissingFields from "../utils/checkMissingFields.js";
-import { GoalSchema, GoalUpdateSchema } from "../schemas/goal.schema.js";
+import { GoalCreateSchema, GoalUpdateSchema } from "../schemas/goal.schema.js";
 import { hasValidString } from "../utils/hasValidString.js";
 
 /**
  * Controller responsável por gerenciar as operações relacionadas a meta.
+ *
+ * @class GoalController
  * @see GoalService
- * @method getAllGoalsData
- * @method createNewGoal
- * @method removeGoalData
- * @method updateGoalData
  */
 class GoalController {
   private _goalService: GoalService;
 
+  /** @param {GoalService} goalService - Serviço de meta */
   constructor(goalService: GoalService) {
     this._goalService = goalService;
   }
 
+  /**
+   * Busca todos os dados de meta.
+   *
+   * @returns {Promise<Response>} - Objeto com mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see GoalController
+   */
   async getAllGoalsData(req: Request, res: Response): Promise<Response> {
     try {
       const allGoalsData = await this._goalService.getAllGoalsData();
@@ -41,12 +48,20 @@ class GoalController {
     }
   }
 
+  /**
+   * Método responsável por criar uma nova meta.
+   *
+   * @returns {Promise<Response>} - Objeto com mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see GoalController
+   */
   async createNewGoal(req: Request, res: Response): Promise<Response> {
     const newGoalInfos = req.body as IGoalCreate;
 
     try {
       const { requiredFieldsMessage, isMissingFields, schemaErr } =
-        checkMissingFields(newGoalInfos, GoalSchema);
+        checkMissingFields(newGoalInfos, GoalCreateSchema);
 
       if (isMissingFields) {
         return res
@@ -65,6 +80,14 @@ class GoalController {
     }
   }
 
+  /**
+   * Método responsável por remover uma meta.
+   *
+   * @returns {Promise<Response>} - Objeto com mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see GoalController
+   */
   async removeGoalData(req: Request, res: Response): Promise<Response> {
     try {
       const { goal_uuid } = req.params;
@@ -97,6 +120,14 @@ class GoalController {
     }
   }
 
+  /**
+   * Método responsável por atualizar os dados de uma meta.
+   *
+   * @returns {Promise<Response>} - Objeto com mensagem de sucesso
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see GoalController
+   */
   async updateGoalData(req: Request, res: Response): Promise<Response> {
     const updateGoalValues = req.body as IGoalUpdate;
     const { goal_uuid } = req.params;

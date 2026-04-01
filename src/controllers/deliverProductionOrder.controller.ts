@@ -8,16 +8,26 @@ import { hasValidString } from "../utils/hasValidString.js";
 
 /**
  * Controller responsável por gerenciar a quantidade de produtos entregues.
+ *
+ * @class DeliverProductionOrderController
  * @see DeliverProductionOrderService
- * @method deliverProductionOrder
  */
 class DeliverProductionOrderController {
   private _deliverProductionOrderService: DeliverProductionOrderService;
 
+  /** @param {DeliverProductionOrderService} deliverProductionOrderService - Serviço de entrega de produção */
   constructor(deliverProductionOrderService: DeliverProductionOrderService) {
     this._deliverProductionOrderService = deliverProductionOrderService;
   }
 
+  /**
+   * Método responsável por gerenciar a quantidade de produtos entregues.
+   *
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @returns {Promise<Response>} Objeto com a quantidade de produtos entregues
+   * @see DeliverProductionOrderService
+   */
   async deliverProductionOrder(req: Request, res: Response): Promise<Response> {
     const { production_order_id } = req.params;
     const { delivered_product_quantity, requested_product_quantity } =
@@ -55,9 +65,19 @@ class DeliverProductionOrderController {
       const error = err as Error;
       const assistantsTaskNotDelivered =
         error.message.includes("não concluíram");
+      const assistantsNotDefined = error.message.includes(
+        "assistentes foram definidos.",
+      );
 
       if (assistantsTaskNotDelivered)
-        return res.status(400).json(errorResponseWith(error.message, 400));
+        return res
+          .status(400)
+          .json(errorResponseWith(error.message, 400, error.message));
+
+      if (assistantsNotDefined)
+        return res
+          .status(400)
+          .json(errorResponseWith(error.message, 400, error.message));
 
       return res.status(500).json(errorResponseWith(error.message, 500));
     }

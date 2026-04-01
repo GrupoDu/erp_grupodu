@@ -6,17 +6,26 @@ import successResponseWith from "../utils/successResponseWith.js";
 
 /**
  * Controller responsável por gerenciar a análise anual.
+ *
+ * @class AnualAnalysisController
  * @see AnualAnalysisService
- * @method getAllAnualAnalysisService
- * @method updateDeliveredAnualAnalysis
  */
 class AnualAnalysisController {
   private _anualAnalysisService: AnualAnalysisService;
 
+  /** @param {AnualAnalysisService} anualAnalysisService - Serviço de análise anual */
   constructor(anualAnalysisService: AnualAnalysisService) {
     this._anualAnalysisService = anualAnalysisService;
   }
 
+  /**
+   * Método responsável por buscar todas as análises anuais.
+   *
+   * @returns {Promise<Response>} Objeto com todas as análises anuais
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see AnualAnalysisController
+   */
   async getAllAnualAnalysisService(req: Request, res: Response) {
     try {
       const anualAnalysisData: IAnualAnalysis[] =
@@ -36,6 +45,14 @@ class AnualAnalysisController {
     }
   }
 
+  /**
+   * Método responsável por atualizar a análise anual.
+   *
+   * @returns {Promise<Response>} Objeto com a análise anual atualizada
+   * @param {Request} req - Request express
+   * @param {Response} res - Response express
+   * @see AnualAnalysisController
+   */
   async updateDeliveredAnualAnalysis(req: Request, res: Response) {
     try {
       const anualAnalysisUpdateResponse: string =
