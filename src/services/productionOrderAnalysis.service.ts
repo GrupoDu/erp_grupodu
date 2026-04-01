@@ -15,7 +15,7 @@ class ProductionOrderAnalysisService {
     this._prisma = prisma;
   }
 
-  async registerDataAnalysis(): Promise<IProductionAnalysis> {
+  async productionOrderDataAnalysis(): Promise<IProductionAnalysis> {
     const [delivered, notDelivered, pending] = await Promise.all([
       this.getDeliveredRegistersData(),
       this.getNotDeliveredRegistersData(),
@@ -34,8 +34,8 @@ class ProductionOrderAnalysisService {
   }
 
   private async getDeliveredRegistersData(): Promise<number> {
-    const deliveredRegistersQuantity = await this._prisma.production_order.count(
-      {
+    const deliveredRegistersQuantity =
+      await this._prisma.production_order.count({
         where: {
           production_order_status: "Entregue",
           production_order_deadline: {
@@ -43,8 +43,7 @@ class ProductionOrderAnalysisService {
             lt: getMonthRange(getTodayDate()).nextMonth,
           },
         },
-      },
-    );
+      });
 
     return deliveredRegistersQuantity;
   }
