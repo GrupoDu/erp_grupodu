@@ -2,7 +2,6 @@ import { PrismaClient } from "../../generated/prisma/client.js";
 import type {
   IProductionOrder,
   IProductionOrderCreate,
-  IProductionOrderDeliver,
   IProductionOrderUpdate,
 } from "../types/productionOrder.interface.js";
 import removeUndefinedUpdateFields from "../utils/removeUndefinedUpdateFields.utils.js";
@@ -19,7 +18,6 @@ dotenv.config();
  * @method createProductionOrder
  * @method updateProductionOrder
  * @method removeProductionOrder
- * @method deliverProductionOrder
  * @method stockProductionValidation
  */
 class ProductionOrderService {
@@ -101,28 +99,6 @@ class ProductionOrderService {
         production_order_id,
       },
       data: productionOrderUpdatedFields,
-    });
-  }
-
-  async deliverProductionOrder(
-    productionOrder_id: string,
-    delivered_product_quantity: number,
-    requested_product_quantity: number,
-  ): Promise<IProductionOrderDeliver> {
-    this.verifyDeliveredProductQuantity(
-      delivered_product_quantity,
-      requested_product_quantity,
-    );
-
-    return this._prisma.production_order.update({
-      data: {
-        delivered_at: new Date(),
-        delivered_product_quantity: delivered_product_quantity,
-        production_order_status: "Entregue",
-      },
-      where: {
-        production_order_id: productionOrder_id,
-      },
     });
   }
 
