@@ -10,6 +10,7 @@ import {
 import { hasValidString } from "../utils/hasValidString.js";
 import checkMissingFields from "../utils/checkMissingFields.js";
 import { OrderSchema, OrderUpdateSchema } from "../schemas/order.schema.js";
+import type { IProductionOrderCreate } from "../types/productionOrder.interface.js";
 
 /**
  * Controller responsável por gerenciar pedidos
@@ -189,10 +190,13 @@ class OrdersController {
    */
   async updateOrderStatus(req: Request, res: Response): Promise<Response> {
     const { order_id } = req.params;
-    const { status } = req.body as { status: string };
+    const { order_status, productionOrders } = req.body as {
+      order_status: string;
+      productionOrders: IProductionOrderCreate[];
+    };
 
     try {
-      if (!hasValidString(order_id) || !hasValidString(status)) {
+      if (!hasValidString(order_id) || !hasValidString(order_status)) {
         return res
           .status(422)
           .json(
@@ -206,7 +210,8 @@ class OrdersController {
 
       const result = await this._ordersService.updateOrderStatus(
         order_id,
-        status,
+        order_status,
+        productionOrders,
       );
 
       return res
@@ -214,7 +219,7 @@ class OrdersController {
         .json(
           successResponseWith(
             result,
-            `Status do pedido atualizado para: ${status}`,
+            `Status do pedido atualizado para: ${order_status}`,
           ),
         );
     } catch (err) {
