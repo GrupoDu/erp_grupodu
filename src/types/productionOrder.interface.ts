@@ -19,6 +19,7 @@ export interface IProductionOrder {
   client_uuid: string;
   delivered_product_quantity?: Decimal;
   stock_validation?: boolean;
+  order_id?: string | null;
 }
 
 /**
@@ -44,19 +45,8 @@ type createOmitFields =
  */
 export interface IProductionOrderCreate extends Omit<
   IProductionOrder,
-  createOmitFields | "product_uuid" | "client_uuid"
-> {
-  users: {
-    connect: {
-      user_id: string;
-    };
-  };
-  products: {
-    connect: {
-      uuid: string;
-    };
-  };
-}
+  createOmitFields
+> {}
 
 /**
  * @see {IProductionOrder}
