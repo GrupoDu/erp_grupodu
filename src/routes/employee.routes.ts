@@ -45,7 +45,7 @@ router.put(
     employeeController.incrementEmployeeActivityQuantity(req, res),
 );
 router.put(
-  "/producedQuantity/:employee_uuid",
+  "/produced-quantity/:employee_uuid",
   getTokenMiddleware,
   (req: Request, res: Response) =>
     employeeController.incrementEmployeeProductsProducedQuantity(req, res),

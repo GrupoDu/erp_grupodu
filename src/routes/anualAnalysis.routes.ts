@@ -19,7 +19,7 @@ router.get(
     anualAnalysisController.getAllAnualAnalysisService(req, res),
 );
 router.put(
-  "/updateAnalysis",
+  "/update-analysis",
   getTokenMiddleware,
   (req: Request, res: Response) =>
     anualAnalysisController.updateDeliveredAnualAnalysis(req, res),

@@ -20,6 +20,7 @@ import AssistantsPoRegistersRoutes from "./routes/assistantsPoRegisters.routes.j
 import DeliverProductionOrderRoutes from "./routes/deliverProductionOrder.routes.js";
 import OrdersRoutes from "./routes/orders.routes.js";
 import OrderItemsRoutes from "./routes/orderItems.routes.js";
+import StockOperationRoutes from "./routes/stockOperation.routes.js";
 
 dotenv.config();
 const app: Express = express();
@@ -42,20 +43,21 @@ app.use(
 app.use("/products", ProductRoutes);
 app.use("/users", UserRoutes);
 app.use("/goals", GoalRoutes);
-app.use("/productionOrder", ProductionOrderRoutes);
+app.use("/production-orders", ProductionOrderRoutes);
 app.use("/employees", EmployeeRoutes);
 app.use("/login", AuthRoutes);
 app.use("/employees-analysis", EmployeeAnalysisRoutes);
-app.use("/productionOrderAnalysis", ProductionOrderAnalysisRoutes);
-app.use("/anualAnalysis", AnualAnaylsisRoutes);
-app.use("/goalsAnalysis", GoalsAnalysisRoutes);
+app.use("/production-order-analysis", ProductionOrderAnalysisRoutes);
+app.use("/anual-analysis", AnualAnaylsisRoutes);
+app.use("/goals-analysis", GoalsAnalysisRoutes);
 app.use("/feedback", FeedbackRoutes);
-app.use("/inoutStock", InOutStockRoutes);
-app.use("/stockUpdates", StockUpdatesRoutes);
-app.use("/assistantsPORegisters", AssistantsPoRegistersRoutes);
-app.use("/deliverProductionOrder", DeliverProductionOrderRoutes);
+app.use("/in-out-stock", InOutStockRoutes);
+app.use("/stock-updates", StockUpdatesRoutes);
+app.use("/assistants-po-registers", AssistantsPoRegistersRoutes);
+app.use("/deliver-production-order", DeliverProductionOrderRoutes);
 app.use("/orders", OrdersRoutes);
-app.use("/orderItems", OrderItemsRoutes);
+app.use("/order-items", OrderItemsRoutes);
+app.use("/stock-operation", StockOperationRoutes);
 
 app.get("/health", (req: Request, res: Response) => res.json({ status: "ok" }));
 

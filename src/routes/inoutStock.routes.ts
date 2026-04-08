@@ -12,13 +12,13 @@ router.get("/", getTokenMiddleware, (req: Request, res: Response) =>
   inoutStockController.getInOutStockAnalysis(req, res),
 );
 router.post(
-  "/incrementInStock",
+  "/increment-in-stock",
   getTokenMiddleware,
   (req: Request, res: Response) =>
     inoutStockController.incrementMonthlyInStockQuantity(req, res),
 );
 router.post(
-  "/incrementOutStock",
+  "/increment-out-stock",
   getTokenMiddleware,
   (req: Request, res: Response) =>
     inoutStockController.incrementMonthlyOutStockQuantity(req, res),

@@ -23,7 +23,7 @@ router.get(
   getTokenMiddleware,
   (req: Request, res: Response) => productController.getProductById(req, res),
 );
-router.put(
+router.patch(
   "/:product_uuid",
   getTokenMiddleware,
   (req: Request, res: Response) =>
