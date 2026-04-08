@@ -4,14 +4,22 @@ import { tokenErrorCases } from "../utils/tokenErrorCases.js";
 import { responseMessages } from "../constants/messages.constants.js";
 import { tryRefreshToken } from "../utils/tryRefreshToken.js";
 
+/**
+ * Middleware para obter o token de autenticação
+ *
+ * @returns {void | Response}
+ * @param {Request} req - Request express
+ * @param {Response} res - Response express
+ * @param {NextFunction} next - Next express
+ */
 export function getTokenMiddleware(
   req: Request,
   res: Response,
   next: NextFunction,
-) {
+): void | Response {
   try {
-    const accessToken = req.cookies.access_token;
-    const refreshToken = req.cookies.refresh_token;
+    const accessToken: string = String(req.cookies.access_token);
+    const refreshToken: string = String(req.cookies.refresh_token);
 
     // Primeiro, tenta ver se o access_token é válido
     if (accessToken) {
