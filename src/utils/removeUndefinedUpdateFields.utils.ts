@@ -1,9 +1,8 @@
 function removeUndefinedUpdateFields<T extends object>(updateData: T) {
-  const clearFields = Object.fromEntries(
+  return Object.fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Object.entries(updateData).filter(([_, value]) => value !== undefined),
   );
-
-  return clearFields;
 }
 
 export default removeUndefinedUpdateFields;
