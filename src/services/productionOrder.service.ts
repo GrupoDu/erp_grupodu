@@ -144,18 +144,17 @@ class ProductionOrderService {
       return "Ordem de produção deletada com sucesso.";
     }
 
-    await this._prisma.$transaction(async (tx) => {
-      await tx.assistants_po_register.deleteMany({
-        where: {
-          production_order_uuid: production_order_id,
-        },
-      });
+    // Se não há transação ativa, precisamos remover os registros de assistentes primeiro
+    await this._prisma.assistants_po_register.deleteMany({
+      where: {
+        production_order_uuid: production_order_id,
+      },
+    });
 
-      await tx.production_order.delete({
-        where: {
-          production_order_id,
-        },
-      });
+    await this._prisma.production_order.delete({
+      where: {
+        production_order_id,
+      },
     });
 
     return "Ordem de produção deletada com sucesso.";
