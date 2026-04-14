@@ -4,5 +4,5 @@ export interface IRefreshToken {
   token: string;
   user_uuid: string;
   expires_at: Date;
-  revoked: boolean;
+  is_revoked: boolean;
 }

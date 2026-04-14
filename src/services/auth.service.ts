@@ -5,6 +5,7 @@ import { PrismaClient } from "../../generated/prisma/client.js";
 import type { IRefreshToken } from "../types/refreshToken.interface.js";
 import type { PrismaTransactionClient } from "../../lib/prisma.js";
 import type { ILoginResponse } from "../types/auth.interface.js";
+import debbugLogger from "../utils/debugLogger.js";
 
 dotenv.config();
 
@@ -59,7 +60,7 @@ class AuthService {
         token: refreshToken,
         user_uuid: user.user_id, // ✅ Campo correto
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        revoked: false,
+        is_revoked: false,
       },
     });
 
@@ -87,9 +88,18 @@ class AuthService {
 
       if (!tokenRecord) throw new Error("Refresh token não encontrado.");
 
-      if (tokenRecord.revoked) throw new Error("Refresh token revogado.");
+      debbugLogger([`Token revogado: ${tokenRecord.is_revoked}`]);
+      if (tokenRecord.is_revoked) {
+        debbugLogger([`Refresh token revogado: ${tokenRecord.is_revoked}`]);
+        throw new Error("Refresh token revogado.");
+      }
+
+      debbugLogger([
+        `Checando se token expirou: ${tokenRecord.expires_at.toString()}`,
+      ]);
 
       await this.checkTokenExpired(tokenRecord, tx);
+      debbugLogger(["Verificação concluída.", "Verificando assinatura JWT..."]);
 
       const decoded = await this.verifyJWTSignature(
         oldRefreshToken,
@@ -103,13 +113,32 @@ class AuthService {
       });
 
       if (!user) throw new Error("Usuário não encontrado.");
+      debbugLogger([
+        "Usuário encontrado.",
+        `Usuário: ${user.user_id}`,
+        "Revogando antigo refresh_token...",
+      ]);
 
       await this.revokeOldRefreshToken(tx, tokenRecord.id);
+      debbugLogger(["Antigo refresh_token revogado."]);
 
+      debbugLogger(["Gerando novos tokens..."]);
       const newAccessToken = this.generateAccessToken(user);
       const newRefreshToken = this.generateRefreshToken(user);
+      debbugLogger([
+        "Tokens gerados.",
+        `access_token: ${newAccessToken}`,
+        `refresh_token: ${newRefreshToken}`,
+      ]);
 
-      await this.saveRefreshToken(tx, user, newRefreshToken);
+      await tx.refresh_tokens.create({
+        data: {
+          token: newRefreshToken,
+          user_uuid: user.user_id, // ✅ Campo correto
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          is_revoked: false,
+        },
+      });
 
       return {
         accessToken: newAccessToken,
@@ -127,7 +156,7 @@ class AuthService {
   async revokeRefreshToken(token: string): Promise<void> {
     await this._prisma.refresh_tokens.updateMany({
       where: { token },
-      data: { revoked: true },
+      data: { is_revoked: true },
     });
   }
 
@@ -147,10 +176,9 @@ class AuthService {
   ): Promise<void> {
     const isTokenExpired = tokenRecord.expires_at < new Date();
     if (isTokenExpired) {
-      // Marca token como revogado
       await tx.refresh_tokens.update({
         where: { id: tokenRecord.id },
-        data: { revoked: true },
+        data: { is_revoked: true },
       });
       throw new Error("Refresh token expirado.");
     }
@@ -171,41 +199,32 @@ class AuthService {
     tx: PrismaTransactionClient,
     tokenId: string,
   ): Promise<{ user_id: string }> {
-    const decoded = jwt.verify(
-      oldRefreshToken,
-      process.env.REFRESH_SECRET!,
-    ) as {
-      user_id: string;
-    };
+    debbugLogger(["Iniciando verifyJWTSignature..."]);
 
-    if (!decoded) {
-      await tx.refresh_tokens.update({
-        where: { id: tokenId },
-        data: { revoked: true },
-      });
-      throw new Error("Refresh token inválido.");
+    if (!process.env.REFRESH_SECRET) {
+      debbugLogger(["REFRESH_SECRET não está definido"]);
+      throw new Error("REFRESH_SECRET não configurado.");
     }
 
-    return decoded;
-  }
+    try {
+      const decoded = jwt.verify(
+        oldRefreshToken,
+        process.env.REFRESH_SECRET,
+      ) as {
+        user_id: string;
+      };
+      debbugLogger(["JWT verificado com sucesso"]);
 
-  /**
-   * Revoga um token antigo de refresh.
-   *
-   * @returns Promise<void>
-   * @param {PrismaTransactionClient} tx - transacion
-   * @param {string} tokenId - ID do token
-   * @private
-   * @see {PrismaTransactionClient}
-   */
-  private async revokeOldRefreshToken(
-    tx: PrismaTransactionClient,
-    tokenId: string,
-  ): Promise<void> {
-    await tx.refresh_tokens.update({
-      where: { id: tokenId },
-      data: { revoked: true },
-    });
+      return decoded;
+    } catch (err) {
+      const error = err as Error;
+      debbugLogger(["JWT verify falhou:", error.message]);
+      await tx.refresh_tokens.update({
+        where: { id: tokenId },
+        data: { is_revoked: true },
+      });
+      throw new Error("Refresh token inválido.", { cause: err });
+    }
   }
 
   /**
@@ -235,34 +254,26 @@ class AuthService {
    * @returns {string} - Refresh token
    * @private
    */
-  private generateRefreshToken(user: { user_id: string }): string {
-    return jwt.sign({ user_id: user.user_id }, process.env.REFRESH_SECRET!, {
-      expiresIn: "7d",
-    });
+  private generateRefreshToken(user: {
+    user_id: string;
+    user_type: string;
+  }): string {
+    return jwt.sign(
+      { user_id: user.user_id, user_type: user.user_type },
+      process.env.REFRESH_SECRET!,
+      {
+        expiresIn: "7d",
+      },
+    );
   }
 
-  /**
-   * Salva o refresh token no banco.
-   *
-   * @param {PrismaTransactionClient} tx - transaction
-   * @param {{user_id: string}} user - ID do usuário
-   * @param {string} newRefreshToken - Novo refresh token
-   * @returns {Promise<void>}
-   * @private
-   * @see {PrismaTransactionClient}
-   */
-  private async saveRefreshToken(
+  private async revokeOldRefreshToken(
     tx: PrismaTransactionClient,
-    user: { user_id: string },
-    newRefreshToken: string,
-  ): Promise<void> {
-    await tx.refresh_tokens.create({
-      data: {
-        token: newRefreshToken,
-        user_uuid: user.user_id, // ✅ Campo correto
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        revoked: false,
-      },
+    token_id: string,
+  ) {
+    await tx.refresh_tokens.update({
+      where: { id: token_id },
+      data: { is_revoked: true },
     });
   }
 }

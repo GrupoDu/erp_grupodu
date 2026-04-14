@@ -3,6 +3,7 @@ import { tryAccessToken } from "../utils/tryAccessToken.js";
 import { tokenErrorCases } from "../utils/tokenErrorCases.js";
 import { responseMessages } from "../constants/messages.constants.js";
 import { tryRefreshToken } from "../utils/tryRefreshToken.js";
+import debbugLogger from "../utils/debugLogger.js";
 
 /**
  * Middleware para obter o token de autenticação
@@ -21,11 +22,14 @@ export function getTokenMiddleware(
     const accessToken: string = String(req.cookies.access_token);
     const refreshToken: string = String(req.cookies.refresh_token);
 
+    console.log(`\nAccess token: ${accessToken}\n`);
+    console.log(`\nRefresh token: ${refreshToken}\n`);
+
     // Primeiro, tenta ver se o access_token é válido
     if (accessToken) {
       const accessResult = tryAccessToken(accessToken);
+      debbugLogger([`Utilizando access_token: ${accessToken}`]);
       if (accessResult.isValid) {
-        // console.log("Usando access_token válido");
         req.tokenResponse = {
           token: accessToken,
           payload: accessResult,
@@ -33,20 +37,20 @@ export function getTokenMiddleware(
         };
         return next();
       }
-      // console.log("Access_token expirado ou inválido");
     }
 
-    if (refreshToken) {
-      const refreshResult = tryRefreshToken(refreshToken);
-      if (refreshResult.isValid) {
-        req.tokenResponse = {
-          token: refreshToken,
-          payload: refreshResult,
-          token_type: "refresh",
-        };
-        return next();
-      }
-    }
+    // if (refreshToken) {
+    //   debbugLogger([`Utilizando refresh_token : ${refreshToken}`]);
+    //   const refreshResult = tryRefreshToken(refreshToken);
+    //   if (refreshResult.isValid) {
+    //     req.tokenResponse = {
+    //       token: refreshToken,
+    //       payload: refreshResult,
+    //       token_type: "refresh",
+    //     };
+    //     return next();
+    //   }
+    // }
 
     console.log("Nenhum token válido encontrado");
     console.log("|=== END DEBUG ===|");

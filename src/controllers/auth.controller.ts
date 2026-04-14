@@ -20,10 +20,9 @@ dotenv.config();
 class AuthController {
   private _authService: AuthService;
   /** @readonly Tempo de expiração do token de acesso em minutos */
-  private static readonly ACCESS_TOKEN_EXPIRY_MIN = 120;
+  private static readonly ACCESS_TOKEN_EXPIRY_MIN = 15;
   /** @readonly Tempo de expiração do token de acesso em milissegundos */
-  private static readonly ACCESS_TOKEN_EXPIRY_MS =
-    AuthController.ACCESS_TOKEN_EXPIRY_MIN * 60 * 1000;
+  private static readonly ACCESS_TOKEN_EXPIRY_MS = 15 * 1000;
   /** @readonly Tempo de expiração do refresh token em dias */
   private static readonly REFRESH_TOKEN_EXPIRY_DAYS = 7;
   /** @readonly Tempo de expiração do refresh token em milssegundos  */
@@ -58,7 +57,7 @@ class AuthController {
    * @returns {Promise<Response>} Response com token de acesso e refresh
    * @see AuthController
    */
-  async userLogin(req: Request, res: Response) {
+  async userLogin(req: Request, res: Response): Promise<Response> {
     const { email, password, user_type } = req.body as IUserLogin;
 
     try {
@@ -77,7 +76,7 @@ class AuthController {
 
       const cookieOptions = this.getCookieOptions();
 
-      res
+      return res
         .status(200)
         .cookie("access_token", accessToken, {
           ...cookieOptions,
@@ -93,7 +92,15 @@ class AuthController {
       const isInvalidCredentials = error.message === "Credenciais inválidas.";
 
       if (isInvalidCredentials) {
-        return res.status(401).json(errorResponseWith(error.message, 401));
+        return res
+          .status(401)
+          .json(
+            errorResponseWith(
+              error.message,
+              401,
+              "Credenciais inválidas. Verifique suas credenciais e tente novamente.",
+            ),
+          );
       }
 
       return res.status(500).json(errorResponseWith(error.message, 500));
@@ -108,23 +115,32 @@ class AuthController {
    * @returns {Promise<Response>} Response com token de acesso e refresh
    * @see AuthController
    */
-  async refresh(req: Request, res: Response) {
+  async refresh(req: Request, res: Response): Promise<Response> {
     const refreshToken = String(req.cookies.refresh_token);
+    debbugLogger(["Rodando refresh..."]);
 
     try {
       if (!refreshToken) {
+        debbugLogger(["Refresh token não fornecido."]);
         return res
           .status(401)
           .json(errorResponseWith("Refresh token não fornecido.", 401));
       }
+      debbugLogger(["Refresh token fornecido.", "Gerando novos tokens..."]);
 
       // O service agora retorna AMBOS os tokens (rotação)
       const { accessToken, refreshToken: newRefreshToken } =
         await this._authService.refreshAccessToken(refreshToken);
+      debbugLogger([
+        "Novos tokens gerados.",
+        `access_token: ${accessToken}`,
+        `refresh_token: ${newRefreshToken}`,
+      ]);
 
       const cookieOptions = this.getCookieOptions();
 
-      res
+      return res
+        .status(200)
         .cookie("access_token", accessToken, {
           ...cookieOptions,
           maxAge: AuthController.ACCESS_TOKEN_EXPIRY_MS,
@@ -132,25 +148,13 @@ class AuthController {
         .cookie("refresh_token", newRefreshToken, {
           ...cookieOptions,
           maxAge: AuthController.REFRESH_TOKEN_EXPIRY_MS,
-        });
-
-      return res
-        .status(200)
+        })
         .json(successResponseWith(null, "Token renovado com sucesso."));
     } catch (err) {
-      // Em caso de erro, limpa os cookies por segurança
-      res.clearCookie("access_token");
-      res.clearCookie("refresh_token");
-
+      const error = err as Error;
       return res
         .status(401)
-        .json(
-          errorResponseWith(
-            "Falha ao renovar token.",
-            401,
-            (err as Error).message,
-          ),
-        );
+        .json(errorResponseWith("Falha ao renovar token.", 401, error.message));
     }
   }
 
@@ -165,9 +169,10 @@ class AuthController {
   async userLogout(req: Request, res: Response): Promise<Response> {
     try {
       const token = req.tokenResponse;
-      debbugLogger([`token usado no logout: ${JSON.stringify(token)}`]);
+      debbugLogger([`token usado no logout: ${token?.token_type}`]);
 
       const isRefreshToken = token?.token_type === "refresh";
+      debbugLogger([`isRefresh: ${isRefreshToken}`]);
       if (isRefreshToken)
         await this._authService.revokeRefreshToken(token.token);
 
@@ -193,10 +198,10 @@ class AuthController {
    *
    * @param {Request} req - Request Express
    * @param {Response} res - Response Express
-   * @returns {Response<any | Record<string, any>>} Mensagem de token válido e payoad
+   * @returns {Response} Mensagem de token válido e payoad
    * @see AuthController
    */
-  isTokenStillValid(req: Request, res: Response) {
+  isTokenStillValid(req: Request, res: Response): Response {
     const token = req.tokenResponse?.token;
 
     if (!token)
