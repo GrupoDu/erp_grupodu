@@ -12,7 +12,7 @@ const isProduction = process.env.NODE_ENV === "production";
 
 export const io = new Server(httpServer, {
   cors: {
-    origin: ALLOWED_ORIGINS,
+    origin: [ALLOWED_ORIGINS, "http://192.168.1.6:3000"],
     credentials: true,
     methods: ["GET", "POST"],
     allowedHeaders: ["Authorization", "Content-Type"],

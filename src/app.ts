@@ -1,6 +1,8 @@
 import express, { type Request, type Response, type Express } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "../swagger.json" with { type: "json" };
 import ProductRoutes from "./routes/product.routes.js";
 import UserRoutes from "./routes/user.routes.js";
 import GoalRoutes from "./routes/goal.routes.js";
@@ -31,6 +33,7 @@ const DEV_URL = process.env.DEV_URL || "";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(cookieParser());
 app.use(
   cors({

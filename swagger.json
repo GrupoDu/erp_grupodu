@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "GCP Backend API",
-    "description": "API para gerenciamento de metas, usuários, produtos, funcionários e análises",
-    "version": "1.0.0"
+    "title": "ERP Grupo Du API",
+    "description": "API para ERP do Grupo Du",
+    "version": "0.1.0"
   },
   "servers": [
     {
@@ -21,6 +21,15 @@
       }
     },
     "schemas": {
+      "Response": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "object" },
+          "status": { "type": "integer" },
+          "message": { "type": "string" },
+          "success": { "type": "boolean" }
+        }
+      },
       "LoginRequest": {
         "type": "object",
         "required": ["email", "senha", "user_type"],
@@ -32,27 +41,26 @@
       },
       "Goal": {
         "type": "object",
-        "required": [
-          "goal_id",
-          "goal_title",
-          "goal_type",
-          "goal_deadline",
-          "goal_status"
-        ],
+        "required": ["goal_id", "goal_title", "goal_type", "goal_deadline"],
         "properties": {
-          "goal_id": { "type": "string" },
+          "goal_id": { "type": "string", "format": "uuid" },
           "goal_title": { "type": "string" },
           "goal_description": { "type": "string", "nullable": true },
           "goal_type": { "type": "string" },
           "goal_deadline": { "type": "string", "format": "date-time" },
-          "employee_goal": { "type": "string", "nullable": true },
+          "employee_goal": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
           "goal_status": { "type": "string" }
         }
       },
       "User": {
         "type": "object",
-        "required": ["name", "email", "password", "user_type"],
+        "required": ["user_id", "name", "email", "password", "user_type"],
         "properties": {
+          "user_id": { "type": "string", "format": "uuid" },
           "name": { "type": "string" },
           "email": { "type": "string", "format": "email" },
           "password": { "type": "string", "format": "password" },
@@ -61,11 +69,13 @@
       },
       "Product": {
         "type": "object",
-        "required": ["name", "description", "product_type", "image"],
+        "required": ["uuid", "name", "description", "product_type", "image"],
         "properties": {
+          "uuid": { "type": "string", "format": "uuid" },
           "name": { "type": "string" },
           "description": { "type": "string" },
           "product_type": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
           "image": { "type": "string" },
           "features": {
             "type": "array",
@@ -77,8 +87,7 @@
             "description": "Campo JSON flexível"
           },
           "stock_quantity": {
-            "type": "number",
-            "format": "decimal"
+            "type": "integer"
           }
         }
       },
@@ -86,15 +95,9 @@
         "type": "object",
         "required": ["name", "employee_type"],
         "properties": {
+          "employee_uuid": { "type": "string", "format": "uuid" },
           "name": { "type": "string" },
           "employee_type": { "type": "string" }
-        }
-      },
-      "ProducedQuantity": {
-        "type": "object",
-        "required": ["productsQuantity"],
-        "properties": {
-          "productsQuantity": { "type": "number" }
         }
       },
       "Feedback": {
@@ -108,13 +111,13 @@
       "ProductionOrder": {
         "type": "object",
         "required": [
+          "production_order_id",
           "production_order_title",
           "production_order_deadline",
-          "product_quantity",
-          "product_uuid",
-          "client_uuid"
+          "delivered_product_quantity"
         ],
         "properties": {
+          "production_order_id": { "type": "string", "format": "uuid" },
           "production_order_title": { "type": "string" },
           "production_order_description": {
             "type": "string",
@@ -124,14 +127,65 @@
             "type": "string",
             "format": "date-time"
           },
-          "product_quantity": { "type": "number", "format": "decimal" },
-          "cut_assistant": { "type": "string", "nullable": true },
-          "fold_assistant": { "type": "string", "nullable": true },
-          "finishing_assistant": { "type": "string", "nullable": true },
-          "paint_assistant": { "type": "string", "nullable": true },
-          "employee_uuid": { "type": "string", "nullable": true },
-          "product_uuid": { "type": "string" },
-          "client_uuid": { "type": "string" }
+          "delivery_observation": { "type": "string", "nullable": true },
+          "delivered_product_quantity": { "type": "integer" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "stock_validation": { "type": "boolean" },
+          "delivered_at": { "type": "string", "format": "date-time" },
+          "cut_assistant": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "fold_assistant": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "finishing_assistant": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "paint_assistant": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "employee_uuid": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "supervisor_uuid": { "type": "string", "format": "uuid" }
+        }
+      },
+      "Order": {
+        "required": ["order_id", "order_title", "order_deadline"],
+        "properties": {
+          "order_id": { "type": "string", "format": "uuid" },
+          "order_title": { "type": "string" },
+          "order_deadline": { "type": "string", "format": "date-time" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "order_status": { "type": "string" },
+          "order_description": { "type": "string", "nullable": true },
+          "delivery_observation": { "type": "string", "nullable": true }
+        }
+      },
+      "OrderItem": {
+        "required": [
+          "order_item_id",
+          "order_id",
+          "product_id",
+          "quantity",
+          "unit_price"
+        ],
+        "properties": {
+          "order_item_id": { "type": "string", "format": "uuid" },
+          "order_id": { "type": "string", "format": "uuid" },
+          "product_id": { "type": "string", "format": "uuid" },
+          "quantity": { "type": "integer" },
+          "unit_price": { "type": "number", "format": "double" }
         }
       },
       "DeliveryOrder": {
@@ -145,11 +199,51 @@
           "requested_product_quantity": { "type": "number" }
         }
       },
+      "AssistantsPORegisters": {
+        "type": "object",
+        "required": [
+          "assistants_po_registers_uuid",
+          "delivered",
+          "production_order_uuid",
+          "assistant_uuid",
+          "assistant_as"
+        ],
+        "properties": {
+          "assistants_po_registers_uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "delivered": { "type": "boolean" },
+          "delivered_at": { "type": "string", "format": "date-time" },
+          "production_order_uuid": { "type": "string", "format": "uuid" },
+          "assistant_uuid": { "type": "string", "format": "uuid" },
+          "assistant_as": { "type": "string" }
+        }
+      },
+      "DeliverProductionOrder": {
+        "type": "object",
+        "required": [
+          "delivered_product_quantity",
+          "requested_product_quantity"
+        ],
+        "properties": {
+          "delivered_product_quantity": { "type": "number" },
+          "requested_product_quantity": { "type": "number" }
+        }
+      },
       "Error": {
         "type": "object",
         "properties": {
+          "status": { "type": "integer" },
           "message": { "type": "string" },
-          "code": { "type": "integer" }
+          "success": { "type": "boolean" },
+          "error": { "type": "string" }
+        },
+        "example": {
+          "status": 500,
+          "message": "Erro interno do servidor.",
+          "success": false,
+          "error": "Erro interno do servidor."
         }
       }
     }
@@ -164,19 +258,56 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+              "schema": { "$ref": "#/components/schemas/LoginRequest" },
+              "example": {
+                "email": "usuario@grupodu.com",
+                "senha": "123456",
+                "user_type": "admin"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Login realizado com sucesso"
+            "description": "Login realizado com sucesso",
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "user": {
+                      "user_id": "6aaf3e59-6d26-40d8-94ef-36e468af493d",
+                      "user_type": "admin"
+                    }
+                  },
+                  "status": 200,
+                  "message": "Login realizado com sucesso",
+                  "success": true
+                }
+              }
+            }
           },
           "401": {
-            "description": "Credenciais inválidas"
+            "description": "Credenciais inválidas",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": 401,
+                  "message": "Credenciais inválidas. Verifique suas credenciais e tente novamente.",
+                  "success": false,
+                  "error": "Credenciais inválidas"
+                }
+              }
+            }
           },
           "500": {
-            "description": "Erro interno do servidor"
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -187,10 +318,42 @@
         "tags": ["Login"],
         "responses": {
           "200": {
-            "description": "Token renovado com sucesso"
+            "description": "Token renovado com sucesso",
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": null,
+                  "status": 200,
+                  "message": "Token renovado com sucesso",
+                  "success": true
+                }
+              }
+            }
           },
           "401": {
-            "description": "Não autorizado"
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "RefreshTokenNotProvided": {
+                    "value": {
+                      "error": "Refresh token não fornecido.",
+                      "status": 401,
+                      "message": "Refresh token não fornecido.",
+                      "success": false
+                    }
+                  },
+                  "FailedToRefresh": {
+                    "value": {
+                      "error": "Falha ao renovar token.",
+                      "status": 401,
+                      "message": "Refresh token não fornecido.",
+                      "success": false
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -802,7 +965,12 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ProducedQuantity" }
+              "schema": {
+                "required": ["productsQuantity"],
+                "properties": {
+                  "productsQuantity": { "type": "integer" }
+                }
+              }
             }
           }
         },
@@ -1005,8 +1173,7 @@
                   "finishing_assistant": { "type": "string", "nullable": true },
                   "paint_assistant": { "type": "string", "nullable": true },
                   "employee_uuid": { "type": "string", "nullable": true },
-                  "product_uuid": { "type": "string" },
-                  "client_uuid": { "type": "string" }
+                  "supervisor_uuid": { "type": "string" }
                 }
               }
             }
