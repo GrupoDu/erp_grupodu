@@ -59,7 +59,7 @@ class AuthService {
       data: {
         token: refreshToken,
         user_uuid: user.user_id, // ✅ Campo correto
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expires_at: this.calculateExpirationDate(),
         is_revoked: false,
       },
     });
@@ -134,8 +134,8 @@ class AuthService {
       await tx.refresh_tokens.create({
         data: {
           token: newRefreshToken,
-          user_uuid: user.user_id, // ✅ Campo correto
-          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          user_uuid: user.user_id,
+          expires_at: this.calculateExpirationDate(),
           is_revoked: false,
         },
       });
@@ -242,7 +242,7 @@ class AuthService {
       { user_id: user.user_id, user_type: user.user_type },
       process.env.JWT_SECRET!,
       {
-        expiresIn: "2h",
+        expiresIn: "15m",
       },
     );
   }
@@ -275,6 +275,15 @@ class AuthService {
       where: { id: token_id },
       data: { is_revoked: true },
     });
+  }
+
+  private calculateExpirationDate(): Date {
+    const days = 7;
+    const hours = 24;
+    const minutes = 60;
+    const today = Date.now();
+
+    return new Date(today + days * hours * minutes * 60 * 1000);
   }
 }
 
