@@ -22,7 +22,8 @@ class AuthController {
   /** @readonly Tempo de expiração do token de acesso em minutos */
   private static readonly ACCESS_TOKEN_EXPIRY_MIN = 15;
   /** @readonly Tempo de expiração do token de acesso em milissegundos */
-  private static readonly ACCESS_TOKEN_EXPIRY_MS = 15 * 1000;
+  private static readonly ACCESS_TOKEN_EXPIRY_MS =
+    AuthController.ACCESS_TOKEN_EXPIRY_MIN * 60 * 1000;
   /** @readonly Tempo de expiração do refresh token em dias */
   private static readonly REFRESH_TOKEN_EXPIRY_DAYS = 7;
   /** @readonly Tempo de expiração do refresh token em milssegundos  */
