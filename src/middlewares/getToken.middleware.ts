@@ -39,19 +39,6 @@ export function getTokenMiddleware(
       }
     }
 
-    // if (refreshToken) {
-    //   debbugLogger([`Utilizando refresh_token : ${refreshToken}`]);
-    //   const refreshResult = tryRefreshToken(refreshToken);
-    //   if (refreshResult.isValid) {
-    //     req.tokenResponse = {
-    //       token: refreshToken,
-    //       payload: refreshResult,
-    //       token_type: "refresh",
-    //     };
-    //     return next();
-    //   }
-    // }
-
     console.log("Nenhum token válido encontrado");
     console.log("|=== END DEBUG ===|");
 

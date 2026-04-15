@@ -129,10 +129,12 @@ export default function checkMissingFields(
     "checkMissingFields",
   );
 
+  const schemaErr =
+    parseSchema.error?.message || "Erro de checagem. Campos faltando";
+
   return {
     ...missingCheckResult,
-    schemaErr:
-      parseSchema.error?.message || "Erro de checagem. Campos faltando",
+    schemaErr,
     isMissingFields: entriesFields.isMissing || keysValues.isMissing,
   };
 }
