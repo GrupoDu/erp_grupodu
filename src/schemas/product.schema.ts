@@ -19,8 +19,8 @@ export const ProductCreateSchema = ProductSchema.omit({
   composition: true,
 });
 
-export const ProductUpdateSchema = ProductSchema.partial({
+export const ProductUpdateSchema = ProductSchema.omit({
   uuid: true,
   created_at: true,
   composition: true,
-});
+}).partial();

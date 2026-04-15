@@ -10,4 +10,6 @@ export const EmployeeCreateSchema = EmployeeSchema.omit({
   employee_uuid: true,
 });
 
-export const EmployeeUpdateSchema = EmployeeSchema.partial();
+export const EmployeeUpdateSchema = EmployeeSchema.omit({
+  employee_uuid: true,
+}).partial();
