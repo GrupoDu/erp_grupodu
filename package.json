@@ -12,7 +12,7 @@
     "dev": "npx tsx src/server.ts --watch",
     "generate:api": "npx swagger-typescript-api generate --path ./swagger.json",
     "prisma:pull": "npx prisma db pull && npx prisma generate",
-    "prettier": "prettier --write src/**/*.ts"
+    "prettier": "prettier --write ."
   },
   "repository": {
     "type": "git",

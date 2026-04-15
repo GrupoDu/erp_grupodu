@@ -11,7 +11,6 @@ import EmployeeRoutes from "./routes/employee.routes.js";
 import AuthRoutes from "./routes/auth.routes.js";
 import EmployeeAnalysisRoutes from "./routes/employeeAnalysis.routes.js";
 import ProductionOrderAnalysisRoutes from "./routes/productionOrderAnalysis.routes.js";
-import GoalsAnalysisRoutes from "./routes/goalsAnalysis.routes.js";
 import AnualAnaylsisRoutes from "./routes/anualAnalysis.routes.js";
 import FeedbackRoutes from "./routes/feedback.routes.js";
 import InOutStockRoutes from "./routes/inoutStock.routes.js";
@@ -37,7 +36,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [FRONTEND_URL, DEV_URL, "http://192.168.1.6:3000"],
+    origin: [FRONTEND_URL, DEV_URL, "http://192.168.1.7:3000"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -52,7 +51,6 @@ app.use("/login", AuthRoutes);
 app.use("/employees-analysis", EmployeeAnalysisRoutes);
 app.use("/production-order-analysis", ProductionOrderAnalysisRoutes);
 app.use("/anual-analysis", AnualAnaylsisRoutes);
-app.use("/goals-analysis", GoalsAnalysisRoutes);
 app.use("/feedback", FeedbackRoutes);
 app.use("/in-out-stock", InOutStockRoutes);
 app.use("/stock-updates", StockUpdatesRoutes);
