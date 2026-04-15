@@ -12,7 +12,7 @@ const employeeAnalysisController = new EmployeeAnalysisController(
 );
 
 router.get(
-  "/",
+  "/:employee_uuid",
   getTokenMiddleware,
   adminAuthMiddleware,
   (req: Request, res: Response) =>

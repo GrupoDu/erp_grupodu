@@ -39,7 +39,7 @@ router.delete(
   adminAuthMiddleware,
   (req: Request, res: Response) => userController.deleteUser(req, res),
 );
-router.put(
+router.patch(
   "/:user_uuid",
   getTokenMiddleware,
   adminAuthMiddleware,

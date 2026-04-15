@@ -30,18 +30,12 @@ router.delete(
   (req: Request, res: Response) =>
     productionOrderController.removeProductionOrder(req, res),
 );
-router.put(
+router.patch(
   "/:production_order_id",
   getTokenMiddleware,
   (req: Request, res: Response) =>
     productionOrderController.updateProductionOrder(req, res),
 );
-// router.put(
-//   "/deliver/:production_order_id",
-//   getTokenMiddleware,
-//   (req: Request, res: Response) =>
-//     productionOrderController.deliverProductionOrder(req, res),
-// );
 router.patch(
   "/validate/:production_order_id",
   getTokenMiddleware,

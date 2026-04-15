@@ -10,7 +10,7 @@ const goalService = new GoalService(prisma);
 const goalController = new GoalController(goalService);
 
 router.get("/", getTokenMiddleware, (req: Request, res: Response) =>
-  goalController.getAllGoalsData(req, res),
+  goalController.getGoalsData(req, res),
 );
 router.post(
   "/",
@@ -24,7 +24,7 @@ router.delete(
   adminAuthMiddleware,
   (req: Request, res: Response) => goalController.removeGoalData(req, res),
 );
-router.put(
+router.patch(
   "/:goal_uuid",
   getTokenMiddleware,
   adminAuthMiddleware,

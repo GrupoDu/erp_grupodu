@@ -11,7 +11,7 @@ const deliverProductionOrderController = new DeliverProductionOrderController(
   deliverProductionOrderService,
 );
 
-router.put(
+router.patch(
   "/:production_order_id",
   getTokenMiddleware,
   (req: Request, res: Response) =>
