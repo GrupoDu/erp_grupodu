@@ -167,7 +167,12 @@ class EmployeeController {
 
       return res
         .status(200)
-        .json(successResponseWith(null, "Funcionário removido do sistema."));
+        .json(
+          successResponseWith(
+            "Funcionário removido do sistema.",
+            "Funcionário removido do sistema.",
+          ),
+        );
     } catch (err) {
       const error = err as Error;
       return res.status(500).json(errorResponseWith(error.message, 500));

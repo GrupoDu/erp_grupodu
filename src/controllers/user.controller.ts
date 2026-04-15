@@ -170,11 +170,17 @@ class UserController {
           );
       }
 
-      await this._userService.deleteUserData(user_uuid);
+      const deletedUserResponse =
+        await this._userService.deleteUserData(user_uuid);
 
       return res
         .status(200)
-        .json(successResponseWith(null, "Usuário deletado com sucesso."));
+        .json(
+          successResponseWith(
+            deletedUserResponse,
+            "Usuário removido com sucesso.",
+          ),
+        );
     } catch (err) {
       const error = err as Error;
       return res.status(500).json(errorResponseWith(error.message, 500));
@@ -251,7 +257,15 @@ class UserController {
           .json(successResponseWith(token.payload, "Token válido."));
       }
 
-      return res.status(401).json(errorResponseWith("Token inválido.", 401));
+      return res
+        .status(401)
+        .json(
+          errorResponseWith(
+            "Token inválido.",
+            401,
+            "Token inválido ou não fornecido.",
+          ),
+        );
     } catch (err) {
       const error = err as Error;
       return res.status(500).json(errorResponseWith(error.message, 500));

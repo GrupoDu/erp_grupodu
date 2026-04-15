@@ -16,6 +16,7 @@ import {
   ProductCreateSchema,
   ProductUpdateSchema,
 } from "../schemas/product.schema.js";
+import { toRecord } from "../utils/toRecord.js";
 
 /**
  * Controller responsável por gerenciar produtos
@@ -158,7 +159,12 @@ class ProductController {
 
       return res
         .status(200)
-        .json(successResponseWith(null, "Produto removido com sucesso."));
+        .json(
+          successResponseWith(
+            "Produto removido com sucesso.",
+            "Produto removido com sucesso.",
+          ),
+        );
     } catch (err) {
       const error = err as Error;
       return res.status(500).json(errorResponseWith(error.message, 500));
@@ -178,10 +184,7 @@ class ProductController {
     const { product_uuid } = req.params;
 
     try {
-      const productRecord = productNewData as unknown as Record<
-        string,
-        unknown
-      >;
+      const productRecord = toRecord(productNewData);
 
       const { schemaErr, requiredFieldsMessage, isMissingFields } =
         checkMissingFields(productRecord, ProductUpdateSchema);

@@ -173,7 +173,7 @@ class UserService {
 
     if (!deletedUser) throw new Error("Usuário não encontrado.");
 
-    return "Usuário excluido com sucesso";
+    return "Usuário removido com sucesso";
   }
 }
 

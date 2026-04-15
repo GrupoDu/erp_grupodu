@@ -206,7 +206,15 @@ class AuthController {
     const token = req.tokenResponse?.token;
 
     if (!token)
-      return res.status(401).json(errorResponseWith("Token inválido.", 401));
+      return res
+        .status(401)
+        .json(
+          errorResponseWith(
+            "Token inválido.",
+            401,
+            "Token inválido ou não fornecido.",
+          ),
+        );
 
     try {
       const payload = jwt.verify(token, process.env.JWT_SECRET as string);
@@ -217,7 +225,13 @@ class AuthController {
     } catch {
       return res
         .status(401)
-        .json(errorResponseWith("Token expirado ou inválido.", 401));
+        .json(
+          errorResponseWith(
+            "Token expirado ou inválido.",
+            401,
+            "Token expirado ou inválido.",
+          ),
+        );
     }
   }
 }
