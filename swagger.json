@@ -236,10 +236,7 @@
       },
       "StockUpdates": {
         "type": "object",
-        "required": [
-          "product_quantity_title",
-          "event"
-        ],
+        "required": ["product_quantity_title", "event"],
         "properties": {
           "product_quantity_title": { "type": "string" },
           "event": { "type": "string" }
