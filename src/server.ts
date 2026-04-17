@@ -1,18 +1,34 @@
 import { Server } from "socket.io";
 import { httpServer, PORT } from "./app.js";
 import dotenv from "dotenv";
+import { parse } from "cookie";
+import { sigintShutown, sigtermShutdown } from "./utils/gracefullShutdowns.js";
 
 dotenv.config();
 
 const FRONT_URL = process.env.FRONTEND_URL;
+const NODE_ENV = process.env.NODE_ENV || "development";
+const isProduction = NODE_ENV === "production" || false;
 const DEV_URL = process.env.DEV_URL || "http://localhost:3000";
 
-const ALLOWED_ORIGINS = FRONT_URL ? FRONT_URL : DEV_URL;
-const isProduction = process.env.NODE_ENV === "production";
+const ALLOWED_ORIGINS = isProduction ? FRONT_URL : DEV_URL;
+
+if (!FRONT_URL) {
+  process.emitWarning(
+    "Variável de ambiente FRONT_URL não definida.\nUtilizando DEV_URL.",
+  );
+
+  if (isProduction) {
+    console.error(
+      "Aplicação em produção mas variável de ambiente FRONT_URL não definida.",
+    );
+    process.exit(1);
+  }
+}
 
 export const io = new Server(httpServer, {
   cors: {
-    origin: [ALLOWED_ORIGINS, "http://192.168.1.7:3000"],
+    origin: [ALLOWED_ORIGINS!, "http://192.168.1.7:3000"],
     credentials: true,
     methods: ["GET", "POST"],
     allowedHeaders: ["Authorization", "Content-Type"],
@@ -33,15 +49,15 @@ export const io = new Server(httpServer, {
 
 // Middleware de autenticação (se precisar)
 io.use((socket, next) => {
-  const token =
-    socket.handshake.auth.token || socket.handshake.headers.authorization;
+  const cookieHeader: string | undefined = socket.handshake.headers.cookie;
 
-  if (token) {
-    // Validar token aqui se necessário
-    // socket.data.userId = decoded.userId;
+  if (cookieHeader) {
+    const cookies = parse(cookieHeader);
+    const token = cookies.access_token;
+
+    if (token) socket.data.access_token = token;
     next();
   } else {
-    // Se não precisa de autenticação, apenas next()
     next();
   }
 });
@@ -51,10 +67,8 @@ io.on("connection", (socket) => {
     `Cliente conectado: ${socket.id} | Transporte: ${socket.conn.transport.name}`,
   );
 
-  // Join na sala (corrigindo a string template)
-  socket.join(`connection_id:${socket.id}`);
+  void socket.join(`connection_id:${socket.id}`);
 
-  // Enviar confirmação de conexão
   socket.emit("connected", {
     socketId: socket.id,
     message: "Conectado ao servidor Socket.IO",
@@ -69,36 +83,12 @@ io.on("connection", (socket) => {
   });
 });
 
-// Graceful shutdown melhorado
-process.on("SIGTERM", () => {
-  console.log("SIGTERM recebido, iniciando graceful shutdown...");
-
-  // Notificar clientes sobre o shutdown
-  io.emit("server-shutdown", {
-    message: "Servidor será desligado em 5 segundos",
-    timestamp: Date.now(),
-  });
-
-  // Aguardar 5 segundos para clientes receberem a mensagem
-  setTimeout(() => {
-    io.close(() => {
-      console.log("Todas as conexões Socket.IO fechadas");
-      httpServer.close(() => {
-        console.log("Servidor HTTP fechado");
-        process.exit(0);
-      });
-    });
-  }, 5000);
-});
-
-// Tratar outros sinais de término
-process.on("SIGINT", () => {
-  console.log("SIGINT recebido, desligando...");
-  process.exit(0);
-});
+// Graceful shutdowns
+process.on("SIGTERM", () => sigtermShutdown(io, httpServer));
+process.on("SIGINT", () => sigintShutown());
 
 httpServer.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   console.log("-----------------------------------");
-  console.log(`Frontend: ${FRONT_URL}`);
+  console.log(`Frontend: ${isProduction ? FRONT_URL : DEV_URL}`);
 });

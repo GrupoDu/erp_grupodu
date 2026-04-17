@@ -36,7 +36,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [FRONTEND_URL, DEV_URL, "http://192.168.1.7:3000"],
+    origin: [FRONTEND_URL, DEV_URL],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
