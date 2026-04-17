@@ -1,5 +1,5 @@
 export interface IInOutStockAnalysis {
-  id?: string;
+  in_out_stock_uuid?: string;
   created_at?: Date;
   month?: number;
   year?: number;

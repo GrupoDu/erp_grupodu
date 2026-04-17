@@ -1,14 +1,12 @@
-import type { Decimal } from "@prisma/client/runtime/wasm-compiler-edge";
-
 export interface IProductionOrder {
-  production_order_id: string;
+  production_order_uuid: string;
   production_order_title: string;
   production_order_description?: string | null;
   delivery_observation?: string | null;
   created_at: Date;
   production_order_deadline: Date;
   production_order_status: string;
-  product_quantity: Decimal;
+  product_quantity: number;
   delivered_at?: Date | null;
   cut_assistant?: string | null;
   fold_assistant?: string | null;
@@ -16,9 +14,9 @@ export interface IProductionOrder {
   paint_assistant?: string | null;
   employee_uuid?: string | null;
   supervisor_uuid: string | null;
-  delivered_product_quantity?: Decimal;
+  delivered_product_quantity?: number;
   stock_validation?: boolean;
-  order_id?: string | null;
+  order_uuid?: string | null;
 }
 
 /**
@@ -45,7 +43,9 @@ type createOmitFields =
 export interface IProductionOrderCreate extends Omit<
   IProductionOrder,
   createOmitFields
-> {}
+> {
+  delivered_product_quantity: number;
+}
 
 /**
  * @see {IProductionOrder}

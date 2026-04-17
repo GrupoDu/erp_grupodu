@@ -5,7 +5,7 @@ export interface IUserLogin {
 }
 
 export interface ILoginResponse {
-  user: { user_id: string; user_type: string };
+  user: { user_uuid: string; user_type: string };
   accessToken: string;
   refreshToken: string;
 }

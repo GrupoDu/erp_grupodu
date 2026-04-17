@@ -1,11 +1,9 @@
-import { Decimal } from "@prisma/client/runtime/wasm-compiler-edge";
-
 export interface IOrderItemsDetails {
-  order_item_id: string;
-  product_id: string;
-  order_id: string;
-  unit_price: Decimal;
-  quantity: Decimal;
+  order_item_uuid: string;
+  product_uuid: string;
+  order_uuid: string;
+  unit_price: number;
+  quantity: number;
 }
 
 /**
@@ -15,7 +13,7 @@ export interface IOrderItemsDetails {
  */
 export interface IOrderItemsCreate extends Omit<
   IOrderItemsDetails,
-  "order_item_id"
+  "order_item_uuid"
 > {}
 
 /**

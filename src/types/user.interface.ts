@@ -1,5 +1,5 @@
 export interface IUser {
-  user_id: string;
+  user_uuid: string;
   name: string;
   email: string;
   password: string;
@@ -11,14 +11,14 @@ export interface IUser {
  * @see {IUser}
  * @Omit user_id
  */
-export interface IUserUpdate extends Partial<Omit<IUser, "user_id">> {}
+export interface IUserUpdate extends Partial<Omit<IUser, "user_uuid">> {}
 
 /**
  * @see {IUser}
  * @extends {IUser}
  * @Omit user_id
  */
-export interface IUserCreate extends Omit<IUser, "user_id"> {}
+export interface IUserCreate extends Omit<IUser, "user_uuid"> {}
 
 /**
  * @extends {IUser}

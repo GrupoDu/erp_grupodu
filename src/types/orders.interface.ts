@@ -1,5 +1,5 @@
 export interface IOrder {
-  order_id: string;
+  order_uuid: string;
   created_at: Date;
   order_status: string;
   order_deadline: Date;
