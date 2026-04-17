@@ -3,6 +3,7 @@
 Esse repositório guarda todo o backend do **ERP** do Grupo Du. Uma única API para todo o ecossistema do Grupo Du.
 
 ---
+
 ## Stack de desenvolvimento
 
 - Node.js
@@ -13,7 +14,9 @@ Esse repositório guarda todo o backend do **ERP** do Grupo Du. Uma única API p
 - ESLint
 - Prettier
 - Socket.io
+
 ---
+
 ## Rodando o projeto
 
 Primeiro é necessário configura o `.env` com as variáveis necessárias:
@@ -30,8 +33,11 @@ Primeiro é necessário configura o `.env` com as variáveis necessárias:
 - TRELLO_KEY: Key do trello
 - TRELLO_TOKEN: Token do trello
 - TRELLO_LIST_ID: ID da lista do trello
+
 ---
+
 Depois de configuras as variáveis de ambiente, execute um dos seguintes comandos para instalar as dependências:
+
 ```
 # npm
 npm install
@@ -42,6 +48,8 @@ pnpm install
 # yarn
 yarn install
 ```
+
 Após instalar as dependências, execute o comando `npx prisma migrate dev` para criar o banco de dados e o comando `npm run dev` para rodar o projeto.
+
 > [!HINT]
 > Também é possível usar o script `npm run prisma:pull`, `pnpm prisma:pull` ou `yarn prisma:pull` para criar o banco de dados e gerar o prisma client.
