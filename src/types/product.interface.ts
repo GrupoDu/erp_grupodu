@@ -6,7 +6,7 @@ import type {
 export interface IProduct {
   product_uuid: string;
   name: string;
-  description: string;
+  description?: string | null;
   product_type: string;
   created_at: Date;
   image: string;
