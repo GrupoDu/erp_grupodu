@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres
-    container_name: erp_db_test
+    container_name: erp_test_db
     volumes:
       - pgdata:/var/lib/postgresql
     networks:
