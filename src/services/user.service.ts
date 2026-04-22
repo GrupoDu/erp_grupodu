@@ -33,7 +33,7 @@ class UserService {
       select: {
         email: true,
         name: true,
-        user_id: true,
+        user_uuid: true,
         user_type: true,
       },
       orderBy: { name: "asc" },
@@ -59,7 +59,7 @@ class UserService {
       select: {
         email: true,
         name: true,
-        user_id: true,
+        user_uuid: true,
         user_type: true,
       },
       orderBy: { name: "asc" },
@@ -69,20 +69,20 @@ class UserService {
   /**
    * Busca um usuário pelo ID.
    *
-   * @param {string} user_id - ID do usuário
+   * @param {string} user_uuid - ID do usuário
    * @returns {Promise<IUserPublic>} - Dados públicos do usuário
    * @throws {Error} - ID do usuário não fornecido ou usuário não encontrado
    * @see {IUserPublic}
    */
-  async getUserById(user_id: string): Promise<IUserPublic> {
+  async getUserById(user_uuid: string): Promise<IUserPublic> {
     const userData = await this._prisma.users.findUnique({
       where: {
-        user_id,
+        user_uuid,
       },
       select: {
         email: true,
         name: true,
-        user_id: true,
+        user_uuid: true,
         user_type: true,
       },
     });
@@ -147,7 +147,7 @@ class UserService {
 
     return this._prisma.users.update({
       where: {
-        user_id: userUuid,
+        user_uuid: userUuid,
       },
       data: {
         email: String(updateFields.email),
@@ -160,14 +160,14 @@ class UserService {
   /**
    * Remove um usuário do sistema.
    *
-   * @param {string} userUuid - ID do usuário
+   * @param {string} user_uuid - ID do usuário
    * @returns {Promise<string>} - Mensagem de sucesso
    * @throws {Error} - ID do usuário não fornecido ou usuário não encontrado
    */
-  async deleteUserData(userUuid: string): Promise<string> {
+  async deleteUserData(user_uuid: string): Promise<string> {
     const deletedUser = await this._prisma.users.delete({
       where: {
-        user_id: userUuid,
+        user_uuid,
       },
     });
 

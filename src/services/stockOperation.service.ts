@@ -7,7 +7,6 @@ import InOutStockService from "./inoutStock.service.js";
 import ProductService from "./product.service.js";
 import ProductionOrderService from "./productionOrder.service.js";
 import type { PrismaClient } from "../../generated/prisma/client.js";
-import { Decimal } from "@prisma/client/runtime/wasm-compiler-edge";
 
 /**
  * Service responsável por gerenciar operações combinadas de estoque.
@@ -50,9 +49,9 @@ class StockOperationService {
       product_quantity_title,
       event,
       inStockIncrementQuantity,
-      product_id,
+      product_uuid,
       validation,
-      production_order_id,
+      production_order_uuid,
       producedQuantity,
     } = stockOperationData;
 
@@ -64,12 +63,12 @@ class StockOperationService {
 
       await this._productionOrderService.updateProductionOrder(
         { stock_validation: validation },
-        production_order_id,
+        production_order_uuid,
       );
 
       await this._productService.updateProductData(
         { stock_quantity: producedQuantity },
-        product_id,
+        product_uuid,
       );
 
       await this._inoutStockService.incrementMonthlyInStockQuantity(

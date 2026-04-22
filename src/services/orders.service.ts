@@ -48,13 +48,13 @@ export default class OrdersService {
   /**
    * Busca um pedido pelo ID
    *
-   * @param {string} order_id - ID do pedido
+   * @param {string} order_uuid - ID do pedido
    * @see {IOrder}
    * @returns {Promise<IOrder>} - Pedido encontrado
    */
-  async getOrderById(order_id: string): Promise<IOrder> {
+  async getOrderById(order_uuid: string): Promise<IOrder> {
     const targetOrder: IOrder | null = await this._prisma.orders.findUnique({
-      where: { order_id },
+      where: { order_uuid },
     });
 
     if (!targetOrder) throw new Error("Pedido não encontrado");
@@ -82,7 +82,7 @@ export default class OrdersService {
   /**
    * Atualiza um pedido
    *
-   * @param {string} order_id - ID do pedido
+   * @param {string} order_uuid - ID do pedido
    * @param {IOrderUpdate} orderUpdatedFields - Campos do pedido para atualizar
    * @returns {Promise<IOrder>} - Pedido atualizado
    * @see {IOrderUpdate}
@@ -90,16 +90,16 @@ export default class OrdersService {
    * @see {removeUndefinedUpdateFields}
    */
   async updateOrder(
-    order_id: string,
+    order_uuid: string,
     orderUpdatedFields: IOrderUpdate,
   ): Promise<IOrder> {
     const updatedFields = removeUndefinedUpdateFields(orderUpdatedFields);
     const hasNoFieldsToUpdate = Object.keys(updatedFields).length === 0;
 
-    if (hasNoFieldsToUpdate) return this.getOrderById(order_id);
+    if (hasNoFieldsToUpdate) return this.getOrderById(order_uuid);
 
     return this._prisma.orders.update({
-      where: { order_id },
+      where: { order_uuid },
       data: updatedFields,
     });
   }
@@ -107,7 +107,7 @@ export default class OrdersService {
   /**
    * Atualiza o status de um pedido
    *
-   * @param {string} order_id - ID do pedido
+   * @param {string} order_uuid - ID do pedido
    * @param {string} order_status - Status seguinte
    * @param {IProductionOrderCreate[]} productionOrders - Ordens de produção
    * @param {PrismaTransactionClient} tx - Transaction
@@ -117,12 +117,12 @@ export default class OrdersService {
    * @see {removeUndefinedUpdateFields}
    */
   async updateOrderStatus(
-    order_id: string,
+    order_uuid: string,
     order_status: string,
     productionOrders: IProductionOrderCreate[],
     tx?: PrismaTransactionClient,
   ): Promise<IOrder> {
-    const currentOrder: IOrder = await this.getOrderById(order_id);
+    const currentOrder: IOrder = await this.getOrderById(order_uuid);
     if (!currentOrder) throw new Error("Pedido não encontrado");
 
     enum statusTypes {
@@ -142,7 +142,7 @@ export default class OrdersService {
 
     if (order_status === "Em produção") {
       return this.sendOrderToProduction(
-        order_id,
+        order_uuid,
         order_status,
         productionOrders,
       );
@@ -150,13 +150,13 @@ export default class OrdersService {
 
     if (tx) {
       return tx.orders.update({
-        where: { order_id },
+        where: { order_uuid },
         data: { order_status },
       });
     }
 
     return this._prisma.orders.update({
-      where: { order_id },
+      where: { order_uuid },
       data: { order_status },
     });
   }
@@ -164,7 +164,7 @@ export default class OrdersService {
   /**
    * Envia itens do pedido para produção
    *
-   * @param {string} order_id - ID do pedido
+   * @param {string} order_uuid - ID do pedido
    * @param {string} order_status - Status
    * @param {IProductionOrderCreate[]} productionOrders - Itens do pedido para produção
    * @see {IProductionOrderCreate}
@@ -173,20 +173,20 @@ export default class OrdersService {
    * @private
    */
   private async sendOrderToProduction(
-    order_id: string,
+    order_uuid: string,
     order_status: string,
     productionOrders: IProductionOrderCreate[],
   ) {
     return this._prisma.$transaction(async (tx) => {
       // Atualizar diretamente o status do pedido para evitar recursão
       const updatedOrder = await tx.orders.update({
-        where: { order_id },
+        where: { order_uuid },
         data: { order_status },
       });
 
       const oldProductionOrders =
         await this._productionOrderService.getProductionOrdersByOrderId(
-          order_id,
+          order_uuid,
           tx,
         );
 
@@ -199,7 +199,7 @@ export default class OrdersService {
       if (hasNoOldProductionOrders) {
         await this.createProductionOrdersForOrderItems(
           productionOrders,
-          order_id,
+          order_uuid,
           tx,
         );
       }
@@ -210,13 +210,13 @@ export default class OrdersService {
 
       await this.removeOldProductionOrders(
         notDeliveredProductionOrders,
-        order_id,
+        order_uuid,
         tx,
       );
 
       await this.recreateNotDeliveredProductionOrders(
         notDeliveredProductionOrders,
-        order_id,
+        order_uuid,
         tx,
       );
 
@@ -228,7 +228,7 @@ export default class OrdersService {
    * Recria as ordens de produção não entregues
    *
    * @param {IProductionOrder[]} notDeliveredProductionOrders - Ordens de produção não entregues
-   * @param {string} order_id - ID do pedido
+   * @param {string} order_uuid - ID do pedido
    * @param {PrismaTransactionClient} tx - Transaction
    * @see {getExtraDeadline}
    * @see {ProductionOrderService}
@@ -236,7 +236,7 @@ export default class OrdersService {
    */
   private async recreateNotDeliveredProductionOrders(
     notDeliveredProductionOrders: IProductionOrder[],
-    order_id: string,
+    order_uuid: string,
     tx?: PrismaTransactionClient,
   ) {
     const newStatusAndDeadline = {
@@ -252,7 +252,7 @@ export default class OrdersService {
             ...newStatusAndDeadline,
             delivered_product_quantity: 0,
           },
-          order_id,
+          order_uuid,
           tx,
         ),
       ),
@@ -289,21 +289,21 @@ export default class OrdersService {
    *
    * @returns {Promise<void>}
    * @param {IProductionOrder[]} notDeliveredProductionOrders - Ordens de produção não entregues
-   * @param {string} order_id - ID de pedido
+   * @param {string} order_uuid - ID de pedido
    * @param {PrismaTransactionClient} tx - Transaction
    * @see {ProductionOrderService}
    * @private
    */
   private async removeOldProductionOrders(
     notDeliveredProductionOrders: IProductionOrder[],
-    order_id: string,
+    order_uuid: string,
     tx?: PrismaTransactionClient,
   ): Promise<void> {
     await Promise.all(
       notDeliveredProductionOrders.map((production) =>
         this._productionOrderService.removeProductionOrder(
-          production.production_order_id,
-          order_id,
+          production.production_order_uuid,
+          order_uuid,
           tx,
         ),
       ),

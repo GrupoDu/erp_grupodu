@@ -21,13 +21,13 @@ export default class OrderItemsService {
   /**
    * Busca itens de um pedido
    *
-   * @param {string} order_id
+   * @param {string} order_uuid
    * @see {IOrderItemsDetails}
    * @returns {Promise<IOrderItemsDetails[]>} - Array de itens de pedido
    */
-  async getOrderItems(order_id: string): Promise<IOrderItemsDetails[]> {
+  async getOrderItems(order_uuid: string): Promise<IOrderItemsDetails[]> {
     return this._prisma.order_items.findMany({
-      where: { order_id },
+      where: { order_uuid },
     });
   }
 
@@ -35,19 +35,19 @@ export default class OrderItemsService {
    * Adiciona um item ao pedido
    *
    * @param {IOrderItemsCreate} orderItemsDetails - Detalhes do item a ser adicionado
-   * @param {string} order_id - ID do pedido
+   * @param {string} order_uuid - ID do pedido
    * @see {IOrderItemsCreate}
    * @see {IOrderItemsDetails}
    * @returns {Promise<IOrderItemsDetails>} - Item adicionado ao pedido
    */
   async addItemsToOrder(
     orderItemsDetails: IOrderItemsCreate,
-    order_id: string,
+    order_uuid: string,
   ): Promise<IOrderItemsDetails> {
     return this._prisma.order_items.create({
       data: {
-        product_id: orderItemsDetails.product_id,
-        order_id,
+        product_uuid: orderItemsDetails.product_uuid,
+        order_uuid,
         unit_price: orderItemsDetails.unit_price,
         quantity: orderItemsDetails.quantity,
       },
@@ -57,18 +57,18 @@ export default class OrderItemsService {
   /**
    * Remove um item do pedido
    *
-   * @param {string} order_id - ID do pedido
-   * @param {string} product_id - ID do produto
+   * @param {string} order_uuid - ID do pedido
+   * @param {string} product_uuid - ID do produto
    * @returns {Promise<string>} - Mensagem de sucesso
    */
   async removeItemFromOrder(
-    order_id: string,
-    product_id: string,
+    order_uuid: string,
+    product_uuid: string,
   ): Promise<string> {
     const deletedItem = await this._prisma.order_items.deleteMany({
       where: {
-        order_id,
-        product_id,
+        order_uuid,
+        product_uuid,
       },
     });
 

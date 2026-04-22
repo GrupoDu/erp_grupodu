@@ -58,14 +58,14 @@ class AuthService {
     await this._prisma.refresh_tokens.create({
       data: {
         token: refreshToken,
-        user_uuid: user.user_id, // ✅ Campo correto
+        user_uuid: user.user_uuid, // ✅ Campo correto
         expires_at: this.calculateExpirationDate(),
         is_revoked: false,
       },
     });
 
     return {
-      user: { user_id: user.user_id, user_type: user.user_type },
+      user: { user_uuid: user.user_uuid, user_type: user.user_type },
       accessToken,
       refreshToken,
     };
@@ -88,7 +88,7 @@ class AuthService {
 
       if (!tokenRecord) throw new Error("Refresh token não encontrado.");
 
-      debbugLogger([`Token revogado: ${tokenRecord.is_revoked}`]);
+      debbugLogger([`Token revogado: ${tokenRecord.is_revoked}`, `Token infos: ${JSON.stringify(tokenRecord)}`]);
       if (tokenRecord.is_revoked) {
         debbugLogger([`Refresh token revogado: ${tokenRecord.is_revoked}`]);
         throw new Error("Refresh token revogado.");
@@ -104,22 +104,22 @@ class AuthService {
       const decoded = await this.verifyJWTSignature(
         oldRefreshToken,
         tx,
-        tokenRecord.id,
+        tokenRecord.refresh_token_uuid,
       );
 
       const user = await tx.users.findUnique({
-        where: { user_id: decoded.user_id },
-        select: { user_id: true, user_type: true },
+        where: { user_uuid: decoded.user_uuid },
+        select: { user_uuid: true, user_type: true },
       });
 
       if (!user) throw new Error("Usuário não encontrado.");
       debbugLogger([
         "Usuário encontrado.",
-        `Usuário: ${user.user_id}`,
+        `Usuário: ${user.user_uuid}`,
         "Revogando antigo refresh_token...",
       ]);
 
-      await this.revokeOldRefreshToken(tx, tokenRecord.id);
+      await this.revokeOldRefreshToken(tx, tokenRecord.refresh_token_uuid);
       debbugLogger(["Antigo refresh_token revogado."]);
 
       debbugLogger(["Gerando novos tokens..."]);
@@ -134,7 +134,7 @@ class AuthService {
       await tx.refresh_tokens.create({
         data: {
           token: newRefreshToken,
-          user_uuid: user.user_id,
+          user_uuid: user.user_uuid,
           expires_at: this.calculateExpirationDate(),
           is_revoked: false,
         },
@@ -160,6 +160,12 @@ class AuthService {
     });
   }
 
+  async isFirstLogin(user_uuid: string) {
+    return await this._prisma.refresh_tokens.count({
+      where: { user_uuid },
+    }) === 0;
+  }
+
   /**
    * Verifica se o token de refresh expirou.
    *
@@ -177,7 +183,7 @@ class AuthService {
     const isTokenExpired = tokenRecord.expires_at < new Date();
     if (isTokenExpired) {
       await tx.refresh_tokens.update({
-        where: { id: tokenRecord.id },
+        where: { refresh_token_uuid: tokenRecord.refresh_token_uuid },
         data: { is_revoked: true },
       });
       throw new Error("Refresh token expirado.");
@@ -198,7 +204,7 @@ class AuthService {
     oldRefreshToken: string,
     tx: PrismaTransactionClient,
     tokenId: string,
-  ): Promise<{ user_id: string }> {
+  ): Promise<{ user_uuid: string }> {
     debbugLogger(["Iniciando verifyJWTSignature..."]);
 
     if (!process.env.REFRESH_SECRET) {
@@ -211,7 +217,7 @@ class AuthService {
         oldRefreshToken,
         process.env.REFRESH_SECRET,
       ) as {
-        user_id: string;
+        user_uuid: string;
       };
       debbugLogger(["JWT verificado com sucesso"]);
 
@@ -220,7 +226,7 @@ class AuthService {
       const error = err as Error;
       debbugLogger(["JWT verify falhou:", error.message]);
       await tx.refresh_tokens.update({
-        where: { id: tokenId },
+        where: { refresh_token_uuid: tokenId },
         data: { is_revoked: true },
       });
       throw new Error("Refresh token inválido.", { cause: err });
@@ -272,7 +278,7 @@ class AuthService {
     token_id: string,
   ) {
     await tx.refresh_tokens.update({
-      where: { id: token_id },
+      where: { refresh_token_uuid: token_id },
       data: { is_revoked: true },
     });
   }

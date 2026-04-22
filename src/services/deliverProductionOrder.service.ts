@@ -70,7 +70,7 @@ class DeliverProductionOrderService {
             production_order_status: "Entregue",
           },
           where: {
-            production_order_id: production_order_id,
+            production_order_uuid: production_order_id,
           },
         });
 

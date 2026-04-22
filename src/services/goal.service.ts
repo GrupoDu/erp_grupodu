@@ -87,7 +87,7 @@ class GoalService {
 
     const deletedGoal = await this._prisma.goals.delete({
       where: {
-        goal_id: goalUuid,
+        goal_uuid: goalUuid,
       },
     });
 
@@ -118,7 +118,7 @@ class GoalService {
 
     return this._prisma.goals.update({
       where: {
-        goal_id: goalUuid,
+        goal_uuid: goalUuid,
       },
       data: updateFields,
     });
