@@ -1,6 +1,7 @@
 export interface IProductionOrder {
   production_order_uuid: string;
   production_order_title: string;
+  product_uuid: string;
   production_order_description?: string | null;
   delivery_observation?: string | null;
   created_at: Date;
@@ -24,21 +25,16 @@ export interface IProductionOrder {
  * @see {IProductionOrder}
  */
 type createOmitFields =
-  | "production_order_id"
+  | "production_order_uuid"
   | "created_at"
   | "delivered_product_quantity"
   | "stock_validation"
   | "delivered_at"
-  | "employee_uuid"
-  | "finishing_assistant"
-  | "paint_assistant"
-  | "fold_assistant"
-  | "cut_assistant";
 
 /**
  * @see {IProductionOrder}
  * @extends {IProductionOrder}
- * @Omit production_order_id, created_at, delivered_product_quantity, stock_validation, delivered_at, employee_uuid, finishing_assistant, paint_assistant, fold_assistant, cut_assistant
+ * @Omit production_order_uuid, created_at, delivered_product_quantity, stock_validation, delivered_at
  */
 export interface IProductionOrderCreate extends Omit<
   IProductionOrder,
@@ -53,7 +49,7 @@ export interface IProductionOrderCreate extends Omit<
  * @Omit production_order_id
  */
 export interface IProductionOrderUpdate extends Partial<
-  Omit<IProductionOrder, "production_order_id">
+  Omit<IProductionOrder, "production_order_uuid">
 > {}
 
 /**
@@ -63,7 +59,7 @@ export interface IProductionOrderUpdate extends Partial<
  */
 export interface IProductionOrderDeliver extends Pick<
   IProductionOrder,
-  "production_order_id" & "delivered_product_quantity" & "product_quantity"
+  "production_order_uuid" & "delivered_product_quantity" & "product_quantity"
 > {}
 
 /**
