@@ -75,20 +75,20 @@ class StockOperationController {
    */
   private validateEntries(entries: IStockOperationCreate): boolean {
     const {
-      production_order_id,
+      production_order_uuid,
       product_quantity_title,
       event,
-      product_id,
+      product_uuid,
       validation,
       inStockIncrementQuantity,
       producedQuantity,
     } = entries;
 
     const hasValidStringValues =
-      hasValidString(production_order_id) &&
+      hasValidString(production_order_uuid) &&
       hasValidString(product_quantity_title) &&
       hasValidString(event) &&
-      hasValidString(product_id);
+      hasValidString(product_uuid);
 
     const hasValidNumberValues =
       isNumber(inStockIncrementQuantity) && isNumber(producedQuantity);
