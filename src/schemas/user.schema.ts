@@ -5,7 +5,7 @@ export const UserSchema = z.object({
   name: z.string(),
   email: z.string(),
   password: z.string(),
-  user_type: z.string(),
+  user_role: z.string(),
 });
 
 export const UserCreateSchema = UserSchema.omit({

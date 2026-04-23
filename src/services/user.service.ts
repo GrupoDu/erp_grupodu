@@ -34,7 +34,7 @@ class UserService {
         email: true,
         name: true,
         user_uuid: true,
-        user_type: true,
+        user_role: true,
       },
       orderBy: { name: "asc" },
       where: {
@@ -54,13 +54,13 @@ class UserService {
   async getAllSupervisorsUsers(): Promise<IUserPublic[]> {
     return this._prisma.users.findMany({
       where: {
-        user_type: "supervisor",
+        user_role: "supervisor",
       },
       select: {
         email: true,
         name: true,
         user_uuid: true,
-        user_type: true,
+        user_role: true,
       },
       orderBy: { name: "asc" },
     });
@@ -83,7 +83,7 @@ class UserService {
         email: true,
         name: true,
         user_uuid: true,
-        user_type: true,
+        user_role: true,
       },
     });
 
@@ -121,7 +121,7 @@ class UserService {
         name: userInfos.name,
         email: userInfos.email,
         password: hashPassword,
-        user_type: userInfos.user_type,
+        user_role: userInfos.user_role,
       },
     });
   }
@@ -152,7 +152,7 @@ class UserService {
       data: {
         email: String(updateFields.email),
         name: String(updateFields.name),
-        user_type: String(updateFields.user_type),
+        user_role: String(updateFields.user_role),
       },
     });
   }
@@ -164,16 +164,19 @@ class UserService {
    * @returns {Promise<string>} - Mensagem de sucesso
    * @throws {Error} - ID do usuário não fornecido ou usuário não encontrado
    */
-  async deleteUserData(user_uuid: string): Promise<string> {
-    const deletedUser = await this._prisma.users.delete({
+  async deactivateUser(user_uuid: string): Promise<string> {
+    const deletedUser = await this._prisma.users.update({
       where: {
         user_uuid,
       },
+      data: {
+        is_active: false,
+      }
     });
 
     if (!deletedUser) throw new Error("Usuário não encontrado.");
 
-    return "Usuário removido com sucesso";
+    return "Usuário desativado com sucesso";
   }
 }
 

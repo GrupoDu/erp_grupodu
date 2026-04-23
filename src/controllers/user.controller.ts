@@ -154,7 +154,7 @@ class UserController {
    * @param {Response} res - Response express
    * @see {UserController}
    */
-  async deleteUser(req: Request, res: Response): Promise<Response> {
+  async deactivateUser(req: Request, res: Response): Promise<Response> {
     try {
       const { user_uuid } = req.params;
 
@@ -171,7 +171,7 @@ class UserController {
       }
 
       const deletedUserResponse =
-        await this._userService.deleteUserData(user_uuid);
+        await this._userService.deactivateUser(user_uuid);
 
       return res
         .status(200)
