@@ -32,7 +32,7 @@ model assistants_po_register {
 model employees {
   employee_uuid                                                    String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                                                             String
-  employee_type                                                    String
+  employee_role                                                    String
   delivered_activities_quantity                                    Int                      @default(0)
   not_delivered_activities_quantity                                Int                      @default(0)
   produced_quantity                                                Int                      @default(0)
@@ -166,7 +166,8 @@ model users {
   name             String
   email            String
   password         String
-  user_type        String
+  user_role        String
+  is_active        Boolean            @default(true)
   production_order production_order[]
   refresh_tokens   refresh_tokens[]
 }
