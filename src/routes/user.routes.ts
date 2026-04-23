@@ -33,11 +33,11 @@ router.get(
   adminAuthMiddleware,
   (req: Request, res: Response) => userController.getUserById(req, res),
 );
-router.delete(
-  "/:user_uuid",
+router.patch(
+  "/deactivate/:user_uuid",
   getTokenMiddleware,
   adminAuthMiddleware,
-  (req: Request, res: Response) => userController.deleteUser(req, res),
+  (req: Request, res: Response) => userController.deactivateUser(req, res),
 );
 router.patch(
   "/:user_uuid",

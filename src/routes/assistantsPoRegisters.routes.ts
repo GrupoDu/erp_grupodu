@@ -15,7 +15,7 @@ router.get("/", getTokenMiddleware, (req: Request, res: Response) =>
 router.post("/", getTokenMiddleware, (req: Request, res: Response) =>
   assistantsPORegistersController.createAssistantPORegister(req, res),
 );
-router.put("/deliver", getTokenMiddleware, (req: Request, res: Response) =>
+router.patch("/deliver", getTokenMiddleware, (req: Request, res: Response) =>
   assistantsPORegistersController.updateAssistantPORegisterAsDelivered(
     req,
     res,

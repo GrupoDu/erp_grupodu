@@ -32,19 +32,19 @@ router.delete(
   adminAuthMiddleware,
   (req: Request, res: Response) => employeeController.removeEmployee(req, res),
 );
-router.put(
+router.patch(
   "/:employee_uuid",
   getTokenMiddleware,
   adminAuthMiddleware,
   (req: Request, res: Response) => employeeController.updateEmployee(req, res),
 );
-router.put(
+router.patch(
   "/activity/:employee_uuid",
   getTokenMiddleware,
   (req: Request, res: Response) =>
     employeeController.incrementEmployeeActivityQuantity(req, res),
 );
-router.put(
+router.patch(
   "/produced-quantity/:employee_uuid",
   getTokenMiddleware,
   (req: Request, res: Response) =>
