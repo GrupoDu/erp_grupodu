@@ -27,7 +27,7 @@ export function dataAnalysisAuthorizationMiddleware(
       return res.status(401).json({ message: "Token inválido." });
     }
 
-    if (payload.user_type !== "admin") {
+    if (payload.user_role !== "admin") {
       return res.status(401).json({ message: "Não autorizado." });
     }
 

@@ -19,8 +19,8 @@ export function adminAuthMiddleware(
       return res.status(401).json({ message: "Token inválido." });
     }
 
-    // @ts-expect-error token.payload?.user_type existe
-    if (token.payload?.user_type !== "admin") {
+    // @ts-expect-error token.payload?.user_role existe
+    if (token.payload?.user_role !== "admin") {
       return res.status(403).json({ message: "não autorizado." });
     }
 
