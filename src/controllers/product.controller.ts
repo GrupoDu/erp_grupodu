@@ -126,6 +126,7 @@ class ProductController {
           ),
         );
     } catch (err) {
+      console.error("Erro no registro de produto:", err);
       const error = err as Error;
       return res.status(500).json(errorResponseWith(error.message, 500));
     }

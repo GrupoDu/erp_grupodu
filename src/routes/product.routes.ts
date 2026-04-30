@@ -4,7 +4,6 @@ import ProductService from "../services/product.service.js";
 import { prisma } from "../../lib/prisma.js";
 import { adminAuthMiddleware } from "../middlewares/adminAuth.middleware.js";
 import { getTokenMiddleware } from "../middlewares/getToken.middleware.js";
-
 const router: Router = Router();
 const productService = new ProductService(prisma);
 const productController = new ProductController(productService);
