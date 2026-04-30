@@ -7,7 +7,7 @@ datasource db {
   provider = "postgresql"
 }
 
-model anual_analysis {
+model annual_analysis {
   anual_analysis_uuid String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   created_at          DateTime? @db.Timestamptz(6)
   month               Int
@@ -132,15 +132,16 @@ model products {
   product_uuid     String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   created_at       DateTime           @default(now()) @db.Timestamptz(6)
   name             String             @unique
-  description      String?
   product_type     String
   image            String
   features         String[]
-  acronym          String?
-  composition      Json?
   stock_quantity   Int                @default(0)
   order_items      order_items[]
+  unit_price       Int
   productionOrders production_order[]
+  acronym          String?
+  composition      Json?
+  description      String?
 }
 
 model refresh_tokens {
