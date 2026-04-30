@@ -1,24 +1,21 @@
 import { Server } from "socket.io";
 import { httpServer, PORT } from "./app.js";
-import dotenv from "dotenv";
 import { parse } from "cookie";
 import { sigintShutown, sigtermShutdown } from "./utils/gracefullShutdowns.js";
+import { isProduction } from "./utils/isProduction.js";
 
-dotenv.config();
+const FRONT_URL = process.env["FRONTEND_URL"];
+const isProd = isProduction();
+const DEV_URL = process.env["DEV_URL"] || "http://localhost:3000";
 
-const FRONT_URL = process.env.FRONTEND_URL;
-const NODE_ENV = process.env.NODE_ENV || "development";
-const isProduction = NODE_ENV === "production" || false;
-const DEV_URL = process.env.DEV_URL || "http://localhost:3000";
-
-const ALLOWED_ORIGINS = isProduction ? FRONT_URL : DEV_URL;
+const ALLOWED_ORIGINS = isProd ? FRONT_URL : DEV_URL;
 
 if (!FRONT_URL) {
   process.emitWarning(
     "Variável de ambiente FRONT_URL não definida.\nUtilizando DEV_URL.",
   );
 
-  if (isProduction) {
+  if (isProd) {
     console.error(
       "Aplicação em produção mas variável de ambiente FRONT_URL não definida.",
     );
@@ -43,7 +40,7 @@ export const io = new Server(httpServer, {
   cookie: {
     name: "io",
     httpOnly: true,
-    sameSite: isProduction ? "lax" : "none",
+    sameSite: isProd ? "lax" : "none",
   },
 });
 
@@ -90,5 +87,5 @@ process.on("SIGINT", () => sigintShutown());
 httpServer.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   console.log("-----------------------------------");
-  console.log(`Frontend: ${isProduction ? FRONT_URL : DEV_URL}`);
+  console.log(`Frontend: ${isProd ? FRONT_URL : DEV_URL}`);
 });
