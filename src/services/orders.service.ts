@@ -384,6 +384,7 @@ export default class OrdersService {
       total: number;
     }>,
   ) {
+    debbugLogger(["Calculando valor total..."], "calculateFinalPrice");
     return products.reduce((total, product) => {
       return total + product.total;
     }, 0);
