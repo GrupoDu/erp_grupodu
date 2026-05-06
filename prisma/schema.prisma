@@ -100,7 +100,7 @@ model orders {
   billing          billing            @relation(fields: [billing_uuid], references: [billing_uuid], onDelete: NoAction, onUpdate: NoAction)
   revenue          revenues           @relation(fields: [revenue_uuid], references: [revenue_uuid], onDelete: NoAction, onUpdate: NoAction)
   clients          clients            @relation(fields: [client_uuid], references: [client_uuid], onDelete: NoAction, onUpdate: NoAction)
-  totalPrice       Int                @default(0)
+  totalPrice       Int?               @default(0)
   delivery         deliveries?
   order_items      order_items[]
   production_order production_order[]
