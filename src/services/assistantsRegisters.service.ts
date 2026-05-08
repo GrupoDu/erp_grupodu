@@ -2,13 +2,13 @@ import type {
   IAssistantsRegisterIdentifiers,
   IAssistantsRegister,
   IAssistantsRegisterCreate,
-} from "../types/assistantsRegisters.interface";
+} from "../types/assistantsRegisters.interface.js";
 import type { PrismaClient } from "../../generated/prisma/client.js";
 
 /**
  * Service responsável por gerenciar registros de assistentes.
  */
-export default class AssistantsPoRegistersService {
+export default class AssistantsRegistersService {
   private _prisma: PrismaClient;
 
   /** @param {PrismaClient} prisma - Prisma client */
@@ -19,14 +19,14 @@ export default class AssistantsPoRegistersService {
   /**
    * Método responsável por buscar todos os registros de assistentes.
    */
-  async getAllAssistantsPORegisters(): Promise<IAssistantsRegister[]> {
+  async getAllAssistantsRegisters(): Promise<IAssistantsRegister[]> {
     return this._prisma.assistants_register.findMany();
   }
 
   /**
    * Método responsável por buscas registro de assistentes por ID do assistente
    */
-  async getAssistantsPORegistersByAssistantId(
+  async getAssistantRegistersByAssistantId(
     assistant_uuid: string,
   ): Promise<IAssistantsRegister[]> {
     return this._prisma.assistants_register.findMany({
@@ -39,7 +39,7 @@ export default class AssistantsPoRegistersService {
   /**
    * Cria registro de assistente
    */
-  async createAssistantPORegister(
+  async createAssistantRegister(
     newAssistantPORegisterValues: IAssistantsRegisterCreate,
   ): Promise<IAssistantsRegister> {
     return this._prisma.assistants_register.create({
@@ -53,7 +53,7 @@ export default class AssistantsPoRegistersService {
   /**
    * Atualizar o registro de assistente como entregue
    */
-  async updateAssistantPORegisterAsDelivered(
+  async updateAssistantRegisterAsDelivered(
     identifiers: IAssistantsRegisterIdentifiers,
   ): Promise<string> {
     await this._prisma.assistants_register.updateMany({

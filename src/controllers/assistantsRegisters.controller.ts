@@ -38,7 +38,7 @@ export default class AssistantsRegistersController {
    * @param {Response} res - Response express
    * @see AssistantsPoRegistersController
    */
-  async getAllAssistantsPORegisters(
+  async getAllAssistantsRegisters(
     req: Request,
     res: Response,
   ): Promise<Response> {
@@ -113,7 +113,7 @@ export default class AssistantsRegistersController {
    * @param {Response} res - Response express
    * @see AssistantsPoRegistersController
    */
-  async createAssistantPORegister(
+  async createAssistantRegister(
     req: Request,
     res: Response,
   ): Promise<Response> {
@@ -159,7 +159,7 @@ export default class AssistantsRegistersController {
    * @param {Response} res - Response express
    * @see AssistantsPoRegistersController
    */
-  async updateAssistantPORegisterAsDelivered(
+  async updateAssistantRegisterAsDelivered(
     req: Request,
     res: Response,
   ): Promise<Response> {

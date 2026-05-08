@@ -18,9 +18,6 @@ import { toRecord } from "../utils/toRecord.js";
 
 /**
  * Controller responsável por gerenciar pedidos
- *
- * @class OrdersController
- * @see OrdersService
  */
 class OrdersController {
   private _ordersService: OrdersService;
@@ -32,11 +29,6 @@ class OrdersController {
 
   /**
    * Método responsável por retornar todos os pedidos
-   *
-   * @returns {Promise<Response>} - Objeto com todos os pedidos
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
-   * @see OrdersController
    */
   async getOrders(req: Request, res: Response): Promise<Response> {
     try {
@@ -51,11 +43,7 @@ class OrdersController {
   }
 
   /**
-   * Método responsável por retornar um pedido por ID
-   *
-   * @returns {Promise<Response>} - Objeto com o pedido encontrado
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
+   * Método responsável por retornar um pedido por UUID
    */
   async getOrderById(req: Request, res: Response): Promise<Response> {
     const { order_uuid } = req.params;
@@ -87,11 +75,6 @@ class OrdersController {
 
   /**
    * Método responsável por criar um novo pedido
-   *
-   * @returns {Promise<Response>} - Objeto com o pedido criado
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
-   * @see OrdersController
    */
   async createOrder(req: Request, res: Response): Promise<Response> {
     try {
@@ -118,11 +101,6 @@ class OrdersController {
 
   /**
    * Método responsável por atualizar um pedido
-   *
-   * @returns {Promise<Response>} - Objeto com o pedido atualizado
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
-   * @see OrdersController
    */
   async updateOrder(req: Request, res: Response): Promise<Response> {
     const { order_uuid } = req.params;
@@ -176,11 +154,6 @@ class OrdersController {
 
   /**
    * Método responsável por atualizar o status de um pedido
-   *
-   * @returns {Promise<Response>} - Objeto com o pedido atualizado
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
-   * @see OrdersController
    */
   async updateOrderStatus(req: Request, res: Response): Promise<Response> {
     const { order_uuid } = req.params;
@@ -218,46 +191,8 @@ class OrdersController {
         );
     } catch (err) {
       const error = err as Error;
-
-      const { isOrderOnFinalStatus, isCurrentStatusInvalid, isOrderNotFound } =
-        this.errorsCase(error);
-
-      if (isOrderNotFound) {
-        return res
-          .status(404)
-          .json(errorResponseWith("Pedido não encontrado", 404));
-      }
-
-      if (isCurrentStatusInvalid) {
-        return res
-          .status(400)
-          .json(errorResponseWith("Status atual inválido", 400));
-      }
-
-      if (isOrderOnFinalStatus) {
-        return res
-          .status(400)
-          .json(errorResponseWith("Pedido já está no status final", 400));
-      }
-
       return res.status(500).json(errorResponseWith(error.message, 500));
     }
-  }
-
-  /**
-   * Método responsável por verificar o tipo de erro
-   *
-   * @returns {Object} - Objeto com casos de erros diferentes
-   * @param error {Error}
-   * @private
-   */
-  private errorsCase(error: Error) {
-    const isOrderOnFinalStatus =
-      error.message === "Order is already in final status";
-    const isCurrentStatusInvalid = error.message === "Invalid current status";
-    const isOrderNotFound = error.message === "Order not found";
-
-    return { isOrderNotFound, isCurrentStatusInvalid, isOrderOnFinalStatus };
   }
 }
 

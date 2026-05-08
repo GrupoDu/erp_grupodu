@@ -1,28 +1,27 @@
 export interface IOrderItems {
   order_item_uuid: string;
-  product_uuid: string;
-  order_uuid: string;
-  unit_price: number;
+  created_at: Date;
   quantity: number;
-  discount_percentage: number;
-  ipi: number;
+  unit_price: number;
   additional_amount: number;
   total: number;
+  discount_percentage?: number;
+  ipi?: number;
+  product_uuid: string;
+  order_uuid: string;
 }
 
 /**
- * @extends {IOrderItemsDetails}
- * @see {IOrderItemsDetails}
- * @Omit order_item_id
+ * @extends {IOrderItems}
+ * @Omit order_item_uuid
  */
 export interface IOrderItemsCreate extends Omit<
   IOrderItems,
-  "order_item_uuid"
+  "order_item_uuid" | "created_at"
 > {}
 
 /**
- * @see {IOrderItemsDetails}
- * @extends {IOrderItemsDetails}
+ * @extends {IOrderItems}
  * @Omit unit_price, quantity
  */
 export interface IOrderItemsTestType extends Omit<

@@ -20,9 +20,6 @@ import { hasValidString } from "../utils/hasValidString.js";
 
 /**
  * Controller relacionado a operações de funcionários.
- *
- * @class EmployeeController
- * @see EmployeeService
  */
 class EmployeeController {
   private _employeeService: EmployeeService;
@@ -34,11 +31,6 @@ class EmployeeController {
 
   /**
    * Método responsável por retornar dados de todos os funcionários.
-   *
-   * @returns {Promise<Response>} - Objeto com todos os funcionários.
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
-   * @see EmployeeController
    */
   async getAllEmployeesData(req: Request, res: Response): Promise<Response> {
     try {
@@ -61,11 +53,6 @@ class EmployeeController {
 
   /**
    * Método responsável por buscar dados de um funcionário pelo seu UUID.
-   *
-   * @returns {Promise<Response>} - Objeto com todos os dados do funcionário.
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
-   * @see EmployeeController
    */
   async getEmployeeDataById(req: Request, res: Response): Promise<Response> {
     const { employee_uuid } = req.params;
@@ -102,11 +89,6 @@ class EmployeeController {
 
   /**
    * Método responsável por registrar um novo funcionário.
-   *
-   * @returns {Promise<Response>} - Retorna objeto com novo funcionário registrado
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
-   * @see EmployeeController
    */
   async createNewEmployee(req: Request, res: Response): Promise<Response> {
     const newEmployeeData = req.body as IEmployeeCreate;
@@ -141,11 +123,6 @@ class EmployeeController {
 
   /**
    * Método responsável por remover um funcionário do sistema.
-   *
-   * @returns {Promise<Response>} - Retorna objeto com mensagem de sucesso
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
-   * @see EmployeeController
    */
   async removeEmployee(req: Request, res: Response): Promise<Response> {
     try {
@@ -156,7 +133,7 @@ class EmployeeController {
           .status(422)
           .json(
             errorResponseWith(
-              REQUIRED_FIELDS_MESSAGE(["uuid"]),
+              REQUIRED_FIELDS_MESSAGE(["employee_uuid"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -181,11 +158,6 @@ class EmployeeController {
 
   /**
    * Método responsável por atualizar dados de um funcionário.
-   *
-   * @returns {Promise<Response>} - Retorna objeto com mensagem de sucesso
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
-   * @see EmployeeController
    */
   async updateEmployee(req: Request, res: Response): Promise<Response> {
     try {
@@ -197,7 +169,13 @@ class EmployeeController {
       if (!hasValidString(employee_uuid)) {
         return res
           .status(422)
-          .json(errorResponseWith(schemaErr, 422, requiredFieldsMessage));
+          .json(
+            errorResponseWith(
+              REQUIRED_FIELDS_MESSAGE(["employee_uuid"]),
+              422,
+              MISSING_FIELDS_MESSAGE,
+            ),
+          );
       }
 
       if (isMissingFields) {
@@ -227,11 +205,6 @@ class EmployeeController {
 
   /**
    * Método responsável por incrementar a quantidade de atividades de um funcionário.
-   *
-   * @returns {Promise<Response>} - Retorna objeto com mensagem de sucesso
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
-   * @see EmployeeController
    */
   async incrementEmployeeActivityQuantity(
     req: Request,
@@ -273,11 +246,6 @@ class EmployeeController {
 
   /**
    * Método responsável por incrementar a quantidade de produtos produzidos de um funcionário.
-   *
-   * @returns {Promise<Response>} - Retorna objeto com mensagem de sucesso
-   * @param {Request} req - Request express
-   * @param {Response} res - Response express
-   * @see EmployeeController
    */
   async incrementEmployeeProductsProducedQuantity(
     req: Request,

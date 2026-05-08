@@ -1,9 +1,4 @@
 import type { IOrderItems } from "./orderItems.interface.js";
-import type { IBilling } from "./billing.interface.js";
-import type { IRevenue } from "./revenue.interface.js";
-import type { IDelivery } from "./delivery.interface.js";
-
-import type { IClient } from "./client.interface.js";
 
 export interface IOrder {
   order_uuid: string;
@@ -11,11 +6,10 @@ export interface IOrder {
   order_status: string;
   order_deadline: Date;
   order_items: IOrderItems[];
-  billing: IBilling;
-  revenue: IRevenue;
-  delivery: IDelivery;
+  billing_uuid: string;
+  revenue_uuid: string;
+  delivery_uuid: string;
   client_uuid: string;
-  clients: IClient;
   totalPrice: number;
 }
 

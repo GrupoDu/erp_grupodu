@@ -8,8 +8,6 @@ import removeUndefinedUpdateFields from "../utils/removeUndefinedUpdateFields.ut
 
 /**
  * Service responsável por gerenciar receitas (dados fiscais).
- *
- * @class RevenueService
  */
 export default class RevenueService {
   private _prisma: PrismaClient;
@@ -21,8 +19,6 @@ export default class RevenueService {
 
   /**
    * Busca todos os registros de receita
-   *
-   * @returns {Promise<IRevenue[]>}
    */
   async getAllRevenues(): Promise<IRevenue[]> {
     return this._prisma.revenues.findMany({
@@ -32,9 +28,6 @@ export default class RevenueService {
 
   /**
    * Busca uma receita pelo ID
-   *
-   * @param {string} revenue_uuid - ID
-   * @returns {Promise<IRevenue>}
    */
   async getRevenueById(revenue_uuid: string): Promise<IRevenue> {
     const revenue = await this._prisma.revenues.findUnique({
@@ -48,9 +41,6 @@ export default class RevenueService {
 
   /**
    * Cria uma nova receita
-   *
-   * @param {IRevenueCreate} data - Dados
-   * @returns {Promise<IRevenue>}
    */
   async createRevenue(data: IRevenueCreate): Promise<IRevenue> {
     return this._prisma.revenues.create({
@@ -60,10 +50,6 @@ export default class RevenueService {
 
   /**
    * Atualiza uma receita
-   *
-   * @param {string} revenue_uuid - ID
-   * @param {IRevenueUpdate} data - Dados
-   * @returns {Promise<IRevenue>}
    */
   async updateRevenue(
     revenue_uuid: string,

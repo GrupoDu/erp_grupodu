@@ -10,15 +10,11 @@ import type {
 } from "../types/productionOrder.interface.js";
 import ProductionOrderService from "./productionOrder.service.js";
 import { getTodayDate } from "../utils/getTodayDate.js";
-import debbugLogger from "../utils/debugLogger.js";
 import removeUndefinedUpdateFields from "../utils/removeUndefinedUpdateFields.utils.js";
 import type { PrismaTransactionClient } from "../../lib/prisma.js";
 
 /**
  * Service responsável por gerenciar pedidos.
- *
- * @class OrdersService
- * @see OrdersController
  */
 export default class OrdersService {
   private _prisma: PrismaClient;
@@ -45,9 +41,6 @@ export default class OrdersService {
 
   /**
    * Busca todos os pedidos
-   *
-   * @see {IOrder}
-   * @returns {Promise<IOrder[]>} Array de pedidos
    */
   async getOrders(): Promise<IOrder[]> {
     const orders = await this._prisma.orders.findMany({
@@ -62,10 +55,6 @@ export default class OrdersService {
 
   /**
    * Busca um pedido pelo ID
-   *
-   * @param {string} order_uuid - ID do pedido
-   * @see {IOrder}
-   * @returns {Promise<IOrder>} - Pedido encontrado
    */
   async getOrderById(order_uuid: string): Promise<IOrder> {
     const targetOrder = await this._prisma.orders.findUnique({
@@ -80,11 +69,6 @@ export default class OrdersService {
 
   /**
    * Cria um pedido
-   *
-   * @returns {Promise<IOrder>} - Pedido criado
-   * @param {IOrderCreateInput} orderData - Detalhes do pedido
-   * @see {IOrderCreateInput}
-   * @see {IOrder}
    */
   async createOrder(orderData: IOrderCreateInput): Promise<IOrder> {
     const {
@@ -131,13 +115,6 @@ export default class OrdersService {
 
   /**
    * Atualiza um pedido
-   *
-   * @param {string} order_uuid - ID do pedido
-   * @param {IOrderUpdate} orderUpdatedFields - Campos do pedido para atualizar
-   * @returns {Promise<IOrder>} - Pedido atualizado
-   * @see {IOrderUpdate}
-   * @see {getOrderById}
-   * @see {removeUndefinedUpdateFields}
    */
   async updateOrder(
     order_uuid: string,
@@ -156,15 +133,6 @@ export default class OrdersService {
 
   /**
    * Atualiza o status de um pedido
-   *
-   * @param {string} order_uuid - ID do pedido
-   * @param {string} order_status - Status seguinte
-   * @param {IProductionOrderCreate[]} productionOrders - Ordens de produção
-   * @param {PrismaTransactionClient} tx - Transaction
-   * @returns {Promise<IOrder>} - Pedido atualizado
-   * @see {IProductionOrderCreate}
-   * @see {getOrderById}
-   * @see {removeUndefinedUpdateFields}
    */
   async updateOrderStatus(
     order_uuid: string,
@@ -213,14 +181,6 @@ export default class OrdersService {
 
   /**
    * Envia itens do pedido para produção
-   *
-   * @param {string} order_uuid - ID do pedido
-   * @param {string} order_status - Status
-   * @param {IProductionOrderCreate[]} productionOrders - Itens do pedido para produção
-   * @see {IProductionOrderCreate}
-   * @see {updateOrderStatus}
-   * @see {ProductionOrderService}
-   * @private
    */
   private async sendOrderToProduction(
     order_uuid: string,
@@ -228,7 +188,6 @@ export default class OrdersService {
     productionOrders: IProductionOrderCreate[],
   ) {
     return this._prisma.$transaction(async (tx) => {
-      // Atualizar diretamente o status do pedido para evitar recursão
       const updatedOrder = await tx.orders.update({
         where: { order_uuid },
         data: { order_status },
@@ -239,11 +198,6 @@ export default class OrdersService {
           order_uuid,
           tx,
         );
-
-      debbugLogger(
-        [`oldProductionOrders: ${JSON.stringify(oldProductionOrders)}`],
-        "||> sendOrderToProduction <||",
-      );
 
       const hasNoOldProductionOrders = oldProductionOrders.length === 0;
       if (hasNoOldProductionOrders) {
@@ -276,13 +230,6 @@ export default class OrdersService {
 
   /**
    * Recria as ordens de produção não entregues
-   *
-   * @param {IProductionOrder[]} notDeliveredProductionOrders - Ordens de produção não entregues
-   * @param {string} order_uuid - ID do pedido
-   * @param {PrismaTransactionClient} tx - Transaction
-   * @see {getExtraDeadline}
-   * @see {ProductionOrderService}
-   * @private
    */
   private async recreateNotDeliveredProductionOrders(
     notDeliveredProductionOrders: IProductionOrder[],
@@ -311,12 +258,6 @@ export default class OrdersService {
 
   /**
    * Cria ordens de produção para os itens do pedido
-   *
-   * @param {IProductionOrderCreate[]} productionOrders - Ordens de produção a serem criados
-   * @param {string} order_id - ID do pedido
-   * @param {PrismaTransactionClient} tx - Transaction
-   * @see {ProductionOrderService}
-   * @private
    */
   private async createProductionOrdersForOrderItems(
     productionOrders: IProductionOrderCreate[],
@@ -336,13 +277,6 @@ export default class OrdersService {
 
   /**
    * Remove antigas ordens de produção não entregues
-   *
-   * @returns {Promise<void>}
-   * @param {IProductionOrder[]} notDeliveredProductionOrders - Ordens de produção não entregues
-   * @param {string} order_uuid - ID de pedido
-   * @param {PrismaTransactionClient} tx - Transaction
-   * @see {ProductionOrderService}
-   * @private
    */
   private async removeOldProductionOrders(
     notDeliveredProductionOrders: IProductionOrder[],
@@ -384,19 +318,11 @@ export default class OrdersService {
       total: number;
     }>,
   ) {
-    debbugLogger(["Calculando valor total..."], "calculateFinalPrice");
     return products.reduce((total, product) => {
       return total + product.total;
     }, 0);
   }
 
-  /**
-   * Adiciona 4 dias extras ao prazo
-   *
-   * @returns {number} - Deadline extra
-   * @see {FOUR_DAYS}
-   * @private
-   */
   private getExtraDeadline(): number {
     return getTodayDate().getTime() + OrdersService.FOUR_DAYS;
   }
