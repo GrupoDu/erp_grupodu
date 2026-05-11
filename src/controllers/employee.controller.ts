@@ -252,15 +252,15 @@ class EmployeeController {
     res: Response,
   ): Promise<Response> {
     const { employee_uuid } = req.params;
-    const { products_quantity } = req.body as { products_quantity: number };
+    const { produced_quantity } = req.body as { produced_quantity: number };
 
     try {
-      if (!hasValidString(employee_uuid) || !isNumber(products_quantity)) {
+      if (!hasValidString(employee_uuid) || !isNumber(produced_quantity)) {
         return res
           .status(422)
           .json(
             errorResponseWith(
-              REQUIRED_FIELDS_MESSAGE(["employee_uuid", "products_quantity"]),
+              REQUIRED_FIELDS_MESSAGE(["employee_uuid", "produced_quantity"]),
               422,
               MISSING_FIELDS_MESSAGE,
             ),
@@ -270,7 +270,7 @@ class EmployeeController {
       const updatedEmployee =
         await this._employeeService.incrementEmployeeProductsProducedQuantity(
           employee_uuid,
-          products_quantity,
+          produced_quantity,
         );
 
       return res
