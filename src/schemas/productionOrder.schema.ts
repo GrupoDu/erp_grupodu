@@ -32,6 +32,7 @@ export const CreateProductionOrderSchema = ProductionOrderSchema.omit({
   stock_validation: true,
   delivered_product_quantity: true,
   produced_quantity: true,
+  delivery_observation: true,
 });
 
 export const UpdateProductionOrderSchema = ProductionOrderSchema.partial();
