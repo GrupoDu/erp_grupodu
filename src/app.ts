@@ -27,6 +27,7 @@ import BillingRoutes from "./routes/billing.routes.js";
 import RevenueRoutes from "./routes/revenue.routes.js";
 import DeliveriesRoutes from "./routes/deliveries.routes.js";
 import ClientRoutes from "./routes/client.routes.js";
+import WeldersActivitiesRoutes from "./routes/weldersActivities.routes.js";
 
 dotenv.config();
 const app: Express = express();
@@ -69,6 +70,7 @@ app.use("/billing", BillingRoutes);
 app.use("/revenues", RevenueRoutes);
 app.use("/deliveries", DeliveriesRoutes);
 app.use("/clients", ClientRoutes);
+app.use("/welders-activities", WeldersActivitiesRoutes);
 
 app.get("/health", (req: Request, res: Response) => res.json({ status: "ok" }));
 
