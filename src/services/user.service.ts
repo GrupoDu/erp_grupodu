@@ -35,6 +35,7 @@ class UserService {
         name: true,
         user_uuid: true,
         user_role: true,
+        is_active: true,
       },
       orderBy: { name: "asc" },
       where: {
@@ -61,6 +62,7 @@ class UserService {
         name: true,
         user_uuid: true,
         user_role: true,
+        is_active: true,
       },
       orderBy: { name: "asc" },
     });
@@ -78,12 +80,6 @@ class UserService {
     const userData = await this._prisma.users.findUnique({
       where: {
         user_uuid,
-      },
-      select: {
-        email: true,
-        name: true,
-        user_uuid: true,
-        user_role: true,
       },
     });
 
@@ -171,7 +167,7 @@ class UserService {
       },
       data: {
         is_active: false,
-      }
+      },
     });
 
     if (!deletedUser) throw new Error("Usuário não encontrado.");
