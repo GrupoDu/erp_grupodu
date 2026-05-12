@@ -27,7 +27,7 @@ services:
         - action: rebuild
           path: Dockerfile
         - action: rebuild
-          path: compose.yaml
+          path: compose.dev.yaml
     env_file:
       - .env
     ports:

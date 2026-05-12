@@ -1,0 +1,12 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: prod
+    env_file:
+      - .env
+    ports:
+      - "8001:8001"
+    expose:
+      - "8001"
