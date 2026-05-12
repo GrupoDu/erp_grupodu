@@ -188,7 +188,7 @@ model products {
 }
 
 model welders_activities {
-  welders_activities_uuid String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  welder_activity_uuid String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   registered_at           DateTime   @default(now()) @db.Timestamptz(6)
   produced_quantity       Int
   product_uuid            String     @db.Uuid
