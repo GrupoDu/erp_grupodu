@@ -261,6 +261,27 @@
           "date": { "type": "string", "format": "date" }
         }
       },
+      "WeldersActivities": {
+        "type": "object",
+        "required": ["welder_activity_uuid", "registered_at", "produced_quantity", "welder_uuid", "product_uuid"],
+        "properties": {
+          "welder_activity_uuid": { "type": "string", "format": "uuid" },
+          "registered_at": { "type": "string", "format": "date-time" },
+          "produced_quantity": { "type": "integer" },
+          "welder_uuid": { "type": "string", "format": "uuid" },
+          "product_uuid": { "type": "string", "format": "uuid" }
+        }
+      },
+      "CreateWeldersActivities": {
+        "type": "object",
+        "required": ["registered_at", "produced_quantity", "welder_uuid", "product_uuid"],
+        "properties": {
+          "registered_at": { "type": "string", "format": "date-time" },
+          "produced_quantity": { "type": "integer" },
+          "welder_uuid": { "type": "string", "format": "uuid" },
+          "product_uuid": { "type": "string", "format": "uuid" }
+        }
+      },
       "Error": {
         "type": "object",
         "properties": {
@@ -3395,6 +3416,172 @@
         "responses": {
           "200": {
             "description": "Cliente atualizado com sucesso"
+          }
+        }
+      }
+    },
+    "/welders-activities": {
+      "get": {
+        "summary": "Lista todas as atividades de soldadores",
+        "tags": ["WeldersActivities"],
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de atividades de soldadores retornada com sucesso",
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "welder_activity_uuid": "185cdd98-20d7-4f36-aa59-4a9d1cc089e9",
+                      "registered_at": "2026-05-12T10:30:00.000Z",
+                      "produced_quantity": 50,
+                      "welder_uuid": "285b4930-4518-471f-a12c-8ae3fffbe477",
+                      "product_uuid": "385c5940-5628-482f-b23d-9bf4ggfcf588"
+                    }
+                  ],
+                  "status": 200,
+                  "message": "Atividades de soldadores encontradas com sucesso.",
+                  "success": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/welders-activities/{welder_uuid}": {
+      "get": {
+        "summary": "Busca atividades de um soldador por UUID",
+        "tags": ["WeldersActivities"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "welder_uuid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Atividades do soldador encontradas com sucesso",
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "welder_activity_uuid": "185cdd98-20d7-4f36-aa59-4a9d1cc089e9",
+                      "registered_at": "2026-05-12T10:30:00.000Z",
+                      "produced_quantity": 50,
+                      "welder_uuid": "285b4930-4518-471f-a12c-8ae3fffbe477",
+                      "product_uuid": "385c5940-5628-482f-b23d-9bf4ggfcf588"
+                    }
+                  ],
+                  "status": 200,
+                  "message": "Dados de atividade do soldador encontrados com sucesso.",
+                  "success": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Campos obrigatórios faltando.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": 422,
+                  "message": "Campos obrigatórios faltando.",
+                  "success": false,
+                  "error": "Campos obrigatórios: welder_uuid."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/welders-activities/register": {
+      "post": {
+        "summary": "Registra uma nova atividade de soldador",
+        "tags": ["WeldersActivities"],
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateWeldersActivities" },
+              "example": {
+                "registered_at": "2026-05-12T10:30:00.000Z",
+                "produced_quantity": 50,
+                "welder_uuid": "285b4930-4518-471f-a12c-8ae3fffbe477",
+                "product_uuid": "385c5940-5628-482f-b23d-9bf4ggfcf588"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Atividade de soldador registrada com sucesso",
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "welder_activity_uuid": "185cdd98-20d7-4f36-aa59-4a9d1cc089e9",
+                    "registered_at": "2026-05-12T10:30:00.000Z",
+                    "produced_quantity": 50,
+                    "welder_uuid": "285b4930-4518-471f-a12c-8ae3fffbe477",
+                    "product_uuid": "385c5940-5628-482f-b23d-9bf4ggfcf588"
+                  },
+                  "status": 201,
+                  "message": "Registro de atividade do soldador realizado",
+                  "success": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Campos obrigatórios faltando.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": 422,
+                  "message": "Campos obrigatórios faltando.",
+                  "success": false,
+                  "error": "Campos obrigatórios: registered_at, produced_quantity, welder_uuid, product_uuid."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
