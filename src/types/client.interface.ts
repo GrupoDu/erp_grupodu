@@ -5,6 +5,7 @@ export interface IClient {
   client_cnpj: string;
   client_address: string;
   client_phone: string;
+  client_email?: string;
   client_landline?: string;
 }
 

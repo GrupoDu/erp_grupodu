@@ -64,9 +64,8 @@ export default class ClientService {
   ): Promise<IClient> {
     const updateFields = removeUndefinedUpdateFields(data);
 
-    if (Object.keys(updateFields).length === 0) {
+    if (Object.keys(updateFields).length === 0)
       return this.getClientById(client_uuid);
-    }
 
     return this._prisma.clients.update({
       where: { client_uuid },
