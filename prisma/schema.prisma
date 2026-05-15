@@ -14,6 +14,7 @@ model annual_analysis {
   year                Int
   delivered           Int       @default(0)
   not_delivered       Int       @default(0)
+  total_production    Int       @default(0)
   updated_at          DateTime  @default(now()) @db.Date
 }
 
@@ -74,12 +75,12 @@ model order_items {
   created_at          DateTime @default(now()) @db.Timestamptz(6)
   quantity            Int      @default(1)
   unit_price          Int
-  discount_percentage Float    @default(0)
-  ipi                 Float    @default(0)
-  additional_amount   Int      @default(0)
   total               Int
   product_uuid        String   @db.Uuid
   order_uuid          String   @db.Uuid
+  discount_percentage Float?    @default(0)
+  ipi                 Float?    @default(0)
+  additional_amount   Int?      @default(0)
   orders              orders   @relation(fields: [order_uuid], references: [order_uuid], onDelete: NoAction, onUpdate: NoAction)
   products            products @relation(fields: [product_uuid], references: [product_uuid], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -93,7 +94,7 @@ model orders {
   revenue_uuid      String              @unique @db.Uuid
   delivery_uuid     String              @unique @db.Uuid
   client_uuid       String              @db.Uuid
-  totalPrice        Int?                @default(0)
+  total_price       Int?                @default(0)
   billing           billings            @relation(fields: [billing_uuid], references: [billing_uuid], onDelete: NoAction, onUpdate: NoAction)
   revenue           revenues            @relation(fields: [revenue_uuid], references: [revenue_uuid], onDelete: NoAction, onUpdate: NoAction)
   clients           clients             @relation(fields: [client_uuid], references: [client_uuid], onDelete: NoAction, onUpdate: NoAction)
@@ -132,6 +133,7 @@ model clients {
   client_cnpj     String
   client_address  String
   client_phone    String
+  client_email    String?
   client_landline String?
   revenues        revenues[]
   billings        billings[]
