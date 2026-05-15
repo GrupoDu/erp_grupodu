@@ -12,7 +12,12 @@ class WeldersActivitiesService {
   }
 
   async getWeldersActivities(): Promise<IWeldersActivities[]> {
-    return this._prisma.welders_activities.findMany();
+    return this._prisma.welders_activities.findMany({
+      include: {
+        products: true,
+        employees: true,
+      },
+    });
   }
 
   async getWelderActivitiesByWelderId(
@@ -29,7 +34,10 @@ class WeldersActivitiesService {
     newWelderActivity: ICreateWeldersActivities,
   ): Promise<IWeldersActivities> {
     return this._prisma.welders_activities.create({
-      data: newWelderActivity,
+      data: {
+        ...newWelderActivity,
+        registered_at: new Date(),
+      },
     });
   }
 }

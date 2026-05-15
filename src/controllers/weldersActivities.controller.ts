@@ -1,5 +1,5 @@
 import type WeldersActivitiesService from "../services/weldersActivities.service.js";
-import { type Request, response, type Response } from "express";
+import { type Request, type Response } from "express";
 import errorResponseWith from "../utils/errorResponseWith.js";
 import successResponseWith from "../utils/successResponseWith.js";
 import { hasValidString } from "../utils/hasValidString.js";
@@ -19,6 +19,12 @@ class WeldersActivitiesController {
     this._weldersActivitiesService = weldersActivitiesService;
   }
 
+  /**
+   * Busca todas as atividades de soldadores.
+   *
+   * @param {Request} req - Request Express
+   * @param {Response} res - Response Express
+   */
   async getAllWeldersActivities(
     req: Request,
     res: Response,
@@ -41,7 +47,16 @@ class WeldersActivitiesController {
     }
   }
 
-  async getWelderActivityById(req: Request, res: Response): Promise<Response> {
+  /**
+   * Busca as atividades pelo ID do soldador.
+   *
+   * @param {Request} req - Request Express
+   * @param {Response} res - Response Express
+   */
+  async getWelderActivityByWelderId(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
     try {
       const { welder_uuid } = req.params;
 
@@ -76,6 +91,12 @@ class WeldersActivitiesController {
     }
   }
 
+  /**
+   * Registra uma nova atividade de soldador.
+   *
+   * @param {Request} req - Request Express
+   * @param {Response} res - Response Express
+   */
   async registerWelderActivity(req: Request, res: Response): Promise<Response> {
     try {
       const newWelderActivity = req.body as ICreateWeldersActivities;

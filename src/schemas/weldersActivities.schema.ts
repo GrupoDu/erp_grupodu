@@ -10,4 +10,5 @@ export const WeldersActivitiesSchema = z.object({
 
 export const CreateWelderActivitySchema = WeldersActivitiesSchema.omit({
   welder_activity_uuid: true,
+  registered_at: true,
 });

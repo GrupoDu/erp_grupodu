@@ -15,7 +15,7 @@ router.get("/", getTokenMiddleware, (req: Request, res: Response) =>
   weldersActivitiesController.getAllWeldersActivities(req, res),
 );
 router.get("/:welder_uuid", getTokenMiddleware, (req: Request, res: Response) =>
-  weldersActivitiesController.getWelderActivityById(req, res),
+  weldersActivitiesController.getWelderActivityByWelderId(req, res),
 );
 router.post("/register", getTokenMiddleware, (req: Request, res: Response) =>
   weldersActivitiesController.registerWelderActivity(req, res),
